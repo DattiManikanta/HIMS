@@ -1,0 +1,26 @@
+# Sub-projects
+chatgpt-app/
+galaxy-striker-3d/
+kids-video-automation/
+village-utsav-app/
+
+# Tools & Local Binaries
+tools/
+
+# Build artifacts & dependencies
+target/
+**/target/
+node_modules/
+
+# Environment variables & credentials
+.env
+
+# Logs & Python cache
+*.log
+__pycache__/
+*.pyc
+
+# IDE & OS temporary files
+.vscode/
+.idea/
+Thumbs.db

@@ -1,0 +1,17 @@
+{
+  "name": "indus-health-city",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "./tools/node.exe ./tools/build.cjs",
+    "build:backend": "cd backend-spring && mvnw.cmd package -DskipTests",
+    "start": "./tools/node.exe server.cjs",
+    "start:backend": "cd backend-spring && mvnw.cmd spring-boot:run",
+    "start:jar": "java -jar ./backend-spring/target/healthcity-backend-1.0.0.jar"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  }
+}

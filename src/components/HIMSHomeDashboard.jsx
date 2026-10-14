@@ -38,28 +38,42 @@ export function HIMSHomeDashboard({ onSelectModule, onLogout }) {
         </div>
       )}
 
-      {/* Left Scenery: Indus Hospital Building (Original High-Res, Clean Pure Photo) */}
+      {/* Left Scenery: Indus Hospital Building (Click opens https://www.indushospital.com/ in new tab) */}
       <div className="atri-scenery-hospital">
-        <div className="scenery-card-frame hospital-frame">
+        <a 
+          href="https://www.indushospital.com/" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="scenery-card-frame hospital-frame"
+          title="Visit Indus Hospital Official Website (https://www.indushospital.com/)"
+          style={{ textDecoration: 'none', cursor: 'pointer', display: 'flex' }}
+        >
           <img 
             src="./hospital_building.png?v=20261014indus" 
             alt="Indus Hospital Building" 
             className="atri-scenery-hospital-img" 
             onError={(e) => { e.currentTarget.src = './hospital_building.jpg'; }}
           />
-        </div>
+        </a>
       </div>
 
-      {/* Right Scenery: Madam Doctor Photo (Original High-Res, Clean Pure Photo) */}
+      {/* Right Scenery: Madam Doctor Photo (Click opens https://www.indushospital.com/ in new tab) */}
       <div className="atri-scenery-doctor">
-        <div className="scenery-card-frame doctor-frame">
+        <a 
+          href="https://www.indushospital.com/" 
+          target="_blank" 
+          rel="noopener noreferrer" 
+          className="scenery-card-frame doctor-frame"
+          title="Visit Indus Hospital Official Website (https://www.indushospital.com/)"
+          style={{ textDecoration: 'none', cursor: 'pointer', display: 'flex' }}
+        >
           <img 
             src="./doctor_profile.png?v=20261014madam" 
             alt="Doctor Madam" 
             className="atri-scenery-doctor-img" 
             onError={(e) => { e.currentTarget.src = './doctor_profile.jpg'; }}
           />
-        </div>
+        </a>
       </div>
 
       {/* Top Header Bar */}

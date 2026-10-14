@@ -1431,12 +1431,6 @@ function HIMSHomeDashboard({
   }, /*#__PURE__*/React.createElement("div", {
     className: "hims-content-wrapper"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "hims-headline-banner"
-  }, /*#__PURE__*/React.createElement("h1", {
-    className: "hims-headline-title"
-  }, "ATRI'S FUTURE READY", /*#__PURE__*/React.createElement("br", null), "INTEGRATED HIMS"), /*#__PURE__*/React.createElement("p", {
-    className: "hims-headline-desc"
-  }, "is designed to help organizations achieve IT resiliency,", /*#__PURE__*/React.createElement("br", null), "be cost-efficient and drive business alignment.")), /*#__PURE__*/React.createElement("div", {
     className: "hims-3d-tile-grid"
   }, /*#__PURE__*/React.createElement("div", {
     className: "hims-tile-spacer-row1"

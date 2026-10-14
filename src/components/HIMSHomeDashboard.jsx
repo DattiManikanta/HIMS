@@ -134,17 +134,7 @@ export function HIMSHomeDashboard({ onSelectModule, onLogout }) {
       {/* Main Center Area with Headline & Metro Tile Grid */}
       <main className="hims-main-area">
         <div className="hims-content-wrapper">
-          {/* Headline Text Banner */}
-          <div className="hims-headline-banner">
-            <h1 className="hims-headline-title">
-              ATRI'S FUTURE READY<br />
-              INTEGRATED HIMS
-            </h1>
-            <p className="hims-headline-desc">
-              is designed to help organizations achieve IT resiliency,<br />
-              be cost-efficient and drive business alignment.
-            </p>
-          </div>
+          {/* Full 3D Metro Tile Grid with HD Photos & Vibrant 3D Functional Tiles */}
 
           {/* Full 3D Metro Tile Grid with HD Photos & Vibrant 3D Functional Tiles */}
           <div className="hims-3d-tile-grid">

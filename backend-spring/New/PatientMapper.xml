@@ -1,0 +1,1698 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- *@author: Swetha S
+ * @created date: 20-Dec-2015
+ * @Modified date: 2 May-2015
+ * @modified by S.Veena
+  * @modified by MANIKANTA.DATTI
+ * @File Name: "PatientMapper.xml"
+ * @version: 1.0
+ * @Copyright (c) 2014-2015 Atri Business Solutions, Inc.
+    All Rights Reserved.
+ *
+    This software is the confidential and proprietary information of Atri
+    Business Solutions, Inc. ("Confidential Information"). You shall not
+    disclose such Confidential Information and shall use it only in
+    accordance with the terms of the license agreement you entered into
+    with Atri Business Solutions. -->
+
+<mapper namespace="com.atri.hms.patientmanagement.opregistration.mapper.PatientMapper">
+
+<!-- Procedure to add patient details  -->
+  <select id="callSetPatientDetails" parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel" statementType="CALLABLE" 
+    resultType="com.atri.hms.patientmanagement.opregistration.model.PatientModel" >
+     { CALL sp_pr_insert_patient( #{pntType, mode=IN}, #{pntCat, mode=IN}, #{picName, mode=IN},#{picNamee, mode=IN},
+		#{pname, mode=IN}, #{lName, mode=IN}, #{ptitle, mode=IN}, #{gender, mode=IN},#{dob, mode=IN},#{ageMonths, mode=IN}, #{ageDays, mode=IN},
+		#{empId, mode=IN},#{mobNum, mode=IN}, #{age, mode=IN}, #{country, mode=IN}, #{state, mode=IN}, #{city, mode=IN},
+		#{village, mode=IN}, #{addr, mode=IN}, #{maritalStatus, mode=IN}, #{bloodGrp, mode=IN},
+		#{nationality, mode=IN},#{religion, mode=IN}, #{refType, mode=IN}, #{refId, mode=IN}, #{refName, mode=IN}, 
+		#{otherStaffId, mode=IN}, #{otherStaffName, mode=IN}, #{otherHospId, mode=IN}, #{otherHospName, mode=IN}, 
+		#{idType, mode=IN}, #{idNum, mode=IN}, #{smsStatus, mode=IN}, #{orgName, mode=IN},
+		#{pntOccupation, mode=IN}, #{addedBy, mode=IN}, #{addedIp, mode=IN}, #{patientId, mode=OUT, jdbcType=INTEGER},
+		#{patientCode, mode=OUT, jdbcType=VARCHAR}, #{parentName, mode=IN}, #{careBy, mode=IN}, #{careByName, mode=IN},#{patCatName, mode=IN},
+		#{organizationsId, mode=IN},#{locationId, mode=IN},#{patCatNameId, mode=IN},#{newOsideOrgId, mode=IN})}
+	
+  </select>
+  
+<!-- Procedure to get unique patient photo name -->  
+  <select id="callGetPhotoDetails" parameterType="PatientModel" statementType="CALLABLE">
+      { CALL sp_pr_get_picname( #{modifiedBy, mode=IN},
+                                #{modifiedIp, mode=IN},
+                                #{picName, mode=OUT, jdbcType=VARCHAR})}
+   </select>
+   
+   <!-- Procedure to get unique patient attendee photo name -->  
+  <select id="callGetAttendeePhotoDetails" parameterType="PatientModel" statementType="CALLABLE">
+      { CALL sp_pr_get_attendee_picname( #{modifiedBy, mode=IN},
+                                #{modifiedIp, mode=IN},
+                                #{picNamee, mode=OUT, jdbcType=VARCHAR})}
+   </select>
+   
+   
+   <select id="callGetinsertchequeRegType" parameterType="PatientModel" statementType="CALLABLE">
+			{ CALL sp_set_registration_bill_op( #{pbillId, mode=IN},
+			                          #{cashPts, mode=IN},
+			                           #{regAmount, mode=IN},
+			                           #{amountss, mode=IN},
+			                            #{transNos, mode=IN},
+			                             #{bankNames, mode=IN},
+			                             <!--  #{chequeDates, mode=IN}, -->
+			                               #{serviceIdReg,mode=IN,jdbcType=INTEGER},
+			                                #{creditNos, mode=IN},
+			                                #{addedBy, mode=IN},
+											#{addedIp, mode=IN},
+											#{cardBankName, mode=IN})}
+			                                
+                           
+   </select>
+   
+  
+   
+ <!-- To get patient details -->  
+     <select id="getPatientList" resultType="com.atri.hms.patientmanagement.opregistration.model.PatientModel"  
+     parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel">
+     SELECT p.patient_id as patientId,
+   p.umr_num as patientCode, p.patient_name as pname, p.gender, p.mob_num as mobNum,
+   date_format(p.reg_dt,'%d-%b-%Y') as regDt, p.credit_org_id as orgName,
+   p.patient_category as pntCat, p.doc_status as docStatus
+   FROM at_pr_patient p WHERE 
+   (p.reg_dt BETWEEN NOW() - INTERVAL 1200 DAY AND NOW()) and p.status_id = 34 
+    <choose>
+    <when test="umrNo !=null">
+    and p.umr_num = #{umrNo}
+    </when>
+    </choose>
+ </select> 
+
+ <!-- To get patient details on particular appointment date  -->  
+    <select id="getPatientQueue" resultType="com.atri.hms.patientmanagement.opregistration.model.PatientQueueModel" 
+    parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel">
+     
+        <!-- Remove comments on 04-07-2022 -->
+            <!-- select a.file_status as fileStatus,a.vital_status as vitalStatus,p.patient_id as patientId,a.patient_appt_id as apptId, concat(l.loc_name) as location, a.loc_id as locId, l.loc_name as locName, 
+		fn_getcodevalue(a.bill_status) as billStatus, p.umr_num as patientCode,a.priority_no as priorityNo, 
+		p.patient_name as patientName,p.gender as gender,p.blood_grp as bloodGrp, p.mob_num as mobNum,p.age as age,
+		p.age_d as ageDays,p.age_m as ageMonths,parent_name as parentName,
+		fn_getcodevalue(a.appt_status_id) as statusInfo,a.op_num as opCode,a.start_time as startTime, tar.r_chart_name as patientCategory,
+		e.emp_id as empId,p.state as state,p.city as city,p.village as village,p.addr as addr, 
+		p.marital_status as maritalStatus,p.religion as religion, p.id_proof_type as idProofType ,
+		p.id_proof_num as idProofNum, p.occupation as occupation, a.ref_type as refType,
+		p.sms_status as smsStatus, p.sms_alert as smsAlert,p.dob as dob,p.ref_id as refId, p.patient_category as patientCategoryId,
+		fn_getcodevalue(a.visit_type) as visitType, e.emp_name  as docName, p.nationality as nationality,
+		a.diseases_desc as problem,a.token_num as tokenNum, DATE_FORMAT(a.schedule_dt,'%d-%b-%Y') as apptDt ,
+		a.other_staff_id as otherStaffId , a.other_hosp_id as otherhospId,
+		(select concat((b.payment_type) ,'-',max(b.bill_id)) from at_bills b where p.patient_id=b.patient_id) as payTypeName,ass.source_service_id as sourceServiceId
+		from at_pr_patient p,at_pr_appt a, at_hr_emp e, at_location l,at_cb_tariff tar,at_source_service_consult ass,at_bill_details bill,at_source_service assc,at_bills b  
+		where p.patient_id=a.patient_id and a.emp_id = e.emp_id and tar.tariff_id=p.patient_category and 
+		 p.status_id=34 and b.bill_id=bill.bill_id and ass.source_service_id=bill.service_id and 
+      ass.source_service_id=assc.source_service_id
+		and l.loc_id = a.loc_id and p.patient_category=4 -->
+		
+		
+		<!-- select a.file_status as fileStatus,a.vital_status as vitalStatus,p.patient_id as patientId,a.patient_appt_id as apptId, concat(l.loc_name) as location, a.loc_id as locId, l.loc_name as locName, 
+		CASE 
+        WHEN a.bill_status = 17 THEN 'Paid'
+        WHEN a.bill_status = 18 THEN 'Pending'
+        WHEN a.bill_status = 177 THEN 'Cancelled'
+    END  as billStatus, p.umr_num as patientCode,a.priority_no as priorityNo, 
+		concat(p.patient_name,'.',p.last_name) as patientName,p.gender as gender,p.blood_grp as bloodGrp, p.mob_num as mobNum,p.age as age,p.title as ptitle,p.last_name as lName,
+		p.age_d as ageDays,p.age_m as ageMonths,parent_name as parentName,p.care_by as careBy,p.care_by_name as careByName,p.patient_category_name as pntCat,
+		 CASE 
+        WHEN a.appt_status_id = 43 THEN 'Available'
+        WHEN a.appt_status_id = 42 THEN 'Visited'
+        WHEN a.appt_status_id = 41 THEN 'Cancelled'
+        WHEN a.appt_status_id = 39 THEN 'Scheduled'
+        WHEN a.appt_status_id = 40 THEN 'Rescheduled'
+        WHEN a.appt_status_id = 159 THEN 'Waiting'
+        WHEN a.appt_status_id = 229 THEN 'ConsReVisit'
+        WHEN a.appt_status_id = 227 THEN 'CheckUp'
+        WHEN a.appt_status_id = 154 THEN 'After Consultation'
+        WHEN a.appt_status_id = 152 THEN 'Before Consultation'
+     END as statusInfo,a.op_num as opCode,a.start_time as startTime, tar.r_chart_name as patientCategory,
+		e.emp_id as empId,p.state as state,p.city as city,p.village as village,p.addr as addr, 
+		p.marital_status as maritalStatus,p.religion as religion, p.id_proof_type as idProofType ,
+		p.id_proof_num as idProofNum, p.occupation as occupation, a.ref_type as refType,p.org_id as orgId,
+		p.sms_status as smsStatus, p.sms_alert as smsAlert,p.dob as dob,p.ref_id as refId, p.patient_category as patientCategoryId,
+		CASE 
+        WHEN a.visit_type = 174 THEN 'NEWVISIT'
+        WHEN a.visit_type = 175 THEN 'REVISIT'
+        WHEN a.visit_type = 226 THEN 'NEWCYCLE'
+    END as visitType, e.emp_name  as docName, p.nationality as nationality,
+		a.diseases_desc as problem,a.token_num as tokenNum, DATE_FORMAT(a.schedule_dt,'%d-%b-%Y') as apptDt ,
+		a.other_staff_id as otherStaffId , a.other_hosp_id as otherhospId,
+		(select concat((b.payment_type) ,'-',max(b.bill_id)) from at_bills b where p.patient_id=b.patient_id) as payTypeName,
+		ss.source_service_id as sourceServiceId,a.visit_type as visitTypeId,bill.bill_id as billId
+		from at_pr_patient p,   and p.patient_category=4 
+		
+        <choose>
+			<when test="apptFromDate != null and apptToDate != null">
+				 appt_last_1_year a, at_hr_emp e, at_location l,
+        at_cb_tariff tar,at_source_service ss,at_source_service_consult ssc, at_bills bill
+		where date(a.schedule_dt) between DATE_FORMAT(STR_TO_DATE(#{apptFromDate}, '%e-%b-%Y'), '%Y-%m-%d') 
+				 and DATE_FORMAT(STR_TO_DATE(#{apptToDate}, '%e-%b-%Y'), '%Y-%m-%d')
+			</when>
+			 <otherwise>
+			 
+				<choose>
+					<when test="apptFromDate != null ">
+						 appt_last_1_year a, at_hr_emp e, at_location l,
+        at_cb_tariff tar,at_source_service ss,at_source_service_consult ssc, at_bills bill
+		where date(a.schedule_dt) = DATE_FORMAT(STR_TO_DATE(#{apptFromDate}, '%e-%b-%Y'), '%Y-%m-%d')
+					</when>
+					<when test="apptToDate != null ">
+						 appt_last_1_year a, at_hr_emp e, at_location l,
+        at_cb_tariff tar,at_source_service ss,at_source_service_consult ssc, at_bills bill
+		where DATE_FORMAT(STR_TO_DATE(#{apptToDate}, '%e-%b-%Y'), '%Y-%m-%d')
+					</when>
+					<otherwise>
+						 appt_last_1_year a, at_hr_emp e, at_location l,
+        at_cb_tariff tar,at_source_service ss,at_source_service_consult ssc, at_bills bill
+		where date(a.schedule_dt) = CURDATE()
+					</otherwise>
+				</choose>
+			</otherwise>			
+	 		
+		</choose> 
+		<choose>
+			<when test="locId != 0 and locId != null">
+				and a.loc_id=#{locId}
+			</when>
+		</choose>
+		and p.patient_id=a.patient_id and a.emp_id = e.emp_id and tar.tariff_id=p.patient_category and bill.patient_id = p.patient_id and
+		 p.emp_id=ss.equp_service_id and ss.source_service_id=ssc.source_service_id and ssc.visit_type_id=a.visit_type and
+         p.status_id=34 and l.loc_id = a.loc_id group by a.patient_appt_id,p.patient_id order by priority_no DESC  -->
+         
+        <!-- select a.file_status AS fileStatus,a.vital_status AS vitalStatus,p.patient_id AS patientId,a.patient_appt_id AS apptId,p.last_name as lName,p.patient_name as pname,
+CONCAT(l.loc_name) AS location,a.loc_id AS locId,l.loc_name AS locName, fn_getcodevalue(a.bill_status) AS billStatus, p.umr_num AS patientCode,
+a.priority_no AS priorityNo,concat(p.patient_name,' ', coalesce (p.last_name , '')) as patientName,p.gender AS gender,p.blood_grp AS bloodGrp, 
+p.mob_num AS mobNum,p.age AS age,p.title AS ptitle,p.age_d AS ageDays,p.age_m AS ageMonths,p.location_id as locationId,
+parent_name AS parentName,p.care_by AS careBy,p.care_by_name AS careByName,p.patient_category_name AS pntCat,
+fn_getcodevalue(a.appt_status_id) AS statusInfo,a.op_num AS opCode,a.start_time AS startTime, tar.r_chart_name AS patientCategory,
+e.emp_id AS empId,CONCAT(e.emp_id, ':', e.emp_code, ':', spec.spec_name) AS employeeId,p.state AS state,p.city AS city, p.village AS village,p.addr AS addr,p.marital_status AS maritalStatus,
+p.religion AS religion, p.id_proof_type AS idProofType ,p.id_proof_num AS idProofNum, p.occupation AS occupation, 
+a.ref_type AS refType,p.org_id AS orgId,p.sms_status AS smsStatus, p.sms_alert AS smsAlert,p.dob AS dob,p.ref_id AS refId, 
+p.patient_category AS patientCategoryId,fn_getcodevalue(a.visit_type) AS visitType, concat(e.emp_name,' ', coalesce (e.last_name , '')) AS docName, p.nationality AS nationality,
+a.diseases_desc AS problem,a.token_num AS tokenNum, DATE_FORMAT(a.schedule_dt,'%d-%b-%Y') AS apptDt ,am.visit_id as visitId,a.added_by as addedBy,
+a.other_staff_id AS otherStaffId , a.other_hosp_id AS otherhospId,
+ COALESCE((SELECT SUM(CASE WHEN p.payment_type = 275 THEN p.amount ELSE '' END) 
+ FROM at_receipt_mode p WHERE p.bill_id = bill.bill_id ),'') AS cashAmt,
+  COALESCE((SELECT SUM(CASE WHEN p.payment_type = 276 THEN p.amount ELSE '' END) 
+ FROM at_receipt_mode p WHERE p.bill_id = bill.bill_id ),'') AS creditAmt,
+ COALESCE((SELECT SUM(CASE WHEN p.payment_type = 277 THEN p.amount ELSE '' END) 
+ FROM at_receipt_mode p WHERE p.bill_id = bill.bill_id ),'') AS upiAmt,bill.bill_id as billId,ss.source_service_id as sourceServiceId,a.visit_type as visitTypeId
+FROM patient_last_1_month p
+LEFT JOIN appt_last_1_month a ON p.patient_id = a.patient_id
+LEFT JOIN at_hr_emp e ON a.emp_id = e.emp_id
+LEFT JOIN at_location l ON l.loc_id = a.loc_id
+LEFT JOIN at_hr_specialization spec ON e.spec_id=spec.spec_id
+LEFT JOIN at_cb_tariff tar ON tar.tariff_id = p.patient_category
+LEFT JOIN at_source_service ss ON p.emp_id = ss.equp_service_id
+LEFT JOIN at_source_service_consult ssc ON ss.source_service_id = ssc.source_service_id AND ssc.visit_type_id = a.visit_type
+LEFT JOIN at_bills bill ON bill.patient_id = p.patient_id
+LEFT JOIN at_pr_visits am ON  am.patient_appt_id = a.patient_appt_id
+WHERE -->
+
+<!-- SELECT 
+    p.patient_id AS patientId, a.patient_appt_id AS apptId, p.last_name AS lName, p.patient_name AS pname,
+    a.vital_status as vitalStatus,a.file_status as fileStatus,
+    CONCAT(l.loc_name) AS location,a.loc_id AS locId,l.loc_name AS locName, bill.bill_status as status,fn_getcodevalue(a.bill_status) AS billStatus, 
+    p.umr_num AS patientCode,a.priority_no AS priorityNo, CONCAT(p.patient_name, ' ', COALESCE(p.last_name, '')) AS patientName,
+    p.gender AS gender, p.blood_grp AS bloodGrp, p.mob_num AS mobNum, p.age AS age, p.title AS ptitle,
+    p.age_d AS ageDays,p.age_m AS ageMonths, p.location_id AS locationId,p.parent_name AS parentName,
+    p.care_by AS careBy,p.care_by_name AS careByName, p.patient_category_name AS pntCat,
+    fn_getcodevalue(a.appt_status_id) AS statusInfo,a.op_num AS opCode,
+    a.start_time AS startTime, tar.r_chart_name AS patientCategory,e.emp_id AS empId,
+    CONCAT(e.emp_id, ':', e.emp_code, ':', spec.spec_name) AS employeeId,
+    p.state AS state, p.city AS city, p.village AS village, p.addr AS addr, p.marital_status AS maritalStatus,
+    p.religion AS religion,p.id_proof_type AS idProofType,p.id_proof_num AS idProofNum, p.occupation AS occupation,
+    a.ref_type AS refType,p.org_id AS orgId, p.sms_status AS smsStatus,p.sms_alert AS smsAlert,
+    p.dob AS dob,p.ref_id AS refId, p.patient_category AS patientCategoryId,fn_getcodevalue(a.visit_type) AS visitType,
+    CONCAT(e.emp_name, ' ', COALESCE(e.last_name, '')) AS docName,p.nationality AS nationality,
+    a.diseases_desc AS problem, a.token_num AS tokenNum, DATE_FORMAT(a.schedule_dt, '%d-%b-%Y') AS apptDt,
+    am.visit_id AS visitId,a.added_by AS addedBy,a.other_staff_id AS otherStaffId,
+    a.other_hosp_id AS otherhospId,
+
+    COALESCE(SUM(DISTINCT CASE 
+        WHEN pc.service_id = 1 AND pc.payment_type = 275 THEN pc.amount 
+        ELSE 0 
+    END), 0) AS regOpCashAmt,
+    COALESCE(SUM(DISTINCT CASE 
+        WHEN pc.service_id = 1 AND pc.payment_type = 276 THEN pc.amount 
+        ELSE 0 
+    END), 0) AS regOpCreditAmt,
+    COALESCE(SUM(DISTINCT CASE 
+        WHEN pc.service_id = 1 AND pc.payment_type = 277 THEN pc.amount 
+        ELSE 0 
+    END), 0) AS regOpUpiAmt,
+
+    COALESCE(SUM(DISTINCT CASE 
+        WHEN pc.service_id = 2 AND pc.payment_type = 275 THEN pc.amount 
+        ELSE 0 
+    END), 0) AS cashAmt,
+    COALESCE(SUM(DISTINCT CASE 
+        WHEN pc.service_id = 2 AND pc.payment_type = 276 THEN pc.amount 
+        ELSE 0 
+    END), 0) AS creditAmt,
+    COALESCE(SUM(DISTINCT CASE 
+        WHEN pc.service_id = 2 AND pc.payment_type = 277 THEN pc.amount 
+        ELSE 0 
+    END), 0) AS upiAmt,
+
+    bill.bill_id AS billId,
+    ss.source_service_id AS sourceServiceId,
+    a.visit_type AS visitTypeId,
+   
+     (SELECT SUM(a.amount)
+     FROM at_receipt_mode a,at_bills b
+     WHERE b.bill_id=a.bill_id and a.service_id = 1 and 
+     a.payment_type=275 AND  b.patient_category=4 and 
+    
+			
+			<choose>
+			<when test="apptFromDate != null and apptToDate != null">
+				 DATE(b.bill_dt) BETWEEN DATE_FORMAT(STR_TO_DATE(#{apptFromDate}, '%e-%b-%Y'), '%Y-%m-%d') 
+				and DATE_FORMAT(STR_TO_DATE(#{apptToDate}, '%e-%b-%Y'), '%Y-%m-%d')
+			</when>
+			 <otherwise>
+				<choose>
+					<otherwise>
+						 date(b.bill_dt) = CURDATE() 
+					</otherwise>
+				</choose>
+			</otherwise>			
+	 		
+		</choose>
+    
+    ) AS regAmoCash,
+      (SELECT SUM(a.amount)
+     FROM at_receipt_mode a,at_bills b
+     WHERE b.bill_id=a.bill_id and a.service_id = 1 and 
+     a.payment_type=276  and b.patient_category=4 and 
+<choose>
+			<when test="apptFromDate != null and apptToDate != null">
+				 DATE(b.bill_dt) BETWEEN DATE_FORMAT(STR_TO_DATE(#{apptFromDate}, '%e-%b-%Y'), '%Y-%m-%d') 
+				and DATE_FORMAT(STR_TO_DATE(#{apptToDate}, '%e-%b-%Y'), '%Y-%m-%d')
+			</when>
+			 <otherwise>
+				<choose>
+					<otherwise>
+						 date(b.bill_dt) = CURDATE() 
+					</otherwise>
+				</choose>
+			</otherwise>			
+	 		
+		</choose>
+		) AS regAmoCard,
+    (SELECT SUM(a.amount)
+     FROM at_receipt_mode a,at_bills b
+     WHERE b.bill_id=a.bill_id and a.service_id = 1 and 
+     a.payment_type=277  and b.patient_category=4 and 
+<choose>
+			<when test="apptFromDate != null and apptToDate != null">
+				 DATE(b.bill_dt) BETWEEN DATE_FORMAT(STR_TO_DATE(#{apptFromDate}, '%e-%b-%Y'), '%Y-%m-%d') 
+				and DATE_FORMAT(STR_TO_DATE(#{apptToDate}, '%e-%b-%Y'), '%Y-%m-%d')
+			</when>
+			 <otherwise>
+				<choose>
+					<otherwise>
+						 date(b.bill_dt) = CURDATE() 
+					</otherwise>
+				</choose>
+			</otherwise>			
+	 		
+		</choose>     
+) AS regAmoUpi,
+     (SELECT SUM(a.amount)
+     FROM at_receipt_mode a,at_bills b
+     WHERE b.bill_id=a.bill_id and a.service_id = 2 and 
+     a.payment_type=275 AND  b.patient_category=4 and 
+<choose>
+			<when test="apptFromDate != null and apptToDate != null">
+				 DATE(b.bill_dt) BETWEEN DATE_FORMAT(STR_TO_DATE(#{apptFromDate}, '%e-%b-%Y'), '%Y-%m-%d') 
+				and DATE_FORMAT(STR_TO_DATE(#{apptToDate}, '%e-%b-%Y'), '%Y-%m-%d')
+			</when>
+			 <otherwise>
+				<choose>
+					<otherwise>
+						 date(b.bill_dt) = CURDATE() 
+					</otherwise>
+				</choose>
+			</otherwise>			
+	 		
+		</choose>
+) AS conAmoCash,
+ (SELECT SUM(a.amount)
+     FROM at_receipt_mode a,at_bills b
+     WHERE b.bill_id=a.bill_id and a.service_id = 2 and 
+     a.payment_type=276 AND  b.patient_category=4 and 
+<choose>
+			<when test="apptFromDate != null and apptToDate != null">
+				 DATE(b.bill_dt) BETWEEN DATE_FORMAT(STR_TO_DATE(#{apptFromDate}, '%e-%b-%Y'), '%Y-%m-%d') 
+				and DATE_FORMAT(STR_TO_DATE(#{apptToDate}, '%e-%b-%Y'), '%Y-%m-%d')
+			</when>
+			 <otherwise>
+				<choose>
+					<otherwise>
+						 date(b.bill_dt) = CURDATE() 
+					</otherwise>
+				</choose>
+			</otherwise>			
+	 		
+		</choose>     
+) AS conAmoCard,
+ (SELECT SUM(a.amount)
+     FROM at_receipt_mode a,at_bills b
+     WHERE b.bill_id=a.bill_id and a.service_id = 2 and 
+     a.payment_type=277 AND  b.patient_category=4 and 
+     <choose>
+			<when test="apptFromDate != null and apptToDate != null">
+				 DATE(b.bill_dt) BETWEEN DATE_FORMAT(STR_TO_DATE(#{apptFromDate}, '%e-%b-%Y'), '%Y-%m-%d') 
+				and DATE_FORMAT(STR_TO_DATE(#{apptToDate}, '%e-%b-%Y'), '%Y-%m-%d')
+			</when>
+			 <otherwise>
+				<choose>
+					<otherwise>
+						 date(b.bill_dt) = CURDATE() 
+					</otherwise>
+				</choose>
+			</otherwise>			
+	 		
+		</choose>
+) AS conAmoUpi
+
+FROM 
+    patient_last_1_month p
+LEFT JOIN 
+    appt_last_1_month a ON p.patient_id = a.patient_id
+LEFT JOIN 
+    at_location l ON l.loc_id = a.loc_id
+
+LEFT JOIN 
+    at_source_service ss ON p.emp_id = ss.equp_service_id
+LEFT JOIN 
+    at_source_service_consult ssc ON ss.source_service_id = ssc.source_service_id AND ssc.visit_type_id = a.visit_type
+LEFT JOIN 
+    at_bills bill ON bill.patient_id = p.patient_id 
+ LEFT JOIN 
+ at_cb_tariff tar ON tar.tariff_id = bill.patient_category
+LEFT JOIN 
+at_pr_visits am ON am.patient_appt_id = a.patient_appt_id
+LEFT JOIN 
+at_bill_details bd ON bill.bill_id = bd.bill_id and bd.patient_appt_id = a.patient_appt_id
+LEFT JOIN 
+at_receipt_mode pc ON bill.bill_id = pc.bill_id and pc.bill_id = bd.bill_id
+LEFT JOIN 
+    at_hr_emp e ON bill.emp_id = e.emp_id
+LEFT JOIN 
+at_hr_specialization spec ON e.spec_id = spec.spec_id
+    
+WHERE
+					
+		
+		 <choose>
+			<when test="apptFromDate != null and apptToDate != null">
+				 date(a.schedule_dt) between DATE_FORMAT(STR_TO_DATE(#{apptFromDate}, '%e-%b-%Y'), '%Y-%m-%d') 
+				and DATE_FORMAT(STR_TO_DATE(#{apptToDate}, '%e-%b-%Y'), '%Y-%m-%d') and bill.patient_category= 4 and p.status_id = 34
+			</when>
+			 <otherwise>
+				<choose>
+					<when test="apptFromDate != null ">
+						 date(a.schedule_dt) = DATE_FORMAT(STR_TO_DATE(#{apptFromDate},
+						'%e-%b-%Y'), '%Y-%m-%d') and bill.patient_category=4 and p.status_id = 34
+					</when>
+					<when test="apptToDate != null ">
+						 DATE_FORMAT(STR_TO_DATE(#{apptToDate}, '%e-%b-%Y'), '%Y-%m-%d') and bill.patient_category= 4 and p.status_id = 34
+					</when>
+					<otherwise>
+						 date(a.schedule_dt) = CURDATE() and bill.patient_category= 4 and p.status_id = 34
+					</otherwise>
+				</choose>
+			</otherwise>			
+	 		
+		</choose> 
+		
+		
+		
+		<choose>
+			<when test="locId != 0 and locId != null">
+				and a.loc_id=#{locId}
+			</when>
+		</choose>
+		 GROUP BY bill.bill_id order by a.priority_no DESC 
+	
+	 -->
+	
+	SELECT  p.patient_id AS patientId,  a.patient_appt_id AS apptId,  p.last_name AS lName, p.patient_name AS pname,  a.vital_status as vitalStatus, 
+    a.file_status as fileStatus, CONCAT(l.loc_name) AS location,   a.loc_id AS locId,   l.loc_name AS locName,  bill.bill_status as status, 
+    p.umr_num AS patientCode, a.priority_no AS priorityNo, 
+    CONCAT(p.patient_name, ' ', COALESCE(p.last_name, '')) AS patientName,p.gender AS gender, p.blood_grp AS bloodGrp, p.mob_num AS mobNum, 
+    p.age AS age, p.title AS ptitle,p.age_d AS ageDays, p.age_m AS ageMonths,  p.location_id AS locationId, 
+    p.parent_name AS parentName,p.care_by AS careBy,p.care_by_name AS careByName, p.patient_category_name AS pntCat,
+    fn_getcodevalue(a.appt_status_id) AS statusInfo,a.op_num AS opCode, a.start_time AS startTime, 
+    tar.r_chart_name AS patientCategory, e.emp_id AS empId,CONCAT(e.emp_id, ':', e.emp_code, ':', spec.spec_name) AS employeeId,
+    p.state AS state, p.city AS city, p.village AS village, p.addr AS addr, p.marital_status AS maritalStatus, p.religion AS religion, 
+    p.id_proof_type AS idProofType, p.id_proof_num AS idProofNum,p.occupation AS occupation,a.ref_type AS refType, 
+    p.org_id AS orgId, p.sms_status AS smsStatus,  p.sms_alert AS smsAlert,p.dob AS dob, 
+    p.ref_id AS refId, p.patient_category AS patientCategoryId, fn_getcodevalue(a.visit_type) AS visitType,
+    CONCAT(e.emp_name, ' ', COALESCE(e.last_name, '')) AS docName, bill.paid_amt as paidAmount,spec.spec_name as specialization,
+    p.nationality AS nationality, a.diseases_desc AS problem, a.token_num AS tokenNum, 
+    DATE_FORMAT(a.schedule_dt, '%d-%b-%Y') AS apptDt,am.visit_id AS visitId, a.added_by AS addedBy, 
+    a.other_staff_id AS otherStaffId,  a.other_hosp_id AS otherhospId,e.emp_code AS empCode,
+
+    
+    CASE 
+    WHEN bill.bill_status = 18 THEN 'Pending'
+    ELSE fn_getcodevalue(bill.bill_status)
+END AS billStatus,
+MAX(
+    CASE 
+        WHEN bill.bill_status IN (17, 18, 322) THEN bill.authorized_by
+        ELSE NULL
+    END
+) AS authorizedBy,
+    
+    
+    -- Registration payment details (only if service_id = 1)
+    COALESCE(regOpCashAmt, 0) AS regOpCashAmt,
+    COALESCE(regOpCreditAmt, 0) AS regOpCreditAmt,
+    COALESCE(regOpUpiAmt, 0) AS regOpUpiAmt,
+    -- Consultation payment details (only if service_id = 2)
+    COALESCE(cashAmt, 0) AS cashAmt,
+    COALESCE(creditAmt, 0) AS creditAmt,
+    COALESCE(upiAmt, 0) AS upiAmt,
+    bill.bill_id AS billId,
+    
+     <!-- bills.amt AS regFee, -->
+     MAX(CASE 
+    WHEN bills.service_id = 1 THEN bills.amt 
+END) AS regFee,
+    bills.charge_per_unit AS consFee,
+    
+    bills.discount AS consDiscount,
+    bills.discount_amt AS consDiscountAmount,
+    bill.tot_amt AS totAmt,
+    bills.cons_final_amount AS consamount,
+     bill.bill_amt as billAmt, 
+     bill.auth_person as disStaffId,
+    bill.tot_discount AS totDiscount,
+    bill.tot_dis_per AS totDiscountAmt,
+    bill.tot_retd_amt AS amtRecd,
+    bill.balance AS balance,
+    bill.disc_remarks  as remarks,
+    ss.source_service_id AS sourceServiceId,
+    a.visit_type AS visitTypeId ,
+     (SELECT SUM(a.amount)
+     FROM at_receipt_mode a,at_bills b
+     WHERE b.bill_id=a.bill_id and a.service_id = 1 and 
+     a.payment_type=275 AND  b.patient_category=4 and 
+    
+			
+			<choose>
+			<when test="apptFromDate != null and apptToDate != null">
+				 DATE(b.bill_dt) BETWEEN DATE_FORMAT(STR_TO_DATE(#{apptFromDate}, '%e-%b-%Y'), '%Y-%m-%d') 
+				and DATE_FORMAT(STR_TO_DATE(#{apptToDate}, '%e-%b-%Y'), '%Y-%m-%d')
+			</when>
+			 <otherwise>
+				<choose>
+					<otherwise>
+						 date(b.bill_dt) = CURDATE() 
+					</otherwise>
+				</choose>
+			</otherwise>			
+	 		
+		</choose>
+    
+    ) AS regAmoCash,
+      (SELECT SUM(a.amount)
+     FROM at_receipt_mode a,at_bills b
+     WHERE b.bill_id=a.bill_id and a.service_id = 1 and 
+     a.payment_type=276  and b.patient_category=4 and 
+<choose>
+			<when test="apptFromDate != null and apptToDate != null">
+				 DATE(b.bill_dt) BETWEEN DATE_FORMAT(STR_TO_DATE(#{apptFromDate}, '%e-%b-%Y'), '%Y-%m-%d') 
+				and DATE_FORMAT(STR_TO_DATE(#{apptToDate}, '%e-%b-%Y'), '%Y-%m-%d')
+			</when>
+			 <otherwise>
+				<choose>
+					<otherwise>
+						 date(b.bill_dt) = CURDATE() 
+					</otherwise>
+				</choose>
+			</otherwise>			
+	 		
+		</choose>
+		) AS regAmoCard,
+    (SELECT SUM(a.amount)
+     FROM at_receipt_mode a,at_bills b
+     WHERE b.bill_id=a.bill_id and a.service_id = 1 and 
+     a.payment_type=277  and b.patient_category=4 and 
+<choose>
+			<when test="apptFromDate != null and apptToDate != null">
+				 DATE(b.bill_dt) BETWEEN DATE_FORMAT(STR_TO_DATE(#{apptFromDate}, '%e-%b-%Y'), '%Y-%m-%d') 
+				and DATE_FORMAT(STR_TO_DATE(#{apptToDate}, '%e-%b-%Y'), '%Y-%m-%d')
+			</when>
+			 <otherwise>
+				<choose>
+					<otherwise>
+						 date(b.bill_dt) = CURDATE() 
+					</otherwise>
+				</choose>
+			</otherwise>			
+	 		
+		</choose>     
+) AS regAmoUpi,
+     (SELECT SUM(a.amount)
+     FROM at_receipt_mode a,at_bills b
+     WHERE b.bill_id=a.bill_id and a.service_id = 2 and 
+     a.payment_type=275 AND  b.patient_category=4 and a.status_id=34 and 
+<choose>
+			<when test="apptFromDate != null and apptToDate != null">
+				 DATE(b.bill_dt) BETWEEN DATE_FORMAT(STR_TO_DATE(#{apptFromDate}, '%e-%b-%Y'), '%Y-%m-%d') 
+				and DATE_FORMAT(STR_TO_DATE(#{apptToDate}, '%e-%b-%Y'), '%Y-%m-%d')
+			</when>
+			 <otherwise>
+				<choose>
+					<otherwise>
+						 date(b.bill_dt) = CURDATE() 
+					</otherwise>
+				</choose>
+			</otherwise>			
+	 		
+		</choose>
+) AS conAmoCash,
+ (SELECT SUM(a.amount)
+     FROM at_receipt_mode a,at_bills b
+     WHERE b.bill_id=a.bill_id and a.service_id = 2 and 
+     a.payment_type=276 AND  b.patient_category=4 and a.status_id=34 and 
+<choose>
+			<when test="apptFromDate != null and apptToDate != null">
+				 DATE(b.bill_dt) BETWEEN DATE_FORMAT(STR_TO_DATE(#{apptFromDate}, '%e-%b-%Y'), '%Y-%m-%d') 
+				and DATE_FORMAT(STR_TO_DATE(#{apptToDate}, '%e-%b-%Y'), '%Y-%m-%d')
+			</when>
+			 <otherwise>
+				<choose>
+					<otherwise>
+						 date(b.bill_dt) = CURDATE() 
+					</otherwise>
+				</choose>
+			</otherwise>			
+	 		
+		</choose>     
+) AS conAmoCard,
+ (SELECT SUM(a.amount)
+     FROM at_receipt_mode a,at_bills b
+     WHERE b.bill_id=a.bill_id and a.service_id = 2 and 
+     a.payment_type=277 AND  b.patient_category=4 and a.status_id=34 and 
+     <choose>
+			<when test="apptFromDate != null and apptToDate != null">
+				 DATE(b.bill_dt) BETWEEN DATE_FORMAT(STR_TO_DATE(#{apptFromDate}, '%e-%b-%Y'), '%Y-%m-%d') 
+				and DATE_FORMAT(STR_TO_DATE(#{apptToDate}, '%e-%b-%Y'), '%Y-%m-%d')
+			</when>
+			 <otherwise>
+				<choose>
+					<otherwise>
+						 date(b.bill_dt) = CURDATE() 
+					</otherwise>
+				</choose>
+			</otherwise>			
+	 		
+		</choose>
+) AS conAmoUpi,
+(SELECT SUM(b.paid_amt)
+     FROM at_bills b
+     WHERE b.patient_category=4 and 
+    
+			
+			<choose>
+			<when test="apptFromDate != null and apptToDate != null">
+				 DATE(b.bill_dt) BETWEEN DATE_FORMAT(STR_TO_DATE(#{apptFromDate}, '%e-%b-%Y'), '%Y-%m-%d') 
+				and DATE_FORMAT(STR_TO_DATE(#{apptToDate}, '%e-%b-%Y'), '%Y-%m-%d')
+			</when>
+			 <otherwise>
+				<choose>
+					<otherwise>
+						 date(b.bill_dt) = CURDATE() 
+					</otherwise>
+				</choose>
+			</otherwise>			
+	 		
+		</choose>
+    
+    ) AS paidAmt,
+    (SELECT SUM(a.refund_amt)
+     FROM at_op_bill_refund a,at_bills b
+     WHERE b.bill_id=a.bill_id and 
+     b.patient_category=4 and 
+    
+			
+			<choose>
+			<when test="apptFromDate != null and apptToDate != null">
+				 DATE(b.bill_dt) BETWEEN DATE_FORMAT(STR_TO_DATE(#{apptFromDate}, '%e-%b-%Y'), '%Y-%m-%d') 
+				and DATE_FORMAT(STR_TO_DATE(#{apptToDate}, '%e-%b-%Y'), '%Y-%m-%d')
+			</when>
+			 <otherwise>
+				<choose>
+					<otherwise>
+						 date(b.bill_dt) = CURDATE() 
+					</otherwise>
+				</choose>
+			</otherwise>			
+	 		
+		</choose>
+    
+    ) AS refundAmt 
+FROM  patient_last_1_year p
+LEFT JOIN  appt_last_1_year a ON p.patient_id = a.patient_id
+LEFT JOIN  at_location l ON l.loc_id = a.loc_id
+LEFT JOIN  at_source_service ss ON p.emp_id = ss.equp_service_id
+LEFT JOIN  at_source_service_consult ssc ON ss.source_service_id = ssc.source_service_id AND ssc.visit_type_id = a.visit_type
+LEFT JOIN  at_bills bill ON bill.patient_id = p.patient_id 
+LEFT JOIN  at_cb_tariff tar ON tar.tariff_id = bill.patient_category
+LEFT JOIN   at_pr_visits am ON am.patient_appt_id = a.patient_appt_id
+LEFT JOIN at_bill_details bd ON bill.bill_id = bd.bill_id and bd.patient_appt_id = a.patient_appt_id
+LEFT JOIN  at_hr_emp e ON bill.emp_id = e.emp_id
+   LEFT JOIN at_bill_details bills ON bills.patient_appt_id = a.patient_appt_id 
+LEFT JOIN  at_hr_specialization spec ON e.spec_id = spec.spec_id
+
+-- Subquery for aggregating payment amounts
+LEFT JOIN (
+    SELECT 
+        bill_id,
+        SUM(CASE 
+            WHEN pc.service_id = 1 AND pc.payment_type = 275 THEN pc.amount 
+            ELSE 0 
+        END) AS regOpCashAmt,
+        SUM(CASE 
+            WHEN pc.service_id = 1 AND pc.payment_type = 276 THEN pc.amount 
+            ELSE 0 
+        END) AS regOpCreditAmt,
+        SUM(CASE 
+            WHEN pc.service_id = 1 AND pc.payment_type = 277 THEN pc.amount 
+            ELSE 0 
+        END) AS regOpUpiAmt,
+        SUM(CASE 
+            WHEN pc.service_id = 2 AND pc.payment_type = 275 THEN pc.amount 
+            ELSE 0 
+        END) AS cashAmt,
+        SUM(CASE 
+            WHEN pc.service_id = 2 AND pc.payment_type = 276 THEN pc.amount 
+            ELSE 0 
+        END) AS creditAmt,
+        SUM(CASE 
+            WHEN pc.service_id = 2 AND pc.payment_type = 277 THEN pc.amount 
+            ELSE 0 
+        END) AS upiAmt
+    FROM 
+        at_receipt_mode pc
+    GROUP BY 
+        bill_id
+) payment_agg ON payment_agg.bill_id = bill.bill_id
+
+WHERE 
+
+<choose>
+			<when test="apptFromDate != null and apptToDate != null">
+				 DATE(bill.bill_dt) BETWEEN DATE_FORMAT(STR_TO_DATE(#{apptFromDate}, '%e-%b-%Y'), '%Y-%m-%d') 
+				and DATE_FORMAT(STR_TO_DATE(#{apptToDate}, '%e-%b-%Y'), '%Y-%m-%d') and
+			</when>
+			 <otherwise>
+				<choose>
+					<otherwise>
+						 date(bill.bill_dt) = CURDATE() and
+					</otherwise>
+				</choose>
+			</otherwise>			
+	 		
+		</choose>
+  <choose>
+			<when test="apptFromDate != null and apptToDate != null">
+				 date(a.schedule_dt) between DATE_FORMAT(STR_TO_DATE(#{apptFromDate}, '%e-%b-%Y'), '%Y-%m-%d') 
+				and DATE_FORMAT(STR_TO_DATE(#{apptToDate}, '%e-%b-%Y'), '%Y-%m-%d') and bill.patient_category= 4 and p.status_id = 34
+			</when>
+			 <otherwise>
+				<choose>
+					<when test="apptFromDate != null ">
+						 date(a.schedule_dt) = DATE_FORMAT(STR_TO_DATE(#{apptFromDate},
+						'%e-%b-%Y'), '%Y-%m-%d') and bill.patient_category=4 and p.status_id = 34
+					</when>
+					<when test="apptToDate != null ">
+						 DATE_FORMAT(STR_TO_DATE(#{apptToDate}, '%e-%b-%Y'), '%Y-%m-%d') and bill.patient_category= 4 and p.status_id = 34
+					</when>
+					<otherwise>
+						 date(a.schedule_dt) = date(now()) and bill.patient_category= 4 and p.status_id = 34
+					</otherwise>
+				</choose>
+			</otherwise>			
+		</choose> 
+		<choose>
+			<when test="locId != 0 and locId != null">
+				and a.loc_id=#{locId}
+			</when>
+		</choose>
+		
+    AND bill.patient_category = 4 
+    AND p.status_id = 34
+
+GROUP BY 
+    bill.bill_id
+
+ORDER BY 
+    a.priority_no DESC;
+	
+   </select>  
+  
+ <!-- To get patient details on particular appointment date through department wise -->  
+    <!-- <select id="getPatientQueueDept" resultType="com.atri.hms.patientmanagement.opregistration.model.PatientQueueModel" 
+    parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel">
+        select a.file_status as fileStatus,a.vital_status as vitalStatus,p.patient_id as patientId,a.patient_appt_id as apptId, concat(l.loc_name) as location,  a.loc_id as locId, l.loc_name as locName, 
+        dept.dept_id, fn_getcodevalue(a.bill_status) as billStatus, p.umr_num as patientCode,a.priority_no as priorityNo, p.patient_name as patientName, 
+        p.gender as gender,p.mob_num as mobNum,p.age as age,parent_name as parentName, fn_getcodevalue(a.appt_status_id) as statusInfo, 
+        a.op_num as opCode,a.start_time as startTime, fn_getcodevalue(p.patient_category) as patientCategory, e.emp_id as empId,p.city as city, 
+		p.village as village, fn_getcodevalue(a.visit_type) as visitType, e.emp_name  as docName, a.diseases_desc as problem, a.token_num as tokenNum, 
+		DATE_FORMAT(a.schedule_dt,'%d-%b-%Y') as apptDt from at_pr_patient p,at_pr_appt a, at_hr_emp e, at_location l, at_loc_depts dept, at_security_user_multiloc multiLoc   
+		where p.patient_id=a.patient_id and a.emp_id = e.emp_id and l.loc_id=multiLoc.loc_id and p.status_id=fn_getcodevalue_id('STS', 'ACTIVE') 
+		and l.loc_id = a.loc_id and l.loc_id=dept.loc_id and multiLoc.user_id=#{userId} 
+        
+        <choose>
+			<when test="apptFromDate != null and apptToDate != null">
+				and date(a.schedule_dt) between DATE_FORMAT(STR_TO_DATE(#{apptFromDate}, '%e-%b-%Y'), '%Y-%m-%d') 
+				and DATE_FORMAT(STR_TO_DATE(#{apptToDate}, '%e-%b-%Y'), '%Y-%m-%d')
+			</when>
+	 		<otherwise>
+				<choose>
+					<when test="apptFromDate != null or apptToDate != null">
+						and date(a.schedule_dt) = DATE_FORMAT(STR_TO_DATE(#{apptFromDate}, '%e-%b-%Y'), '%Y-%m-%d') 
+						or DATE_FORMAT(STR_TO_DATE(#{apptToDate}, '%e-%b-%Y'), '%Y-%m-%d')
+					</when> 
+					<otherwise>
+						and date(a.schedule_dt) = CURDATE()
+					</otherwise>
+				 </choose>
+			</otherwise>
+		</choose> 
+		group by apptId order by priority_no
+   </select> --> 
+  
+  
+ <!-- To get patient details on particular appointment date  -->  
+    <select id="getPatientQueueUsers" resultType="com.atri.hms.patientmanagement.opregistration.model.PatientModel" parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel">
+        select a.file_status as fileStatus,a.vital_status as vitalStatus,p.patient_id as patientId, a.patient_appt_id as apptId, p.umr_num as patientCode, 
+        a.priority_no as priorityNo,p.patient_name as pname,p.gender as gender,p.mob_num as mobNum, p.pat_cat as catValue,
+        TIMESTAMPDIFF(YEAR,p.dob,CURDATE()) as age, fn_getcodevalue(a.appt_status_id) as statusInfo, a.op_num as opCode, 
+        fn_getcodevalue_id('SCH','a.appt_status_id') as statusInfoId, fn_getcodevalue(a.visit_type) as visitType, p.city as city,p.village as village,
+        a.diseases_desc as problem,a.token_num as tokenNum, DATE_FORMAT(a.schedule_dt,'%d-%b-%Y') as apptDt 
+        from at_pr_patient p,at_pr_appt a, at_security_users sec where p.patient_id=a.patient_id and 
+        a.emp_id = sec.emp_id and sec.user_id = #{userId}
+       <choose>
+        <when test="selectDate != null">
+          and a.schedule_dt = #{selectDate}
+          order by priority_no
+        </when>
+      <otherwise>
+         and a.schedule_dt = CURDATE()
+         order by priority_no
+      </otherwise>
+    </choose>
+   </select> 
+   
+    <!-- To get patient details on particular appointment date  -->  
+    <select id="getUpdatedPatientQueue" resultType="com.atri.hms.patientmanagement.opregistration.model.PatientModel" parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel">
+        select p.patient_id as patientId,a.patient_appt_id as apptId, p.umr_num as patientCode,a.priority_no as priorityNo,
+        p.patient_name as pname,p.gender as gender,p.mob_num as mobNum,TIMESTAMPDIFF(YEAR,p.dob,CURDATE()) as age,
+        fn_getcodevalue(a.appt_status_id) as statusInfo,a.op_num as opCode,a.start_time as startTime,
+        fn_getcodevalue(a.appt_mode_id) as statusInfoId,e.emp_id as empId,
+        fn_getcodevalue(a.visit_type) as visitType, e.emp_name as docName, p.pat_cat as catValue
+        a.diseases_desc as problem,a.token_num as tokenNum, DATE_FORMAT(a.schedule_dt,'%d-%b-%Y') as apptDt 
+        from at_pr_patient p,at_pr_appt a, at_hr_emp e where a.schedule_dt = #{selectDate} and 
+        p.patient_id=a.patient_id and a.emp_id = e.emp_id order by token_num
+   </select> 
+   
+  <!-- To get count of patients based on appointment status  --> 
+   <select id="getStatusCount" resultType="com.atri.hms.patientmanagement.opregistration.model.PatientModel" parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel">
+    select  v.val_name as visitStatus, if (a.appt_status_id is null, 0, count(a.patient_appt_id)) as 
+    visitCount from at_std_code_values v inner join at_std_code s on 
+    s.std_code = 'SCH' and  v.std_code_id = s.std_code_id
+    left join at_pr_appt a on a.appt_status_id = v.code_val_id and a.schedule_dt = CURDATE() 
+    group by v.code_val_id ;
+   </select>
+   
+   
+   <select id="getApptStatusDetails" resultType="com.atri.hms.patientmanagement.opregistration.model.PatientModel" parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel">
+    select  v.val_name as visitStatus,v.val_code_icon as statusIcon,v.val_code_bg_color as statusBgColor 
+     from at_std_code_values v,at_std_code s where s.std_code = 'SCH' and v.std_code_id = s.std_code_id and  
+     v.val_name!='Scheduled' and v.val_name!='Rescheduled' and v.val_name!='ConsReVisit' and v.val_name!='ConsReVisitN';
+   </select>
+
+<!-- To update queue details --> 
+    <update id="updateQueue" parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel" >
+      <foreach collection="list" item="item" separator=";"> 
+      update at_pr_appt appt set appt.priority_no=#{item.priorityNo} where appt.patient_appt_id=#{item.apptId}
+       </foreach> 
+     </update> 
+     
+ 
+ <!-- To get the file name of uploaded document -->
+<select id="getPatientFileName" parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel" resultType="String">
+ select doc_details as fileName from at_pr_documents where doc_id = #{documentId} 
+</select>
+
+
+<select id="getSearchDetails" resultType="com.atri.hms.patientmanagement.opregistration.model.PatientModel" parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel">
+   SELECT CONCAT(coalesce(p.umr_num,''),'-',coalesce(p.patient_name,''),'-',
+ coalesce(p.mob_num,'')) AS umrNo, patient_id as patientId FROM 
+ at_pr_patient p where p.status_id = 34  
+</select>
+
+ <select id="getQueue" resultType="com.atri.hms.patientmanagement.opregistration.model.PatientModel" parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel">
+        select p.patient_id as patientId,a.patient_appt_id as apptId, p.umr_num as patientCode,
+        p.patient_name as pname,a.diseases_desc as problem,TIME_FORMAT(a.start_time,'%h:%i %p') as apptDt,
+        a.token_num as tokenNum from at_pr_patient p,at_pr_appt a where a.schedule_dt = #{selectDate} 
+        and a.appt_status_id = fn_getcodevalue_id ('SCH', 'Scheduled')
+        and p.patient_id=a.patient_id order by a.token_num asc 
+ </select> 
+    
+   <select id="getCategories" resultType="com.atri.hms.patientmanagement.opregistration.model.PatientModel" 
+   parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel">
+        select v.code_val_id as pntCatId , v.val_code as pntCat from 
+        at_std_code_values v,at_std_code c where c.std_code = #{type} and 
+        v.std_code_id = c.std_code_id and v.val_code in ('Cash', 'Credit', 'NTRVAIDYASEVA')
+    </select>   
+    
+   <select id="getRefCategories" resultType="com.atri.hms.patientmanagement.opregistration.model.PatientModel" 
+   parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel">
+        select v.code_val_id as pntCatId , v.val_code as pntCat from 
+        at_std_code_values v,at_std_code c where c.std_code = #{type} and 
+        v.std_code_id = c.std_code_id
+    </select>   
+    
+    <update id="updateQueueStatus" parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel" >
+    update at_pr_appt set appt_status_id = #{status} where patient_appt_id = #{apptId}
+   </update>
+   
+      <select id="updateFollowup" statementType="CALLABLE" 
+      resultType="com.atri.hms.patientmanagement.opregistration.model.PatientModel" 
+    parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel">
+    
+    { CALL sp_appt_followup (#{apptId, mode=IN},
+                             #{recurringDay, mode=IN},
+                             #{patientId, mode=IN},
+                             #{locId, mode=IN},
+                             #{empId, mode=IN},
+                             #{problem, mode=IN}, 
+                             #{schDt, mode=IN},
+                             #{addedBy, mode=IN},
+                             #{addedOn, mode=IN},
+                             #{priorityNo, mode=OUT,jdbcType=INTEGER})}
+                             
+    </select>
+    
+<select id="updtRefdetails" statementType="CALLABLE" parameterType="PatientModel">
+    
+    { CALL sp_pr_referral_ins (#{patientId, mode=IN},#{refType, mode=IN},
+		                     #{refName, mode=IN},
+		#{refCity, mode=IN},#{refState, mode=IN},#{refCountry, mode=IN},
+		#{refAddr, mode=IN},#{refPIN, mode=IN},
+		#{modifiedBy, mode=IN},#{modifiedOn, mode=IN},#{modifiedIp, mode=IN},
+		#{refId , mode=IN})}
+                             
+    </select>
+    
+     <!-- To get patient details -->  
+     <select id="searchPatients" resultType="com.atri.hms.patientmanagement.opregistration.model.PatientModel"  
+     parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel">
+    SELECT p.patient_id as patientId,pic_details as picName,p.city as city,p.addr as addr,
+   p.umr_num as patientCode, p.patient_name as pname, p.gender, p.mob_num as mobNum,
+   date_format(p.reg_dt,'%d-%b-%Y') as regDt, p.credit_org_id as orgName,
+   p.patient_category as pntCat,date_format(p.dob,'%d-%b-%Y') as dob, age as age,age_m as ageMonths,age_d as ageDays
+   FROM at_pr_patient p WHERE p.status_id in (fn_getcodevalue_id ('STS', 'Active'),fn_getcodevalue_id ('PATSTS', 'Active')) 
+  <if test="fromDate == null and toDate == null and umrNo == null and pname == null and mobNum == null and gender == null and dob == null">
+  and (p.reg_dt BETWEEN NOW() - INTERVAL 1200 DAY AND NOW())
+  </if> 
+    <if test="fromDate != null and fromDate != ''">
+	        <choose>
+	        <when test="fromDate != null and fromDate != '' and toDate != null and toDate != ''">
+	        and reg_dt between DATE_FORMAT(STR_TO_DATE(#{fromDate}, '%e-%b-%Y'), '%Y-%m-%d') and DATE_FORMAT(STR_TO_DATE(#{toDate}, '%e-%b-%Y'), '%Y-%m-%d')
+	        </when>
+	        <otherwise>
+	        and reg_dt = DATE_FORMAT(STR_TO_DATE(#{fromDate}, '%e-%b-%Y'), '%Y-%m-%d')
+	        </otherwise>
+	        </choose>
+	</if> 
+    <if test="umrNo != null and umrNo!= ''">
+        	 and  p.umr_num = #{umrNo}
+    </if> 
+     <if test="pname != null and pname != ''">
+        	 and (p.patient_name sounds like #{pname} or p.patient_name like #{patientLike})
+    </if> 
+     <if test="mobNum != null and mobNum != ''">
+        	 and  p.mob_num = #{mobNum}
+    </if> 
+     <if test="gender != null and gender != ''">
+        	 and  p.gender = #{gender}
+    </if> 
+     <if test="dob != null and dob != ''">
+        	 and  p.dob = DATE_FORMAT(STR_TO_DATE(#{dob}, '%e-%b-%Y'), '%Y-%m-%d')
+    </if> 
+ </select> 
+ 
+ <select id="getPatientResch" resultType="com.atri.hms.patientmanagement.opregistration.model.PatientModel" parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel">
+ select fn_getcodevalue(reschedule_type) as rschType,appt_waiting_time as waitingTime,
+ appt_waiting_color as waitingColor,appt_cancelled_color as cancelledColor from at_org_settings
+ </select> 
+   
+ <update id="updateRescheduleQueue" parameterType="com.atri.hms.patientmanagement.appointment.model.AppointmentModel" >
+    update at_pr_appt set schedule_dt = #{selectDate},emp_id = #{empId},start_time = #{startTime},
+    end_time = #{endTime},token_num = #{tokenNum},modified_by = #{modifiedBy},
+    modified_on=now(),modified_ip=#{modifiedIp},
+    appt_status_id = fn_getcodevalue_id('SCH',#{status}) where patient_appt_id = #{apptId}
+   </update>
+   
+  <update id="updtReschSts" parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel" >
+    update at_pr_appt set appt_status_id = fn_getcodevalue_id('SCH',#{status}),modified_by = #{modifiedBy},
+    modified_on=now(),modified_ip=#{modifiedIp} where patient_appt_id = #{apptId}
+  </update>
+  
+    <update id="updtCancelledSts" parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel" >
+    update at_pr_appt set appt_status_id = fn_getcodevalue_id('SCH',#{status}),token_num = #{tokenNum},
+    start_time = #{startTime}, end_time= #{endTime},modified_by = #{modifiedBy},
+    modified_on=now(),modified_ip=#{modifiedIp} where patient_appt_id = #{apptId}
+  </update>
+  
+  
+   
+   
+   <select id="callGetRegistrationFee" parameterType="PatientModel" statementType="CALLABLE" resultType="PatientModel">
+      { CALL sp_get_registration_fee( #{patientId, mode=IN},
+                                #{patientCategoryId, mode=IN},
+                                #{buildId, mode=IN},
+                                #{billStatus, mode=IN},
+                                #{serviceChargeId, mode=OUT, jdbcType=INTEGER},
+                                #{fee, mode=OUT, jdbcType=DOUBLE},
+                                #{patVisitId, mode=IN},
+                                #{empId, mode=IN},
+                                #{scheduleDt, mode=IN} )}
+   </select>
+   
+   
+   
+   <select id="callExtraDoctorAvailTokens" parameterType="com.atri.hms.patientmanagement.opregistration.model.ExtraDoctorSlots" 
+                 statementType="CALLABLE" >
+        { CALL sp_pr_extra_slot_details( #{empId, mode=IN},
+                                   #{reqDate, mode=IN}, 
+                                   #{numOfExTokens, mode=IN},
+                                   #{extraStartTime, mode=IN},
+                                   #{extraEndTime, mode=IN},
+                                   #{addedBy, mode=IN},
+                                   #{addedIp, mode=IN})} 
+    </select>
+    
+   
+   
+    <select id="callGetConsultationFee" parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel" 
+    statementType="CALLABLE" resultType="com.atri.hms.patientmanagement.opregistration.model.PatientModel">
+      
+          { CALL sp_get_consultation_fee_det( #{patientId, mode=IN},
+                                #{suvRegPatientId, mode=IN},
+                                #{patientCategoryId, mode=IN},
+                                #{empId, mode=IN},
+                                #{buildId, mode=IN},
+                                #{scheduleDt, mode=IN},
+                                #{billStatus, mode=IN},
+                                #{serviceChargeId, mode=OUT, jdbcType=INTEGER},
+                                #{fee, mode=OUT, jdbcType=DOUBLE},
+                                #{visitType, mode=OUT, jdbcType=VARCHAR},
+                                #{patVisit, mode=OUT, jdbcType=VARCHAR})}                      
+   </select>
+   
+ <select id="callSetBillDetails" parameterType="com.atri.hms.patientmanagement.opregistration.model.FeeModel" statementType="CALLABLE" 
+    resultType="com.atri.hms.patientmanagement.opregistration.model.FeeModel">
+      { CALL sp_bill_insert_bill(#{patientId, mode=IN},
+                                #{billCategory, mode=IN},
+                                #{totAmt, mode=IN},
+                                #{totDiscount, mode=IN},
+                                #{totDiscountAmt, mode=IN},
+                                #{billAmt, mode=IN},
+                                #{bal, mode=IN},
+                                #{paymentType, mode=IN},
+                                #{billStatus, mode=IN},
+                                #{amtRecd, mode=IN},
+                                #{chngGiven, mode=IN},
+                                #{patientCategory, mode=IN},
+                                #{authPerson, mode=IN},
+                                #{disStaffId, mode=IN},
+                                #{remarks, mode=IN},
+                                #{addedBy, mode=IN},
+                                #{addedIp, mode=IN},
+                                #{locationId, mode=IN},
+                                #{organizationsId, mode=IN},
+                                #{authorizedBy, mode=IN},
+                                #{empId, mode=IN},
+                                #{billId, mode=OUT, jdbcType=INTEGER})}
+                                                                
+   </select> 
+   
+  
+   <select id="setRegistrationFeeDetails" parameterType="com.atri.hms.patientmanagement.opregistration.model.FeeModel" statementType="CALLABLE"
+    resultType="com.atri.hms.patientmanagement.opregistration.model.FeeModel">
+     
+           
+           { CALL sp_set_registration_bill(#{billId, mode=IN},
+                                #{patientId, mode=IN},
+                                #{apptId, mode=IN},
+                                #{regFee, mode=IN},
+                                #{regDiscount, mode=IN},
+                                #{regDiscountAmount, mode=IN},
+                                #{addedBy, mode=IN},
+                                #{addedIp, mode=IN},
+                                #{bal, mode=IN},
+                                #{billStatus, mode=IN},
+                                #{amtRecd, mode=IN},
+                                #{chngGiven, mode=IN},
+                                #{docId, mode=IN},
+                                #{billCategory, mode=IN},
+                                #{visitType, mode=IN},
+                                #{locId, mode=IN},
+                                #{regBillId, mode=OUT, jdbcType=INTEGER})}
+   
+   </select>
+   
+    <select id="setConsultationFeeDetails" parameterType="com.atri.hms.patientmanagement.opregistration.model.FeeModel" statementType="CALLABLE" 
+    resultType="com.atri.hms.patientmanagement.opregistration.model.FeeModel">
+    
+              { CALL sp_set_consultation_bill(#{billId, mode=IN},
+                                #{apptId, mode=IN},
+                                #{consFee, mode=IN},
+                                #{consDiscount, mode=IN},
+                                #{consDiscountAmount, mode=IN},
+                                #{addedBy, mode=IN},
+                                #{addedIp, mode=IN},
+                                #{doctor, mode=IN},
+                                #{docId, mode=IN},
+                                #{billCategory, mode=IN},
+                                #{regFee, mode=IN},
+                                #{regDiscount, mode=IN},
+                                #{regDiscountAmount, mode=IN},
+                                #{bal, mode=IN},
+                                #{billStatus, mode=IN},
+                                #{amtRecd, mode=IN},
+                                #{chngGiven, mode=IN},
+                                #{locId, mode=IN},
+                                #{consAmount, mode=IN},
+                                #{consBillId, mode=OUT, jdbcType=INTEGER})}
+   </select> 
+    
+   <select id="getPatientDetails" resultType="PatientModel" parameterType="Integer">
+   select patient_id as patientId, umr_num as patientCode, patient_name as pname, gender, mob_num as mobNum, age, 
+    dob as dob,age_m as ageMonths,age_d as ageDays, sms_alert as smsStatus, addr, city, state, country, marital_status as maritalStatus, 
+   patient_category as patientCategory, credit_org_id as orgId, blood_grp as bloodGrp, nationality, religion, ref_type as refType,village, 
+   id_proof_type as idProofType, id_proof_num as idProofNum, ref_id as refId, occupation from at_pr_patient where patient_id = #{patientId};
+   </select>
+   
+   <select id="getBillDetails" resultType="com.atri.hms.patientmanagement.opregistration.model.FeeModel" parameterType="Integer">
+   select a.bill_details_id as billsId, a.bill_id as billId, c.bill_num as billNum, fn_getcodevalue(b.service_type) as serviceType, 
+	DATE_FORMAT(c.bill_dt,'%d-%b-%Y') as billDt, a.amt as amount, a.discount as discount, a.discount_amt as disAmt, a.final_amt as billAmt  
+	from at_bill_details a, at_services b, at_bills c 
+	where a.service_id = b.service_id and a.bill_id = c.bill_id and a.bill_id = #{billId};
+   </select>
+   
+   <select id="getBill" resultType="com.atri.hms.patientmanagement.opregistration.model.FeeModel" parameterType="Integer">
+   select bill_id as billId, fn_getcodevalue(bill_type) as billType, bill_num as billNum, 
+			DATE_FORMAT(bill_dt,'%d-%b-%Y') as billDt, tot_amt as amount, tot_discount as totDiscount, 
+			bill_amt as billAmt, paid_amt as paidAmt, balance 
+			from at_bills 
+			where bill_id = #{billId}
+   
+   </select>
+   
+   <select id="updateBill" parameterType="com.atri.hms.patientmanagement.opregistration.model.FeeModel" statementType="CALLABLE" 
+    resultType="com.atri.hms.patientmanagement.opregistration.model.FeeModel">
+   { CALL sp_update_bill(#{billId, mode=IN},
+                         #{modifiedBy, mode=IN},
+                                #{modifiedIp, mode=IN},
+                                #{amtRecd, mode=IN},
+                                #{chngGiven, mode=IN},
+                                #{bal, mode=IN},
+                                #{billStatus, mode=IN},
+                                #{patientId, mode=IN},
+                                #{apptId, mode=IN},
+                                #{count, mode=OUT, jdbcType=INTEGER})}
+   
+   </select>
+   
+   <select id="updateCancellationBillDetails" parameterType="com.atri.hms.patientmanagement.appointment.model.AppointmentModel" statementType="CALLABLE" 
+    resultType="com.atri.hms.patientmanagement.appointment.model.AppointmentModel">
+        { CALL sp_cancel_appt(#{billId, mode=IN},
+                                #{apptId, mode=IN},
+                                #{charges, mode=IN},
+                                #{toBeRefund, mode=IN},
+                                #{visitStatus, mode=IN},
+                                #{modifiedBy, mode=IN},
+                                #{modifiedIp, mode=IN},
+                                #{addedBy, mode=IN},
+                                #{addedIp, mode=IN},
+                                #{billAmt, mode=IN},
+                                #{totAmt, mode=IN},
+                                #{opBalAmt, mode=IN},
+                                #{refundAmt, mode=IN},
+                                #{billLogId, mode=IN},
+                                #{authorizedBy, mode=IN},
+                                #{remarksss, mode=IN},
+                                #{count, mode=OUT, jdbcType=INTEGER})}
+   
+   </select>
+   
+   <select id="billRefundStatus" parameterType="com.atri.hms.patientmanagement.appointment.model.AppointmentModel" statementType="CALLABLE" 
+    resultType="com.atri.hms.patientmanagement.appointment.model.AppointmentModel">
+        { CALL sp_get_bill_refundStatus(
+                                #{apptId, mode=IN},
+                                #{refundSts, mode=OUT, jdbcType=VARCHAR})}
+   
+   </select>
+   
+   <select id="rescheduleAppointment" parameterType="com.atri.hms.patientmanagement.appointment.model.AppointmentModel" statementType="CALLABLE" 
+    resultType="com.atri.hms.patientmanagement.appointment.model.AppointmentModel">
+        { CALL sp_reschedule_appt(#{apptId, mode=IN},
+                                #{scheduleDt, mode=IN},
+                                #{remarks, mode=IN},
+                                #{visitStatus, mode=IN},
+                                #{scheduleTime, mode=IN},
+                                #{scheduleEndTime, mode=IN},
+                                #{tokenNum, mode=IN},
+                                #{empId, mode=IN},
+                                #{locId, mode=IN},
+                                #{modifiedBy, mode=IN},
+                                #{modifiedIp, mode=IN},
+                                #{count, mode=OUT, jdbcType=INTEGER})}
+   
+   </select>
+     
+ 	<select id="setPatientRegistration" parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel" statementType="CALLABLE" 
+    	resultType="com.atri.hms.patientmanagement.opregistration.model.PatientModel">
+      { CALL sp_pr_reg(#{patientId, mode=IN}, #{refType, mode=IN}, 
+                                #{locId, mode=IN},
+                                #{patientCategoryId, mode=IN},
+                                #{addedBy, mode=IN},
+                                #{addedIp, mode=IN},
+                                #{regNum, mode=OUT, jdbcType=VARCHAR})}
+                                    
+   </select> 
+   
+	<!-- here we are inserting values into at_other_hosp table -->
+	<insert id="setOtherHospDet" parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel"
+     useGeneratedKeys="true" keyProperty="otherHospId">
+
+		INSERT INTO at_other_hosp(other_hosp_code, other_hosp_name, alias_name, status_id, added_by, added_on, added_ip)
+       VALUES(#{otherHospCode},#{otherHospName},#{otherHospName}, 34, #{addedBy}, now(), #{addedIp})
+    	<selectKey resultType="int" keyProperty="otherHospId" order="AFTER">
+       		SELECT LAST_INSERT_ID() as otherHospId;
+    	</selectKey>
+	</insert>
+   
+	<!-- here we are inserting values into at_other_staff table -->
+	<insert id="setOtherStaffDet" parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel"
+     useGeneratedKeys="true" keyProperty="otherStaffId">
+
+		INSERT INTO at_other_staff(other_staff_code, other_staff_name, alias_name, other_staff_type, other_staff_number, other_staff_address, 
+			status_id, added_by, added_on, added_ip)
+       VALUES(#{otherStaffCode}, #{otherStaffName}, #{otherStaffName}, 'Others', #{otherStaffMob}, #{otherStaffAddr}, 
+       		34, #{addedBy}, now(), #{addedIp})
+    	<selectKey resultType="int" keyProperty="otherStaffId" order="AFTER">
+       		SELECT LAST_INSERT_ID() as otherStaffId;
+    	</selectKey>
+	</insert>
+	
+	<insert id="setOtherDoctorDet" parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel"
+     useGeneratedKeys="true" keyProperty="otherDoctorId">
+
+		INSERT INTO at_pr_op_outsource_doctor(other_doctor_code, other_doctor_name,
+		alias_name, other_doctor_type, other_doctor_number, other_doctor_address, 
+		status_id, added_by, added_on, added_ip)
+		VALUES(#{otherDoctorCode}, #{otherDoctorName}, #{otherDoctorName}, 'Others',
+		#{otherDoctorMob}, #{otherDoctorAddr}, 
+		34, #{addedBy}, now(), #{addedIp})
+    	<selectKey resultType="int" keyProperty="otherDoctorId" order="AFTER">
+       		SELECT LAST_INSERT_ID() as otherDoctorId;
+    	</selectKey>
+	</insert>
+  
+  
+   <select id="setPresDetails" parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel" statementType="CALLABLE"
+  		resultType="com.atri.hms.patientmanagement.opregistration.model.PatientModel">
+     { CALL sp_pr_op_prescription( #{prescDate, mode=IN},
+     							   #{umrNo, mode=IN},
+     							   #{opNum, mode=IN},
+     							   #{apptId, mode=IN},
+     							   #{pntId, mode=IN},
+     							   #{vsType, mode=IN},
+     							   #{apDate, mode=IN},
+	    						   #{addedIp, mode=IN},
+	    						   #{addedBy, mode=IN},
+	    						   #{prescId, mode=OUT, jdbcType=INTEGER},
+	    						   #{prescNum, mode=OUT, jdbcType=VARCHAR} )}
+	    						   
+	    						       						   
+  </select>
+  
+	<!-- Procedure to get unique patient photo name -->  
+  <select id="getPrescPicDetails" parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel" statementType="CALLABLE">
+      { CALL sp_pr_op_get_prescpicname( 
+      							#{modifiedBy, mode=IN},
+                                #{modifiedIp, mode=IN},
+                                #{picNames, mode=OUT, jdbcType=VARCHAR})}
+   </select>
+    
+    
+     <select id="setSuvPrescription" parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel" statementType="CALLABLE"
+  		resultType="com.atri.hms.patientmanagement.opregistration.model.PatientModel">
+     { CALL sp_pr_suv_prescription(#{umrNo, mode=IN},
+     							   #{addedIp, mode=IN},
+	    						   #{addedBy, mode=IN},
+	    						   #{prescId, mode=OUT, jdbcType=INTEGER},
+	    						   #{prescNum, mode=OUT, jdbcType=VARCHAR} )}
+	    						   
+	    						       						   
+  </select>
+  
+  <select id="callCustomerRegister"
+		parameterType="com.atri.hms.lab.billing.model.LabBillingModel"
+		statementType="CALLABLE"
+		resultType="com.atri.hms.lab.billing.model.LabBillingModel">
+
+		{ CALL sp_lb_insert_cust_op(#{customerName, mode=IN}, #{patAge, mode=IN},
+		#{patGender, mode=IN}, #{customerMobNum, mode=IN},
+		#{customerEmail, mode=IN}, #{consultantId, mode=IN}, #{refDoctorId, mode=IN},
+		#{fullName, mode=IN}, #{shortName, mode=IN},
+		#{specialization, mode=IN}, #{mobileNum, mode=IN}, #{refEmail, mode=IN}, #{typeEmp,
+		mode=IN}, #{addedBy, mode=IN},#{addedIp, mode=IN},#{patientTitle,
+		mode=IN}, #{customerCode, mode=OUT, jdbcType=VARCHAR},
+		#{patId, mode=OUT, jdbcType=INTEGER})}
+
+	</select>
+	
+	<select id="insertLabBillingDetails"
+		parameterType="com.atri.hms.lab.billing.model.LabBillingModel"
+		statementType="CALLABLE"
+		resultType="com.atri.hms.lab.billing.model.LabBillingModel">
+		{ CALL sp_lb_dept_insert_bill_op(
+		#{patId, mode=IN},
+		#{orgId, mode=IN},
+		#{deptName, mode=IN},
+		#{labTotAmt, mode=IN},
+		#{labTotDisc, mode=IN},
+	    #{labDiscPerc, mode=IN},
+		#{labBillAmt, mode=IN},
+		#{labPaidAmt, mode=IN},
+		#{labBalAmt, mode=IN},
+		#{tariffId, mode=IN},
+		#{billCat, mode=IN},
+		#{billStatus, mode=IN},
+		#{prescId, mode=IN},
+		#{consultantId, mode=IN},
+		#{refDoctorId, mode=IN},
+		#{addedBy, mode=IN},
+		#{addedIp, mode=IN},
+		#{paymentType, mode=IN},
+		#{transactionNumber, mode=IN},
+		#{discountReason, mode=IN},
+		#{authorized, mode=IN},
+		#{billId, jdbcType=INTEGER, mode=OUT},
+		 #{billNum, jdbcType=VARCHAR, mode=OUT})}
+	</select>
+	
+	<select id="insertLabBillingLogDetailsOp"
+		parameterType="com.atri.hms.lab.billing.model.LabBillingModel"
+		statementType="CALLABLE"
+		resultType="com.atri.hms.lab.billing.model.LabBillingModel">
+
+			{ CALL sp_lb_insert_bill_details_op(#{billId, mode=IN},#{deptId, mode=IN}, #{serviceId, mode=IN}, #{investigationId, mode=IN}, 
+			#{packId, mode=IN},#{charge, mode=IN}, #{discPercent, mode=IN}, #{discAmt, mode=IN}, #{discAmt, mode=IN}, 
+			#{labPaidAmt, mode=IN},#{hosPercent, mode=IN}, #{docPercent, mode=IN}, #{prescId, mode=IN},#{addedBy, mode=IN}, 
+			#{addedIp, mode=IN},#{tarrifId, mode=IN})} 
+
+	</select>
+	
+	<select id="deleteLabBills"
+		parameterType="com.atri.hms.lab.billing.model.LabBillingModel"
+		statementType="CALLABLE"
+		resultType="com.atri.hms.lab.billing.model.LabBillingModel">
+
+		{ CALL sp_lb_delete_bill_details_op(#{billId, mode=IN}, #{addedBy,
+		mode=IN}, #{addedIp, mode=IN})}
+
+	</select>
+	
+	
+	 <select id="getInvsList" parameterType="com.atri.hms.lab.billing.model.LabBillingModel"
+		resultType="com.atri.hms.lab.billing.model.LabBillingModel">
+
+		select bill.bill_id as billId,bill.tot_dis_per as discount,  bill.bill_num as billNum,pr.patient_category_name as tarrifType,
+		DATE_FORMAT(bill.bill_dt, '%d-%M-%Y') as billDt,bill.bill_dt as
+		billDateView, pr.patient_id as patId,
+		pr.patient_name as patName, pr.umr_num as patUmr,pr.mob_num as customerMobNum,pr.patient_category_id as tarrifId, bill_type as labDeptId,
+		bill.emp_id as empId,bill.ref_id,
+		fn_get_emp_name(bill.emp_id) as doctorName,fn_get_referral_name(bill.ref_id) as
+		refName,bill.tot_amt as labTotAmt,
+		bill.tot_discount as labTotDisc, bill.bill_amt as labBillAmt, bill.paid_amt as
+		labPaidAmt, bill.balance as labBalAmt, bill.added_by as addedBy,
+		fn_getcodevalue(bill_category) as billCat,
+		fn_getcodevalue(bill_status) as billStatus,bill.bill_paid_through as
+		paymentType,bill.transaction_number as transactionNumber,
+		bill.disc_reason as discountReason, bill.authorize as authorized
+		from at_bills bill, at_pr_patient pr where bill.patient_id=pr.patient_id
+		and bill.status_id=fn_getcodevalue_id('STS', 'ACTIVE') and 
+		bill_type=fn_getcodevalue_id('BILLTYPE',#{deptName}) 
+		<choose>
+			<when test="fromDt != '' and toDt != ''">
+				and DATE_FORMAT(bill.bill_dt, '%Y-%m-%d') between
+				DATE_FORMAT(STR_TO_DATE(#{fromDt}, '%e-%b-%Y'), '%Y-%m-%d') and
+				DATE_FORMAT(STR_TO_DATE(#{toDt}, '%e-%b-%Y'), '%Y-%m-%d')
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+
+	</select>    
+	
+	 <select id="getInvsListCredit" parameterType="com.atri.hms.lab.billing.model.LabBillingModel"
+		resultType="com.atri.hms.lab.billing.model.LabBillingModel">
+
+		select bill.bill_id as billId, bill.bill_num as billNum,r_chart_name as tarrifType,
+		DATE_FORMAT(bill.bill_dt, '%d-%M-%Y') as billDt,bill.bill_dt as
+		billDateView, pr.patient_id as patId,
+		pr.patient_name as patName, pr.umr_num as patUmr,pr.mob_num as customerMobNum,
+		bill.emp_id as empId,bill.ref_id,
+		fn_get_emp_name(bill.emp_id) as doctorName,fn_get_referral_name(bill.ref_id) as
+		refName,bill.tot_amt as labTotAmt,
+		bill.tot_discount as labTotDisc, bill.bill_amt as labBillAmt, bill.paid_amt as
+		labPaidAmt, bill.balance as labBalAmt, bill.added_by as addedBy,
+		fn_getcodevalue(bill_category) as billCat,
+		fn_getcodevalue(bill_status) as billStatus,bill.bill_paid_through as
+		paymentType,bill.transaction_number as transactionNumber,
+		bill.disc_reason as discountReason
+		from at_bills bill, at_pr_patient pr,at_cb_tariff tar where bill.patient_id=pr.patient_id
+		and bill.status_id=34 and pr.patient_category !=4 and pr.patient_category=tar.tariff_id and 
+		bill_type=fn_getcodevalue_id('BILLTYPE',#{deptName}) 
+		<choose>
+			<when test="fromDt != '' and toDt != ''">
+				and DATE_FORMAT(bill.bill_dt, '%Y-%m-%d') between
+				DATE_FORMAT(STR_TO_DATE(#{fromDt}, '%e-%b-%Y'), '%Y-%m-%d') and
+				DATE_FORMAT(STR_TO_DATE(#{toDt}, '%e-%b-%Y'), '%Y-%m-%d')
+			</when>
+			<otherwise>
+			</otherwise>
+		</choose>
+
+	</select>   
+	
+	
+	  <select id="setOpServiceDetails"
+		parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel"
+		statementType="CALLABLE"
+		resultType="com.atri.hms.patientmanagement.opregistration.model.PatientModel">
+       { CALL sp_op_Investigation( #{serviceGroupId, mode=IN},
+     							   #{serviceName, mode=IN},
+     							   #{serviceCode, mode=IN},
+     							   #{departmentId, mode=IN},
+     							   #{price, mode=IN},
+	    						   #{addedIp, mode=IN},
+	    						   #{addedBy, mode=IN},
+	    						   #{tarrifId, mode=IN},
+	    						   #{opInvservId, mode=OUT, jdbcType=INTEGER})}
+	    						 
+	 <!--    						   
+	    						    INSERT INTO at_lb_investigation(service_group_id, investigation_name,investigation_code, dept_id, price, status_id,added_by, added_on,
+         added_ip) VALUES(#{serviceGroupId}, #{serviceName}, #{serviceCode},#{departmentId}, #{price},34,
+         #{addedBy}, now(), #{addedIp})
+	    						    -->
+	    						       						   
+  </select>
+	
+	   <!--    sandhya  -->
+  <select id="deleteInvProfDetaID" parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel"
+    statementType="CALLABLE" resultType="com.atri.hms.patientmanagement.opregistration.model.PatientModel">
+    
+    	
+    
+   { CALL sp_op_delete_individual_services(
+        #{billLogId, mode=IN},
+        #{addedBy, mode=IN}, 
+        #{addedIp, mode=IN},
+        #{serviceId, mode=IN},
+        #{billId, mode=IN},
+        #{billAmt, mode=IN},
+        #{totAmt,  mode=IN},
+        #{opBalAmt, mode=IN},
+        #{refundAmt,  mode=IN}
+    )}
+</select>
+	
+	
+	<select id="getPatByDoctor" parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientQueueModel"
+		resultType="com.atri.hms.patientmanagement.opregistration.model.PatientQueueModel">
+SELECT p.patient_id AS patientId,a.patient_appt_id AS apptId,DATE_FORMAT(a.schedule_dt, '%d-%b-%Y') AS apptDt,
+CONCAT(l.loc_name) AS location, a.loc_id AS locId,l.loc_name AS locName,p.umr_num AS patientCode,
+p.patient_name AS patientName,p.gender AS gender,p.mob_num AS mobNum,p.umr_num AS patientCode,p.age AS age,
+p.age_d AS ageDays,p.age_m AS ageMonths,DATE_FORMAT(a.schedule_dt, '%d-%b-%Y') AS apptDt,
+fn_getcodevalue(a.appt_status_id) AS statusInfo,a.op_num AS opCode,a.start_time AS startTime,e.emp_id AS empId,
+p.state AS state,p.city AS city,p.village AS village FROM at_pr_patient p,at_pr_appt a,at_hr_emp e,at_location l
+ WHERE p.patient_id = a.patient_id AND a.emp_id = e.emp_id AND p.status_id = 34 and e.emp_id = #{docName} 
+ AND l.loc_id = '1'
+ 
+		<choose>
+			<when test="fromDt != '' and toDt != ''">
+				and DATE_FORMAT(a.schedule_dt, '%Y-%m-%d') between
+				DATE_FORMAT(STR_TO_DATE(#{fromDt}, '%e-%b-%Y'), '%Y-%m-%d') and
+				DATE_FORMAT(STR_TO_DATE(#{toDt}, '%e-%b-%Y'), '%Y-%m-%d')
+			</when>
+			<otherwise>
+			and a.schedule_dt = CURDATE()
+			</otherwise>
+		</choose>
+
+	</select>  
+	
+	<select id="getDateWisePatientList" parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientQueueModel"
+		resultType="com.atri.hms.patientmanagement.opregistration.model.PatientQueueModel">
+SELECT p.patient_id AS patientId,a.patient_appt_id AS apptId,DATE_FORMAT(a.schedule_dt, '%d-%b-%Y') AS apptDt,
+CONCAT(l.loc_name) AS location, a.loc_id AS locId,l.loc_name AS locName,
+p.patient_name AS patientName,p.gender AS gender,p.mob_num AS mobNum,p.umr_num AS patientCode,p.age AS age,
+p.age_d AS ageDays,p.age_m AS ageMonths,
+fn_getcodevalue(a.appt_status_id) AS statusInfo,a.op_num AS opCode,a.start_time AS startTime,e.emp_id AS empId,
+p.state AS state,p.city AS city,p.village AS village FROM at_pr_patient p,at_pr_appt a,at_hr_emp e,at_location l
+ WHERE p.patient_id = a.patient_id AND a.emp_id = e.emp_id AND p.status_id = 34 
+ AND l.loc_id = '1'
+ 
+		<choose>
+			<when test="fromDt != '' and toDt != ''">
+				and DATE_FORMAT(a.schedule_dt, '%Y-%m-%d') between
+				DATE_FORMAT(STR_TO_DATE(#{fromDt}, '%e-%b-%Y'), '%Y-%m-%d') and
+				DATE_FORMAT(STR_TO_DATE(#{toDt}, '%e-%b-%Y'), '%Y-%m-%d')
+			</when>
+			<otherwise>
+			and a.schedule_dt = CURDATE()
+			</otherwise>
+		</choose>
+
+	</select>  
+	  
+	  
+	  	  
+		  
+	  
+	   <select id="getPatientQueuee" resultType="com.atri.hms.patientmanagement.opregistration.model.PatientQueueModel" 
+    parameterType="com.atri.hms.patientmanagement.opregistration.model.PatientModel">
+     
+  
+SELECT 
+    p.patient_id AS patientId,
+    a.patient_appt_id AS apptId,
+    p.last_name AS lName,
+    a.vital_status as vitalStatus,
+    p.patient_name AS pname,
+    CONCAT(l.loc_name) AS location,
+    a.loc_id AS locId,
+    l.loc_name AS locName,
+    fn_getcodevalue(a.bill_status) AS billStatus, 
+    p.umr_num AS patientCode,
+    a.priority_no AS priorityNo,
+    CONCAT(p.patient_name, ' ', COALESCE(p.last_name, '')) AS patientName,
+    p.gender AS gender,
+    p.blood_grp AS bloodGrp, 
+    p.mob_num AS mobNum,
+    p.age AS age,
+    p.title AS ptitle,
+    p.age_d AS ageDays,
+    p.age_m AS ageMonths,
+    p.location_id AS locationId,
+    p.parent_name AS parentName,
+    p.care_by AS careBy,
+    p.care_by_name AS careByName,
+    p.patient_category_name AS pntCat,
+    fn_getcodevalue(a.appt_status_id) AS statusInfo,
+    a.op_num AS opCode,
+    a.start_time AS startTime,
+    tar.r_chart_name AS patientCategory,
+    e.emp_id AS empId,
+    CONCAT(e.emp_id, ':', e.emp_code, ':', spec.spec_name) AS employeeId,
+    p.state AS state,
+    p.city AS city,
+    p.village AS village,
+    p.addr AS addr,
+    p.marital_status AS maritalStatus,
+    p.religion AS religion,
+    p.id_proof_type AS idProofType,
+    p.id_proof_num AS idProofNum,
+    p.occupation AS occupation,
+    a.ref_type AS refType,
+    p.org_id AS orgId,
+    p.sms_status AS smsStatus,
+    p.sms_alert AS smsAlert,
+    p.dob AS dob,
+    p.ref_id AS refId,
+    p.patient_category AS patientCategoryId,
+    fn_getcodevalue(a.visit_type) AS visitType,
+    CONCAT(e.emp_name, ' ', COALESCE(e.last_name, '')) AS docName,
+    p.nationality AS nationality,
+    a.diseases_desc AS problem,
+    a.token_num AS tokenNum,
+    DATE_FORMAT(a.schedule_dt, '%d-%b-%Y') AS apptDt,
+    am.visit_id AS visitId,
+    a.added_by AS addedBy,
+    a.other_staff_id AS otherStaffId,
+    a.other_hosp_id AS otherhospId,
+
+    -- Registration payment details (only if service_id = 1)
+    COALESCE(SUM(DISTINCT CASE 
+        WHEN pc.service_id = 1 AND pc.payment_type = 275 THEN pc.amount 
+        ELSE 0 
+    END), 0) AS regOpCashAmt,
+    COALESCE(SUM(DISTINCT CASE 
+        WHEN pc.service_id = 1 AND pc.payment_type = 276 THEN pc.amount 
+        ELSE 0 
+    END), 0) AS regOpCreditAmt,
+    COALESCE(SUM(DISTINCT CASE 
+        WHEN pc.service_id = 1 AND pc.payment_type = 277 THEN pc.amount 
+        ELSE 0 
+    END), 0) AS regOpUpiAmt,
+
+    -- Consultation payment details (only if service_id = 2)
+    COALESCE(SUM(DISTINCT CASE 
+        WHEN pc.service_id = 2 AND pc.payment_type = 275 THEN pc.amount 
+        ELSE 0 
+    END), 0) AS cashAmt,
+    COALESCE(SUM(DISTINCT CASE 
+        WHEN pc.service_id = 2 AND pc.payment_type = 276 THEN pc.amount 
+        ELSE 0 
+    END), 0) AS creditAmt,
+    COALESCE(SUM(DISTINCT CASE 
+        WHEN pc.service_id = 2 AND pc.payment_type = 277 THEN pc.amount 
+        ELSE 0 
+    END), 0) AS upiAmt,
+
+    bill.bill_id AS billId,
+    bill.authorized_by as authorizedBy,
+    ss.source_service_id AS sourceServiceId,
+    a.visit_type AS visitTypeId
+
+FROM 
+    patient_last_1_month p
+LEFT JOIN 
+    appt_last_1_month a ON p.patient_id = a.patient_id
+LEFT JOIN 
+    at_hr_emp e ON a.emp_id = e.emp_id
+LEFT JOIN 
+    at_location l ON l.loc_id = a.loc_id
+LEFT JOIN 
+    at_hr_specialization spec ON e.spec_id = spec.spec_id
+LEFT JOIN 
+    at_cb_tariff tar ON tar.tariff_id = p.patient_category
+LEFT JOIN 
+    at_source_service ss ON p.emp_id = ss.equp_service_id
+LEFT JOIN 
+    at_source_service_consult ssc ON ss.source_service_id = ssc.source_service_id AND ssc.visit_type_id = a.visit_type
+LEFT JOIN 
+    at_bills bill ON bill.patient_id = p.patient_id
+LEFT JOIN 
+    at_pr_visits am ON am.patient_appt_id = a.patient_appt_id
+LEFT JOIN 
+    at_receipt_mode pc ON bill.bill_id = pc.bill_id
+WHERE 
+
+
+        <choose>
+			<when test="apptFromDate != null and apptToDate != null">
+				 date(a.schedule_dt) between DATE_FORMAT(STR_TO_DATE(#{apptFromDate}, '%e-%b-%Y'), '%Y-%m-%d') 
+				and DATE_FORMAT(STR_TO_DATE(#{apptToDate}, '%e-%b-%Y'), '%Y-%m-%d') and p.patient_category=4 and p.status_id = 34
+			</when>
+			 <otherwise>
+				<choose>
+					<when test="apptFromDate != null ">
+						 date(a.schedule_dt) = DATE_FORMAT(STR_TO_DATE(#{apptFromDate},
+						'%e-%b-%Y'), '%Y-%m-%d') and p.patient_category=4 and p.status_id = 34
+					</when>
+					<when test="apptToDate != null ">
+						 DATE_FORMAT(STR_TO_DATE(#{apptToDate}, '%e-%b-%Y'), '%Y-%m-%d') and p.patient_category=4 and p.status_id = 34
+					</when>
+					<otherwise>
+						 date(a.schedule_dt) = CURDATE() and p.patient_category=4 and p.status_id = 34
+					</otherwise>
+				</choose>
+			</otherwise>			
+	 		
+		</choose> 
+		
+		
+		
+		<choose>
+			<when test="locId != 0 and locId != null">
+				and a.loc_id=#{locId}
+			</when>
+		</choose>
+		GROUP BY 
+    p.patient_id, bill.bill_id, a.patient_appt_id, a.visit_type
+		order by bill.bill_id DESC 
+   </select>  
+	  
+	
+    <!-- Update the appointment status to 'Cancelled'  added by sandhya 28 th sep 2024-->
+    
+	  <select id="updateApptCancellationBil" parameterType="com.atri.hms.patientmanagement.appointment.model.AppointmentModel" statementType="CALLABLE" 
+    resultType="com.atri.hms.patientmanagement.appointment.model.AppointmentModel">
+        { CALL sp_cancel_appt_cb(#{billId, mode=IN},
+                                #{apptId, mode=IN},
+                                #{charges, mode=IN},
+                                #{toBeRefund, mode=IN},
+                                #{visitStatus, mode=IN},
+                                #{modifiedBy, mode=IN},
+                                #{modifiedIp, mode=IN},
+                                #{addedBy, mode=IN},
+                                #{addedIp, mode=IN},
+                                #{billAmt, mode=IN},
+                                #{totAmt, mode=IN},
+                                #{opBalAmt, mode=IN},
+                                #{refundAmt, mode=IN},
+                                #{billLogId, mode=IN},
+                                #{count, mode=OUT, jdbcType=INTEGER})}
+   
+   </select>
+<update id="updatePendingPayment"
+        parameterType="com.atri.hms.patientmanagement.opregistration.model.FeeModel">
+
+    UPDATE at_bills
+    SET
+        paid_amt = COALESCE(paid_amt, 0) + COALESCE(#{amtRecd}, 0),
+        balance = COALESCE(balance, 0) - COALESCE(#{amtRecd}, 0),
+        bill_status = CASE
+            WHEN (COALESCE(balance, 0) - COALESCE(#{amtRecd}, 0)) &lt;= 0
+            THEN fn_getcodevalue_id('BILLSTS', 'PAID')
+            ELSE bill_status
+        END,
+        modified_by = #{modifiedBy},
+        modified_ip = #{modifiedIp},
+        modified_on = NOW()
+    WHERE bill_id = #{billId}
+
+</update>
+     
+</mapper>

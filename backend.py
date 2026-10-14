@@ -439,6 +439,122 @@ def init_database(force=False):
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
             );
             """)
+
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS at_pr_patient (
+                patient_id INT AUTO_INCREMENT PRIMARY KEY,
+                umr_num VARCHAR(50) UNIQUE,
+                patient_name VARCHAR(150),
+                last_name VARCHAR(150),
+                title VARCHAR(20),
+                gender VARCHAR(20),
+                dob VARCHAR(30),
+                age VARCHAR(20),
+                age_m VARCHAR(20),
+                age_d VARCHAR(20),
+                mob_num VARCHAR(30),
+                land_phn VARCHAR(30),
+                addr VARCHAR(255),
+                village VARCHAR(100),
+                city VARCHAR(100),
+                state VARCHAR(100),
+                country VARCHAR(100),
+                pin VARCHAR(20),
+                marital_status VARCHAR(30),
+                blood_grp VARCHAR(20),
+                nationality VARCHAR(50),
+                religion VARCHAR(50),
+                parent_name VARCHAR(150),
+                care_by VARCHAR(50),
+                care_by_name VARCHAR(150),
+                id_proof_type VARCHAR(50),
+                id_proof_num VARCHAR(100),
+                patient_category VARCHAR(50),
+                patient_category_name VARCHAR(100),
+                credit_org_id VARCHAR(50),
+                org_id VARCHAR(50),
+                ref_type VARCHAR(50),
+                ref_id VARCHAR(50),
+                ref_name VARCHAR(150),
+                other_staff_id VARCHAR(50),
+                other_staff_name VARCHAR(150),
+                other_hosp_id VARCHAR(50),
+                other_hosp_name VARCHAR(150),
+                occupation VARCHAR(100),
+                sms_status VARCHAR(10),
+                sms_alert VARCHAR(10),
+                status_id INT DEFAULT 34,
+                doc_status VARCHAR(10) DEFAULT 'y',
+                emp_id INT,
+                reg_dt DATETIME DEFAULT CURRENT_TIMESTAMP,
+                added_by VARCHAR(100),
+                added_ip VARCHAR(100),
+                added_on DATETIME DEFAULT CURRENT_TIMESTAMP,
+                modified_by VARCHAR(100),
+                modified_ip VARCHAR(100),
+                modified_on DATETIME
+            );
+            """)
+
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS at_pr_appt (
+                patient_appt_id INT AUTO_INCREMENT PRIMARY KEY,
+                patient_id INT,
+                umr_num VARCHAR(50),
+                op_num VARCHAR(50),
+                token_num VARCHAR(50),
+                priority_no INT DEFAULT 1,
+                emp_id INT,
+                doc_name VARCHAR(150),
+                dept_id INT,
+                dept_name VARCHAR(100),
+                loc_id INT DEFAULT 1,
+                loc_name VARCHAR(100) DEFAULT 'Main Hospital',
+                visit_type VARCHAR(50) DEFAULT '174',
+                appt_status_id VARCHAR(50) DEFAULT '159',
+                bill_status VARCHAR(50) DEFAULT '17',
+                diseases_desc TEXT,
+                schedule_dt VARCHAR(50),
+                start_time VARCHAR(20),
+                reg_fee DECIMAL(10,2) DEFAULT 0,
+                cons_fee DECIMAL(10,2) DEFAULT 0,
+                tot_amt DECIMAL(10,2) DEFAULT 0,
+                amt_recd DECIMAL(10,2) DEFAULT 0,
+                reg_cash DECIMAL(10,2) DEFAULT 0,
+                reg_card DECIMAL(10,2) DEFAULT 0,
+                reg_upi DECIMAL(10,2) DEFAULT 0,
+                con_cash DECIMAL(10,2) DEFAULT 0,
+                con_card DECIMAL(10,2) DEFAULT 0,
+                con_upi DECIMAL(10,2) DEFAULT 0,
+                ref_type VARCHAR(50),
+                ref_id VARCHAR(50),
+                other_staff_id VARCHAR(50),
+                other_hosp_id VARCHAR(50),
+                status_id INT DEFAULT 34,
+                added_by VARCHAR(100),
+                added_ip VARCHAR(100),
+                added_on DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+            """)
+
+            cur.execute("""
+            CREATE TABLE IF NOT EXISTS at_bills (
+                bill_id INT AUTO_INCREMENT PRIMARY KEY,
+                patient_id INT,
+                appt_id INT,
+                umr_num VARCHAR(50),
+                bill_no VARCHAR(50),
+                bill_amt DECIMAL(10,2) DEFAULT 0,
+                amt_received DECIMAL(10,2) DEFAULT 0,
+                payment_type VARCHAR(50),
+                bill_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+                added_by VARCHAR(100),
+                added_ip VARCHAR(100),
+                modified_by VARCHAR(100),
+                modified_ip VARCHAR(100),
+                modified_on DATETIME
+            );
+            """)
         else:
             # PostgreSQL Schema
             cur.execute("""
@@ -515,6 +631,116 @@ def init_database(force=False):
                 status VARCHAR(50),
                 queue_items JSONB,
                 updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS at_pr_patient (
+                patient_id SERIAL PRIMARY KEY,
+                umr_num VARCHAR(50) UNIQUE,
+                patient_name VARCHAR(150),
+                last_name VARCHAR(150),
+                title VARCHAR(20),
+                gender VARCHAR(20),
+                dob VARCHAR(30),
+                age VARCHAR(20),
+                age_m VARCHAR(20),
+                age_d VARCHAR(20),
+                mob_num VARCHAR(30),
+                land_phn VARCHAR(30),
+                addr VARCHAR(255),
+                village VARCHAR(100),
+                city VARCHAR(100),
+                state VARCHAR(100),
+                country VARCHAR(100),
+                pin VARCHAR(20),
+                marital_status VARCHAR(30),
+                blood_grp VARCHAR(20),
+                nationality VARCHAR(50),
+                religion VARCHAR(50),
+                parent_name VARCHAR(150),
+                care_by VARCHAR(50),
+                care_by_name VARCHAR(150),
+                id_proof_type VARCHAR(50),
+                id_proof_num VARCHAR(100),
+                patient_category VARCHAR(50),
+                patient_category_name VARCHAR(100),
+                credit_org_id VARCHAR(50),
+                org_id VARCHAR(50),
+                ref_type VARCHAR(50),
+                ref_id VARCHAR(50),
+                ref_name VARCHAR(150),
+                other_staff_id VARCHAR(50),
+                other_staff_name VARCHAR(150),
+                other_hosp_id VARCHAR(50),
+                other_hosp_name VARCHAR(150),
+                occupation VARCHAR(100),
+                sms_status VARCHAR(10),
+                sms_alert VARCHAR(10),
+                status_id INT DEFAULT 34,
+                doc_status VARCHAR(10) DEFAULT 'y',
+                emp_id INT,
+                reg_dt TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                added_by VARCHAR(100),
+                added_ip VARCHAR(100),
+                added_on TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                modified_by VARCHAR(100),
+                modified_ip VARCHAR(100),
+                modified_on TIMESTAMP WITH TIME ZONE
+            );
+
+            CREATE TABLE IF NOT EXISTS at_pr_appt (
+                patient_appt_id SERIAL PRIMARY KEY,
+                patient_id INT,
+                umr_num VARCHAR(50),
+                op_num VARCHAR(50),
+                token_num VARCHAR(50),
+                priority_no INT DEFAULT 1,
+                emp_id INT,
+                doc_name VARCHAR(150),
+                dept_id INT,
+                dept_name VARCHAR(100),
+                loc_id INT DEFAULT 1,
+                loc_name VARCHAR(100) DEFAULT 'Main Hospital',
+                visit_type VARCHAR(50) DEFAULT '174',
+                appt_status_id VARCHAR(50) DEFAULT '159',
+                bill_status VARCHAR(50) DEFAULT '17',
+                diseases_desc TEXT,
+                schedule_dt VARCHAR(50),
+                start_time VARCHAR(20),
+                reg_fee NUMERIC(10,2) DEFAULT 0,
+                cons_fee NUMERIC(10,2) DEFAULT 0,
+                tot_amt NUMERIC(10,2) DEFAULT 0,
+                amt_recd NUMERIC(10,2) DEFAULT 0,
+                reg_cash NUMERIC(10,2) DEFAULT 0,
+                reg_card NUMERIC(10,2) DEFAULT 0,
+                reg_upi NUMERIC(10,2) DEFAULT 0,
+                con_cash NUMERIC(10,2) DEFAULT 0,
+                con_card NUMERIC(10,2) DEFAULT 0,
+                con_upi NUMERIC(10,2) DEFAULT 0,
+                ref_type VARCHAR(50),
+                ref_id VARCHAR(50),
+                other_staff_id VARCHAR(50),
+                other_hosp_id VARCHAR(50),
+                status_id INT DEFAULT 34,
+                added_by VARCHAR(100),
+                added_ip VARCHAR(100),
+                added_on TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS at_bills (
+                bill_id SERIAL PRIMARY KEY,
+                patient_id INT,
+                appt_id INT,
+                umr_num VARCHAR(50),
+                bill_no VARCHAR(50),
+                bill_amt NUMERIC(10,2) DEFAULT 0,
+                amt_received NUMERIC(10,2) DEFAULT 0,
+                payment_type VARCHAR(50),
+                bill_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+                added_by VARCHAR(100),
+                added_ip VARCHAR(100),
+                modified_by VARCHAR(100),
+                modified_ip VARCHAR(100),
+                modified_on TIMESTAMP WITH TIME ZONE
             );
             """)
 
@@ -881,26 +1107,73 @@ def get_record_by_token(token):
 
 
 @app.route('/api/register', methods=['POST'])
+@app.route('/api/patient/register', methods=['POST'])
+@app.route('/patient/registerPatient', methods=['POST', 'GET'])
 def register_patient():
-    """Register a new patient and persist to MySQL/PostgreSQL."""
+    """Register a new patient and persist to MySQL/PostgreSQL (at_pr_patient, at_pr_appt, at_bills, patients)."""
     global db_connected, last_db_error
-    data = request.json or {}
+    data = request.json or request.form.to_dict() or {}
     
-    token = data.get('token')
-    op_id = data.get('opId') or f"OP-2026-{int(datetime.now().timestamp()) % 10000}"
-    patient_name = data.get('patientName', 'Unknown')
-    age = int(data.get('age', 0))
+    umr_no = data.get('umrNo') or data.get('patientCode') or data.get('opId')
+    fallback = load_fallback_data()
+    q_len = len(fallback.get('patientQueue', []))
+    if not umr_no:
+        umr_no = f"UMR{334253 + q_len + 1}"
+    
+    token = data.get('token') or data.get('tokenNum') or f"OPD-{120 + q_len + 1}"
+    op_id = data.get('opId') or umr_no
+    
+    ptitle = data.get('title') or data.get('ptitle', 'Mr')
+    pname = data.get('patientName') or data.get('pname', 'Unknown')
+    last_name = data.get('lastName') or data.get('lName', '')
+    patient_name = f"{ptitle} {pname} {last_name}".strip() if (last_name or ptitle) else pname
+    
+    age = int(data.get('age') or data.get('years', 0))
     gender = data.get('gender', 'Other')
-    phone = data.get('phone', '')
-    blood_group = data.get('bloodGroup', 'B+')
-    department = data.get('department', data.get('departmentName', 'General Medicine'))
+    phone = data.get('phone') or data.get('mobile') or data.get('mobNum', '')
+    blood_group = data.get('bloodGroup') or data.get('bloodGrp', 'B+')
+    department = data.get('department') or data.get('departmentName', 'General Medicine')
     department_code = data.get('departmentCode', 'GEN')
-    doctor = data.get('doctor', 'Consultant Doctor')
+    doctor = data.get('doctor') or data.get('consultant') or data.get('docName', 'Consultant Doctor')
     room = data.get('room', 'OP Cabin')
     priority = data.get('priority', 'Regular')
-    visit_date = data.get('visitDate', datetime.now().strftime('%d-%b-%Y'))
+    visit_date = data.get('visitDate') or data.get('appointmentDate', datetime.now().strftime('%d-%b-%Y'))
     visit_type = data.get('visitType', 'OPD Consultation' if priority != 'Emergency' else 'Emergency Outpatient')
-    symptoms = data.get('symptoms', 'General Outpatient checkup and clinical evaluation.')
+    category = data.get('category') or data.get('pntCat', 'GENERAL')
+    address = data.get('address') or data.get('addr', '')
+    village = data.get('village', '')
+    city = data.get('city', 'Visakhapatnam')
+    state = data.get('state', 'Andhra Pradesh')
+    country = data.get('country', 'India')
+    parent_name = data.get('parentName') or data.get('parentOrHusband', '')
+    id_proof_type = data.get('idProofType') or data.get('idType', 'Aadhaar Card')
+    id_proof_num = data.get('idProofNum') or data.get('idNumber', '')
+    marital_status = data.get('maritalStatus', 'Single')
+    occupation = data.get('occupation', '')
+
+    # Fee Breakdown
+    reg_fee = float(data.get('regFee') or data.get('regAmount', 50.0))
+    cons_fee = float(data.get('consFee') or data.get('consAmount', 850.0))
+    tot_amt = float(data.get('totAmt') or data.get('totalAmount', reg_fee + cons_fee))
+    amt_recd = float(data.get('amtRecd') or data.get('amountReceived', tot_amt))
+
+    reg_cash = float(data.get('regCash') or data.get('regAmoCash', 0.0))
+    reg_card = float(data.get('regCard') or data.get('regAmoCard', 0.0))
+    reg_upi = float(data.get('regUpi') or data.get('regAmoUpi', 0.0))
+    con_cash = float(data.get('conCash') or data.get('conAmoCash', 0.0))
+    con_card = float(data.get('conCard') or data.get('conAmoCard', 0.0))
+    con_upi = float(data.get('conUpi') or data.get('conAmoUpi', 0.0))
+
+    payment_mode = data.get('paymentMode', 'Cash')
+    if reg_cash == 0 and reg_card == 0 and reg_upi == 0 and con_cash == 0 and con_card == 0 and con_upi == 0:
+        if payment_mode == 'UPI':
+            reg_upi, con_upi = reg_fee, cons_fee
+        elif payment_mode in ('Credit', 'Card'):
+            reg_card, con_card = reg_fee, cons_fee
+        else:
+            reg_cash, con_cash = reg_fee, cons_fee
+
+    symptoms = data.get('symptoms') or data.get('healthIssue', 'General Outpatient checkup and clinical evaluation.')
     diagnosis = data.get('diagnosis', 'Clinical Consultation in Progress (Initial OP Intake)')
     vitals = data.get('vitals', {
         "bp": "120/80 mmHg",
@@ -920,30 +1193,67 @@ def register_patient():
         {"testName": "Consultant Clinical Examination", "status": "In Waiting Queue"}
     ])
     doctor_notes = data.get('doctorNotes', f"Patient {patient_name} registered at OPD Desk. Priority: {priority}.")
-    payment = data.get('payment', {})
+    payment = data.get('payment', {
+        "regFee": reg_fee,
+        "consultationFee": cons_fee,
+        "totalAmount": tot_amt,
+        "paymentMethod": payment_mode,
+        "paymentStatus": "Paid"
+    })
 
     new_record = {
         "token": token,
         "opId": op_id,
+        "umrNo": umr_no,
+        "patientCode": umr_no,
         "patientName": patient_name,
+        "pname": pname,
+        "lastName": last_name,
+        "title": ptitle,
         "age": age,
         "gender": gender,
+        "genderAge": f"{gender.upper()}/{age}yrs",
         "phone": phone,
+        "mobNum": phone,
         "bloodGroup": blood_group,
         "department": department,
         "departmentCode": department_code,
         "doctor": doctor,
+        "consultant": doctor,
+        "docName": doctor,
         "room": room,
         "priority": priority,
         "visitDate": visit_date,
+        "appointmentDate": visit_date,
+        "apptDt": visit_date,
         "visitType": visit_type,
+        "category": category,
+        "patientCategory": category,
+        "billStatus": "Paid",
+        "statusInfo": "Waiting",
         "symptoms": symptoms,
         "diagnosis": diagnosis,
         "vitals": vitals,
         "prescription": prescription,
         "recommendedTests": recommended_tests,
         "doctorNotes": doctor_notes,
-        "payment": payment
+        "payment": payment,
+        "regFee": reg_fee,
+        "consFee": cons_fee,
+        "totAmt": tot_amt,
+        "amtRecd": amt_recd,
+        "regCash": reg_cash,
+        "regCard": reg_card,
+        "regUpi": reg_upi,
+        "conCash": con_cash,
+        "conCard": con_card,
+        "conUpi": con_upi,
+        "address": address,
+        "village": village,
+        "city": city,
+        "idProofType": id_proof_type,
+        "idProofNum": id_proof_num,
+        "parentName": parent_name
     }
 
     if not db_connected:
@@ -954,6 +1264,37 @@ def register_patient():
         try:
             conn = get_db_connection()
             cur = conn.cursor()
+            # 1. Insert into at_pr_patient
+            cur.execute("""
+            INSERT INTO at_pr_patient (
+                umr_num, patient_name, last_name, title, gender, age, mob_num, addr,
+                village, city, state, country, blood_grp, marital_status, parent_name,
+                id_proof_type, id_proof_num, occupation, patient_category, patient_category_name,
+                status_id, doc_status, added_by, added_ip
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 34, 'y', %s, %s)
+            """, (
+                umr_no, pname, last_name, ptitle, gender, str(age), phone, address,
+                village, city, state, country, blood_group, marital_status, parent_name,
+                id_proof_type, id_proof_num, occupation, category, category,
+                'RECEPTIONIST', request.remote_addr or '127.0.0.1'
+            ))
+
+            patient_id = cur.lastrowid if hasattr(cur, 'lastrowid') else None
+
+            # 2. Insert into at_pr_appt
+            cur.execute("""
+            INSERT INTO at_pr_appt (
+                patient_id, umr_num, op_num, token_num, doc_name, dept_name, visit_type,
+                appt_status_id, bill_status, schedule_dt, reg_fee, cons_fee, tot_amt, amt_recd,
+                reg_cash, reg_card, reg_upi, con_cash, con_card, con_upi, added_by, added_ip
+            ) VALUES (%s, %s, %s, %s, %s, %s, '174', '159', '17', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """, (
+                patient_id, umr_no, op_id, token, doctor, department, visit_date,
+                reg_fee, cons_fee, tot_amt, amt_recd, reg_cash, reg_card, reg_upi,
+                con_cash, con_card, con_upi, 'RECEPTIONIST', request.remote_addr or '127.0.0.1'
+            ))
+
+            # 3. Insert into patients table
             if DB_TYPE == 'mysql':
                 cur.execute("""
                 INSERT INTO patients (
@@ -961,10 +1302,7 @@ def register_patient():
                     department, department_code, doctor, room, priority, visit_date,
                     visit_type, symptoms, diagnosis, doctor_notes, payment_json, vitals_json
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ON DUPLICATE KEY UPDATE
-                    patient_name = VALUES(patient_name),
-                    symptoms = VALUES(symptoms),
-                    payment_json = VALUES(payment_json)
+                ON DUPLICATE KEY UPDATE patient_name=VALUES(patient_name), symptoms=VALUES(symptoms)
                 """, (
                     op_id, token, patient_name, age, gender, phone, blood_group,
                     department, department_code, doctor, room, priority, visit_date,
@@ -978,11 +1316,7 @@ def register_patient():
                     department, department_code, doctor, room, priority, visit_date,
                     visit_type, symptoms, diagnosis, doctor_notes, payment_json, vitals_json
                 ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (token) DO UPDATE SET
-                    patient_name = EXCLUDED.patient_name,
-                    symptoms = EXCLUDED.symptoms,
-                    payment_json = EXCLUDED.payment_json,
-                    updated_at = CURRENT_TIMESTAMP
+                ON CONFLICT (token) DO UPDATE SET patient_name=EXCLUDED.patient_name
                 """, (
                     op_id, token, patient_name, age, gender, phone, blood_group,
                     department, department_code, doctor, room, priority, visit_date,
@@ -990,46 +1324,207 @@ def register_patient():
                     json.dumps(payment), json.dumps(vitals)
                 ))
 
-            # Insert Vitals
-            cur.execute("""
-            INSERT INTO patient_vitals (token, bp, pulse, spo2, temp, weight, bmi, blood_sugar, triage_notes)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """, (
-                token, vitals.get('bp'), vitals.get('pulse'), vitals.get('spo2'),
-                vitals.get('temp'), vitals.get('weight'), vitals.get('bmi'), vitals.get('bloodSugar'),
-                'Registration desk triage'
-            ))
-
-            # Insert Prescription
-            cur.execute("""
-            INSERT INTO patient_prescriptions (token, prescription_items, recommended_tests, doctor_notes)
-            VALUES (%s, %s, %s, %s)
-            """, (
-                token, json.dumps(prescription), json.dumps(recommended_tests), doctor_notes
-            ))
-
             conn.commit()
             cur.close()
             conn.close()
             saved_to_db = True
-            logger.info("✓ Patient %s (%s) saved to %s database.", patient_name, token, DB_TYPE.upper())
+            logger.info("✓ Patient %s (%s, %s) saved to %s database.", patient_name, umr_no, token, DB_TYPE.upper())
         except Exception as e:
             logger.error("Error inserting patient to database: %s", e)
             db_connected = False
             last_db_error = str(e)
 
-    # Always update fallback cache for offline resiliency
+    # Update Fallback Cache
     fallback = load_fallback_data()
-    fallback["patients"][token] = new_record
+    fallback.setdefault("patients", {})[token] = new_record
+    queue = fallback.setdefault("patientQueue", [])
+    queue.insert(0, new_record)
     save_fallback_data(fallback)
 
     return jsonify({
         "success": True,
         "savedToDatabase": saved_to_db,
+        "patientCode": umr_no,
+        "umrNo": umr_no,
         "token": token,
+        "tokenNum": token,
         "opId": op_id,
+        "patientName": patient_name,
         "record": new_record
     }), 201
+
+
+@app.route('/api/update', methods=['POST'])
+@app.route('/api/patient/update', methods=['POST'])
+@app.route('/patient/updatePatientRecord', methods=['POST'])
+def update_patient_record():
+    """Update an existing patient record in at_pr_patient, at_pr_appt, and patients table."""
+    global db_connected, last_db_error
+    data = request.json or request.form.to_dict() or {}
+
+    umr_no = data.get('umrNo') or data.get('patientCode') or data.get('opId') or ''
+    patient_id = data.get('patientId')
+    pname = data.get('patientName') or data.get('pname', '')
+    last_name = data.get('lastName') or data.get('lName', '')
+    title = data.get('title') or data.get('ptitle', '')
+    full_name = f"{title} {pname} {last_name}".strip() if (last_name or title) else pname
+
+    gender = data.get('gender')
+    age = data.get('age') or data.get('years')
+    phone = data.get('phone') or data.get('mobile') or data.get('mobNum')
+    blood_group = data.get('bloodGroup') or data.get('bloodGrp')
+    category = data.get('category') or data.get('pntCat')
+    address = data.get('address') or data.get('addr')
+    village = data.get('village')
+    city = data.get('city')
+    consultant = data.get('consultant') or data.get('doctor') or data.get('docName')
+
+    updated_in_db = False
+    if db_connected:
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute("""
+            UPDATE at_pr_patient SET
+                patient_name = COALESCE(NULLIF(%s, ''), patient_name),
+                last_name = COALESCE(NULLIF(%s, ''), last_name),
+                gender = COALESCE(NULLIF(%s, ''), gender),
+                age = COALESCE(NULLIF(%s, ''), age),
+                mob_num = COALESCE(NULLIF(%s, ''), mob_num),
+                addr = COALESCE(NULLIF(%s, ''), addr),
+                village = COALESCE(NULLIF(%s, ''), village),
+                city = COALESCE(NULLIF(%s, ''), city),
+                blood_grp = COALESCE(NULLIF(%s, ''), blood_grp),
+                patient_category = COALESCE(NULLIF(%s, ''), patient_category),
+                modified_by = 'RECEPTIONIST',
+                modified_on = NOW()
+            WHERE umr_num = %s OR patient_id = %s
+            """, (
+                pname, last_name, gender, str(age) if age else '', phone, address,
+                village, city, blood_group, category, umr_no, patient_id
+            ))
+
+            if consultant:
+                cur.execute("""
+                UPDATE at_pr_appt SET doc_name = %s WHERE umr_num = %s OR patient_id = %s
+                """, (consultant, umr_no, patient_id))
+
+            conn.commit()
+            cur.close()
+            conn.close()
+            updated_in_db = True
+            logger.info("✓ Patient %s (%s) updated in database.", full_name, umr_no)
+        except Exception as e:
+            logger.error("Error updating patient in database: %s", e)
+
+    # Update Fallback Cache
+    fallback = load_fallback_data()
+    queue = fallback.get('patientQueue', [])
+    for item in queue:
+        if (umr_no and item.get('umrNo', '').lower() == umr_no.lower()) or \
+           (patient_id and str(item.get('patientId')) == str(patient_id)):
+            if pname: item['pname'] = pname
+            if last_name: item['lastName'] = last_name
+            if title: item['title'] = title
+            item['patientName'] = full_name or item.get('patientName')
+            if gender:
+                item['gender'] = gender
+                item['genderAge'] = f"{gender.upper()}/{age or item.get('age', 30)}yrs"
+            if age: item['age'] = int(age)
+            if phone:
+                item['phone'] = phone
+                item['mobNum'] = phone
+            if blood_group: item['bloodGroup'] = blood_group
+            if category:
+                item['category'] = category
+                item['patientCategory'] = category
+            if address: item['address'] = address
+            if village: item['village'] = village
+            if city: item['city'] = city
+            if consultant:
+                item['consultant'] = consultant
+                item['docName'] = consultant
+            break
+    save_fallback_data(fallback)
+
+    return jsonify({
+        "success": True,
+        "updatedInDatabase": updated_in_db,
+        "patientCode": umr_no,
+        "umrNo": umr_no,
+        "patientName": full_name,
+        "message": f"Patient {full_name} details updated successfully.",
+        "legacyResult": "1^<div class='col-md-12 alert alert-success alert-dismissable'><h5 style='color:white;' class='fa fa-check'></h5>Patient Details Updated.</div>^1"
+    }), 200
+
+
+@app.route('/api/queue', methods=['GET'])
+@app.route('/api/patient/queue', methods=['GET'])
+@app.route('/patient/patientQueue', methods=['GET'])
+def get_patient_queue():
+    """Return live appointment queue with UMR numbers, fees breakdown, and vital statistics."""
+    fallback = load_fallback_data()
+    queue = fallback.get('patientQueue')
+    if not queue:
+        # Seed initial queue if absent
+        queue = [
+            {"patientId": 1, "apptId": 101, "umrNo": "UMR334253", "patientCode": "UMR334253", "tokenNum": "1", "token": "1", "patientName": "VENKATA RAMANA", "genderAge": "MALE/45yrs", "gender": "MALE", "age": 45, "appointmentDate": "09-Oct-2026", "apptDt": "09-Oct-2026", "consultant": "SATYANARAYANA V VSN", "docName": "SATYANARAYANA V VSN", "category": "GENERAL", "billStatus": "Paid", "statusInfo": "Waiting", "regFee": 50, "consFee": 1000, "totAmt": 1050, "amtRecd": 1050, "regCash": 50, "regAmoCash": 50, "regCredit": 0, "regAmoCard": 0, "regUpi": 0, "regAmoUpi": 0, "conCash": 1000, "conAmoCash": 1000, "conCredit": 0, "conAmoCard": 0, "conUpi": 0, "conAmoUpi": 0, "phone": "9848022334", "mobNum": "9848022334"},
+            {"patientId": 2, "apptId": 102, "umrNo": "UMR334252", "patientCode": "UMR334252", "tokenNum": "CAR-104", "token": "CAR-104", "patientName": "TOTA RAMANA", "genderAge": "MALE/45yrs", "gender": "MALE", "age": 45, "appointmentDate": "08-Oct-2026", "apptDt": "08-Oct-2026", "consultant": "R LALITHA LA", "docName": "R LALITHA LA", "category": "GENERAL", "billStatus": "Paid", "statusInfo": "Waiting", "regFee": 50, "consFee": 800, "totAmt": 850, "amtRecd": 850, "regCash": 50, "regAmoCash": 50, "regCredit": 0, "regAmoCard": 0, "regUpi": 0, "regAmoUpi": 0, "conCash": 800, "conAmoCash": 800, "conCredit": 0, "conAmoCard": 0, "conUpi": 0, "conAmoUpi": 0, "phone": "9848123456", "mobNum": "9848123456"},
+            {"patientId": 3, "apptId": 103, "umrNo": "UMR334251", "patientCode": "UMR334251", "tokenNum": "ORT-082", "token": "ORT-082", "patientName": "JAYANTI PANIGRAHI", "genderAge": "FEMALE/58yrs", "gender": "FEMALE", "age": 58, "appointmentDate": "08-Oct-2026", "apptDt": "08-Oct-2026", "consultant": "RAKESH TUMULA RT", "docName": "RAKESH TUMULA RT", "category": "GENERAL", "billStatus": "Paid", "statusInfo": "Waiting", "regFee": 0, "consFee": 1450, "totAmt": 1450, "amtRecd": 1450, "regCash": 0, "regAmoCash": 0, "regCredit": 0, "regAmoCard": 0, "regUpi": 0, "regAmoUpi": 0, "conCash": 1450, "conAmoCash": 1450, "conCredit": 0, "conAmoCard": 0, "conUpi": 0, "conAmoUpi": 0, "phone": "9440112233", "mobNum": "9440112233"},
+            {"patientId": 4, "apptId": 104, "umrNo": "UMR334249", "patientCode": "UMR334249", "tokenNum": "CAR-105", "token": "CAR-105", "patientName": "LANKE DURGA", "genderAge": "FEMALE/35yrs", "gender": "FEMALE", "age": 35, "appointmentDate": "08-Oct-2026", "apptDt": "08-Oct-2026", "consultant": "ANIL KUMAR MAHAPATRO AKM", "docName": "ANIL KUMAR MAHAPATRO AKM", "category": "GENERAL", "billStatus": "Paid", "statusInfo": "Waiting", "regFee": 50, "consFee": 850, "totAmt": 900, "amtRecd": 900, "regCash": 50, "regAmoCash": 50, "regCredit": 0, "regAmoCard": 0, "regUpi": 0, "regAmoUpi": 0, "conCash": 850, "conAmoCash": 850, "conCredit": 0, "conAmoCard": 0, "conUpi": 0, "conAmoUpi": 0, "phone": "9989445566", "mobNum": "9989445566"}
+        ]
+        fallback["patientQueue"] = queue
+        save_fallback_data(fallback)
+    return jsonify(queue)
+
+
+@app.route('/api/patient/search', methods=['GET', 'POST'])
+@app.route('/patient/searchPatients', methods=['GET', 'POST'])
+def search_patients():
+    """Search patients by term, UMR number, mobile number, or name."""
+    term = request.args.get('term') or request.args.get('umrNo') or request.args.get('mobNum') or request.args.get('pname') or ''
+    term = term.lower().strip()
+    fallback = load_fallback_data()
+    queue = fallback.get('patientQueue', [])
+    matches = [
+        item for item in queue
+        if not term or term in item.get('umrNo', '').lower() or \
+           term in item.get('patientName', '').lower() or \
+           term in item.get('phone', '').lower()
+    ]
+    return jsonify(matches)
+
+
+@app.route('/api/patient/details', methods=['GET'])
+@app.route('/patient/getPatientDetails', methods=['GET'])
+def get_patient_details():
+    """Fetch complete patient record by patientId or umrNo."""
+    umr_no = request.args.get('umrNo') or request.args.get('patientCode')
+    patient_id = request.args.get('patientId')
+    fallback = load_fallback_data()
+    queue = fallback.get('patientQueue', [])
+    for item in queue:
+        if (umr_no and item.get('umrNo', '').lower() == umr_no.lower()) or \
+           (patient_id and str(item.get('patientId')) == str(patient_id)):
+            return jsonify(item)
+    return jsonify({"error": "Patient not found"}), 404
+
+
+@app.route('/api/patient/delete', methods=['POST'])
+@app.route('/patient/deletePatientRecord', methods=['POST'])
+def delete_patient_record():
+    """Inactivate or remove patient from queue."""
+    umr_no = request.args.get('umrNo') or request.form.get('umrNo')
+    patient_id = request.args.get('patientId') or request.form.get('patientId')
+    fallback = load_fallback_data()
+    queue = fallback.get('patientQueue', [])
+    fallback['patientQueue'] = [
+        item for item in queue
+        if not ((umr_no and item.get('umrNo', '').lower() == umr_no.lower()) or
+                (patient_id and str(item.get('patientId')) == str(patient_id)))
+    ]
+    save_fallback_data(fallback)
+    return jsonify({"success": True, "message": "Patient record deleted / inactivated."})
 
 
 @app.route('/api/vitals', methods=['POST'])

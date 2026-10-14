@@ -275,6 +275,27 @@ export function RegistrationForm({
   const [printModal, setPrintModal] = useState(null);
   const [toast, setToast] = useState(null);
   const [vitalsDrawer, setVitalsDrawer] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingPatient, setEditingPatient] = useState(null);
+
+  // Fetch live queue from backend
+  const fetchServerQueue = async () => {
+    try {
+      const res = await fetch('/api/patient/queue');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setAppointments(data);
+        }
+      }
+    } catch (err) {
+      console.warn('Queue fetch warning:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchServerQueue();
+  }, []);
 
   // Auto-merge persisted records from props/backend into appointments
   useEffect(() => {
@@ -490,8 +511,63 @@ export function RegistrationForm({
     setFormData(prev => ({ ...prev, years: y, dob: `${bYear}-01-01` }));
   };
 
-  // Handle Form Submission (Save Patient)
-  const handleSave = (e) => {
+  // Handle Edit Patient
+  const handleEditPatient = (row) => {
+    setIsEditMode(true);
+    setEditingPatient(row);
+
+    const rawName = row.pname || row.patientName || '';
+    const parts = rawName.split(' ');
+    let title = row.title || 'Mr.';
+    let pName = rawName;
+    let lName = row.lastName || '';
+
+    if (!row.title && parts.length > 1 && ['Mr', 'Mr.', 'Mrs', 'Mrs.', 'Ms', 'Ms.', 'Baby', 'Master', 'Dr', 'Dr.'].includes(parts[0])) {
+      title = parts[0].endsWith('.') ? parts[0] : `${parts[0]}.`;
+      pName = parts.slice(1).join(' ');
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      title: title,
+      patientName: pName,
+      lastName: lName,
+      gender: row.gender || (row.genderAge ? row.genderAge.split('/')[0] : 'Male'),
+      years: row.age || 40,
+      mobile: row.mobNum || row.phone || '',
+      consultant: row.consultant || row.docName || 'SATYANARAYANA V VSN',
+      category: row.patientCategory || row.category || 'GENERAL - TRI',
+      address: row.address || row.addr || '',
+      village: row.village || '',
+      city: row.city || 'Visakhapatnam',
+      token: row.tokenNum || row.token || '',
+      regFee: row.regFee != null ? row.regFee : 50,
+      regFinalAmt: row.regFee != null ? row.regFee : 50,
+      consFee: row.consFee != null ? row.consFee : 1000,
+      consFinalAmt: row.consFee != null ? row.consFee : 1000,
+      totalBillAmt: row.totAmt != null ? row.totAmt : 1050,
+      paymentMode: (row.regUpi > 0 || row.conUpi > 0) ? 'UPI' : (row.regCredit > 0 || row.conCredit > 0) ? 'Credit' : 'Cash'
+    }));
+
+    setActiveTab('add_appointment');
+    showNotification(`✏️ Loaded ${row.patientName} (${row.umrNo}) into form for editing.`);
+  };
+
+  // Handle Delete Patient
+  const handleDeletePatient = async (row) => {
+    if (window.confirm(`Are you sure you want to remove patient ${row.patientName} (${row.umrNo}) from active queue?`)) {
+      try {
+        await fetch(`/api/patient/delete?umrNo=${encodeURIComponent(row.umrNo)}`, { method: 'POST' });
+        setAppointments(prev => prev.filter(p => p.umrNo !== row.umrNo));
+        showNotification(`🗑️ Patient ${row.patientName} (${row.umrNo}) removed from queue.`);
+      } catch (err) {
+        console.warn('Delete error:', err);
+      }
+    }
+  };
+
+  // Handle Form Submission (Save New or Update Existing Patient)
+  const handleSave = async (e) => {
     if (e) e.preventDefault();
 
     if (!formData.patientName.trim()) {
@@ -499,10 +575,119 @@ export function RegistrationForm({
       return;
     }
 
-    const nextUmrNum = 334253 + appointments.length;
-    const newUmrNo = `UMR${nextUmrNum}`;
-    const tokenStr = formData.token || `OPD-${120 + appointments.length + 1}`;
     const fullName = `${formData.title} ${formData.patientName} ${formData.lastName}`.trim().toUpperCase();
+
+    // -------------------------------------------------------------
+    // UPDATE PATIENT (When in Edit Mode)
+    // -------------------------------------------------------------
+    if (isEditMode && editingPatient) {
+      const updatePayload = {
+        umrNo: editingPatient.umrNo,
+        patientId: editingPatient.patientId,
+        patientName: formData.patientName.trim(),
+        pname: formData.patientName.trim(),
+        lastName: formData.lastName.trim(),
+        title: formData.title,
+        gender: formData.gender,
+        age: formData.years,
+        years: formData.years,
+        phone: formData.mobile,
+        mobile: formData.mobile,
+        consultant: formData.consultant,
+        doctor: formData.consultant,
+        category: formData.category,
+        address: formData.address,
+        village: formData.village,
+        city: formData.city,
+        bloodGroup: formData.bloodGroup
+      };
+
+      try {
+        await fetch('/api/patient/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatePayload)
+        });
+      } catch (err) {
+        console.warn('Update API error:', err);
+      }
+
+      setAppointments(prev => prev.map(a => {
+        if (a.umrNo === editingPatient.umrNo) {
+          return {
+            ...a,
+            patientName: fullName,
+            pname: formData.patientName,
+            lastName: formData.lastName,
+            title: formData.title,
+            genderAge: `${formData.gender.toUpperCase()}/${formData.years}yrs`,
+            gender: formData.gender,
+            age: formData.years,
+            phone: formData.mobile,
+            consultant: formData.consultant,
+            category: formData.category,
+            address: formData.address,
+            village: formData.village
+          };
+        }
+        return a;
+      }));
+
+      showNotification(`✓ Patient ${fullName} (${editingPatient.umrNo}) updated in database!`);
+      setIsEditMode(false);
+      setEditingPatient(null);
+      setActiveTab('appointments');
+      fetchServerQueue();
+      return;
+    }
+
+    // -------------------------------------------------------------
+    // REGISTER NEW PATIENT
+    // -------------------------------------------------------------
+    const regPayload = {
+      patientName: formData.patientName.trim(),
+      pname: formData.patientName.trim(),
+      lastName: formData.lastName.trim(),
+      title: formData.title,
+      gender: formData.gender,
+      age: formData.years,
+      years: formData.years,
+      phone: formData.mobile,
+      mobile: formData.mobile,
+      consultant: formData.consultant,
+      doctor: formData.consultant,
+      category: formData.category,
+      paymentMode: formData.paymentMode,
+      regFee: formData.regFinalAmt,
+      consFee: formData.consFinalAmt,
+      totalAmount: formData.totalBillAmt,
+      address: formData.address,
+      village: formData.village,
+      city: formData.city,
+      bloodGroup: formData.bloodGroup,
+      healthIssue: formData.healthIssue,
+      idProofType: formData.idType,
+      idProofNum: formData.idNumber,
+      parentOrHusband: formData.parentOrHusband
+    };
+
+    let newUmrNo = `UMR${334253 + appointments.length + 1}`;
+    let tokenStr = formData.token || `OPD-${120 + appointments.length + 1}`;
+
+    try {
+      const resp = await fetch('/api/patient/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(regPayload)
+      });
+      if (resp.ok) {
+        const resJson = await resp.json();
+        if (resJson.umrNo) newUmrNo = resJson.umrNo;
+        if (resJson.tokenNum) tokenStr = resJson.tokenNum;
+      }
+    } catch (err) {
+      console.warn('Register API error:', err);
+    }
 
     const newAppointmentRecord = {
       umrNo: newUmrNo,
@@ -525,10 +710,10 @@ export function RegistrationForm({
       vitals: { bp: '120/80', pulse: '74', spo2: '99%', temp: '98.6', weight: '65' }
     };
 
-    // 1. Add to local appointments state at TOP of list
+    // Add to local list at top
     setAppointments(prev => [newAppointmentRecord, ...prev]);
 
-    // 2. Call parent callback to sync with PostgreSQL backend
+    // Parent callback
     if (onRegisterSuccess) {
       const matchingDoc = CONSULTANTS_ROSTER.find(c => c.name === formData.consultant);
       onRegisterSuccess({
@@ -555,11 +740,11 @@ export function RegistrationForm({
       });
     }
 
-    // 3. Switch to Tab 1 (Appointments) immediately as requested!
+    // Switch to Tab 1
     setActiveTab('appointments');
-    showNotification(`✓ Patient ${fullName} successfully registered (${newUmrNo}). Data saved to database.`);
+    showNotification(`✓ Patient ${fullName} successfully registered (${newUmrNo}). Saved to database.`);
 
-    // Reset form for next entry
+    // Reset form
     setFormData(prev => ({
       ...prev,
       patientName: '',
@@ -572,6 +757,8 @@ export function RegistrationForm({
       healthIssue: '',
       token: `OPD-${Math.floor(120 + appointments.length + 2)}`
     }));
+
+    fetchServerQueue();
   };
 
   // Export to Excel / CSV
@@ -636,7 +823,10 @@ export function RegistrationForm({
           <div className="reg-top-icons">
             <button 
               className="reg-icon-btn refresh" 
-              onClick={() => showNotification("🔄 Data refreshed from PostgreSQL database.")} 
+              onClick={() => {
+                fetchServerQueue();
+                showNotification("🔄 Data refreshed from database.");
+              }} 
               title="Refresh Appointments"
             >
               🔄
@@ -890,22 +1080,22 @@ export function RegistrationForm({
                     <td><strong>{row.conCash}</strong></td>
                     <td>{row.conCredit}</td>
                     <td>{row.conUpi}</td>
-                    <td className="cell-action-icon">
+                    <td className="cell-action-icon" style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
                       <button 
                         className="btn-icon orange-edit" 
-                        onClick={() => {
-                          setFormData(prev => ({
-                            ...prev,
-                            patientName: row.patientName,
-                            consultant: row.consultant,
-                            years: row.age || 40,
-                            gender: row.gender || 'Male'
-                          }));
-                          setActiveTab('add_appointment');
-                        }}
-                        title="Edit / Open Patient"
+                        onClick={() => handleEditPatient(row)}
+                        title="Edit / Update Patient Record"
+                        style={{ cursor: 'pointer' }}
                       >
                         ✏️
+                      </button>
+                      <button 
+                        className="btn-icon red-delete" 
+                        onClick={() => handleDeletePatient(row)}
+                        title="Delete Patient Record"
+                        style={{ cursor: 'pointer', background: 'none', border: 'none', fontSize: '15px' }}
+                      >
+                        🗑️
                       </button>
                     </td>
                   </tr>
@@ -921,6 +1111,63 @@ export function RegistrationForm({
       {/* ========================================================================= */}
       {activeTab === 'add_appointment' && (
         <form onSubmit={handleSave} className="add-appointment-form">
+          
+          {/* Edit Mode Alert Banner */}
+          {isEditMode && editingPatient && (
+            <div style={{
+              background: '#fef3c7',
+              border: '2px solid #f59e0b',
+              borderRadius: '8px',
+              padding: '12px 20px',
+              marginBottom: '15px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              boxShadow: '0 2px 8px rgba(245,158,11,0.15)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '20px' }}>✏️</span>
+                <div>
+                  <strong style={{ color: '#b45309', fontSize: '15px' }}>UPDATE PATIENT RECORD:</strong>
+                  <span style={{ marginLeft: '8px', color: '#78350f', fontWeight: '500' }}>
+                    Editing <strong>{editingPatient.patientName}</strong> | UMR: <strong style={{ color: '#1e40af' }}>{editingPatient.umrNo}</strong> | Token: <strong>{editingPatient.tokenNum || editingPatient.token}</strong>
+                  </span>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onClick={() => {
+                  setIsEditMode(false);
+                  setEditingPatient(null);
+                  setFormData(prev => ({
+                    ...prev,
+                    patientName: '',
+                    lastName: '',
+                    mobile: '',
+                    village: '',
+                    address: '',
+                    idNumber: '',
+                    parentOrHusband: '',
+                    healthIssue: '',
+                    token: `OPD-${Math.floor(120 + appointments.length + 2)}`
+                  }));
+                  showNotification("Switched back to New Patient Registration mode.");
+                }}
+                style={{
+                  background: '#fee2e2',
+                  border: '1px solid #ef4444',
+                  color: '#b91c1c',
+                  padding: '6px 14px',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontWeight: '600',
+                  fontSize: '13px'
+                }}
+              >
+                ✕ Cancel Edit
+              </button>
+            </div>
+          )}
           
           {/* ===================================================================== */}
           {/* 1. TOP: PATIENT DETAILS (FULL WIDTH ACROSS SCREEN, EQUAL 6-COL GRID)  */}
@@ -1669,56 +1916,102 @@ export function RegistrationForm({
           {/* 3. BOTTOM: EQUAL CENTERED ACTION FOOTER BAR                           */}
           {/* ===================================================================== */}
           <div className="form-equal-footer-bar">
-            <button type="submit" className="btn-green-save-prominent">
-              💾 Save Appointment
-            </button>
-            <button 
-              type="button" 
-              className="btn-print-token-action"
-              onClick={() => {
-                if (!formData.patientName) {
-                  showNotification("Please enter patient name first.");
-                  return;
-                }
-                setPrintModal({
-                  type: 'reg',
-                  patient: {
-                    umrNo: `UMR${Math.floor(334250 + Math.random() * 50)}`,
-                    token: formData.token,
-                    patientName: `${formData.title} ${formData.patientName} ${formData.lastName}`.trim().toUpperCase(),
-                    genderAge: `${formData.gender.toUpperCase()}/${formData.years}yrs`,
-                    appointmentDate: formData.appointmentDate,
-                    consultant: formData.consultant,
-                    category: formData.category,
-                    phone: formData.mobile,
-                    regCash: formData.regFinalAmt,
-                    conCash: formData.consFinalAmt
-                  }
-                });
-              }}
-            >
-              🖨️ Save & Print Token Slip
-            </button>
-            <button 
-              type="button" 
-              className="btn-reset-form-action"
-              onClick={() => {
-                setFormData(prev => ({
-                  ...prev,
-                  patientName: '',
-                  lastName: '',
-                  mobile: '',
-                  village: '',
-                  address: '',
-                  idNumber: '',
-                  parentOrHusband: '',
-                  healthIssue: ''
-                }));
-                showNotification("Form reset.");
-              }}
-            >
-              🔄 Reset Fields
-            </button>
+            {isEditMode && editingPatient ? (
+              <>
+                <button type="submit" className="btn-green-save-prominent" style={{ background: '#d97706', borderColor: '#b45309' }}>
+                  💾 Update Patient Record ({editingPatient.umrNo})
+                </button>
+                <button 
+                  type="button" 
+                  className="btn-print-token-action"
+                  onClick={() => {
+                    setIsEditMode(false);
+                    setEditingPatient(null);
+                    handleSave();
+                  }}
+                  style={{ background: '#0284c7', borderColor: '#0369a1' }}
+                  title="Save this entry as a new patient with fresh UMR"
+                >
+                  ➕ Save as New Patient
+                </button>
+                <button 
+                  type="button" 
+                  className="btn-reset-form-action"
+                  onClick={() => {
+                    setIsEditMode(false);
+                    setEditingPatient(null);
+                    setFormData(prev => ({
+                      ...prev,
+                      patientName: '',
+                      lastName: '',
+                      mobile: '',
+                      village: '',
+                      address: '',
+                      idNumber: '',
+                      parentOrHusband: '',
+                      healthIssue: ''
+                    }));
+                    showNotification("Cancelled edit mode.");
+                  }}
+                  style={{ background: '#ef4444', color: '#fff', borderColor: '#dc2626' }}
+                >
+                  ✕ Cancel
+                </button>
+              </>
+            ) : (
+              <>
+                <button type="submit" className="btn-green-save-prominent">
+                  💾 Save Appointment
+                </button>
+                <button 
+                  type="button" 
+                  className="btn-print-token-action"
+                  onClick={() => {
+                    if (!formData.patientName) {
+                      showNotification("Please enter patient name first.");
+                      return;
+                    }
+                    setPrintModal({
+                      type: 'reg',
+                      patient: {
+                        umrNo: `UMR${Math.floor(334250 + Math.random() * 50)}`,
+                        token: formData.token,
+                        patientName: `${formData.title} ${formData.patientName} ${formData.lastName}`.trim().toUpperCase(),
+                        genderAge: `${formData.gender.toUpperCase()}/${formData.years}yrs`,
+                        appointmentDate: formData.appointmentDate,
+                        consultant: formData.consultant,
+                        category: formData.category,
+                        phone: formData.mobile,
+                        regCash: formData.regFinalAmt,
+                        conCash: formData.consFinalAmt
+                      }
+                    });
+                  }}
+                >
+                  🖨️ Save & Print Token Slip
+                </button>
+                <button 
+                  type="button" 
+                  className="btn-reset-form-action"
+                  onClick={() => {
+                    setFormData(prev => ({
+                      ...prev,
+                      patientName: '',
+                      lastName: '',
+                      mobile: '',
+                      village: '',
+                      address: '',
+                      idNumber: '',
+                      parentOrHusband: '',
+                      healthIssue: ''
+                    }));
+                    showNotification("Form reset.");
+                  }}
+                >
+                  🔄 Reset Fields
+                </button>
+              </>
+            )}
           </div>
         </form>
       )}

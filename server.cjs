@@ -109,8 +109,8 @@ const server = http.createServer((req, res) => {
   const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   let pathname = decodeURIComponent(parsedUrl.pathname);
 
-  // Forward /api routes to Python PostgreSQL backend
-  if (pathname.startsWith('/api/')) {
+  // Forward /api and /patient routes to backend
+  if (pathname.startsWith('/api/') || pathname.startsWith('/patient/')) {
     return proxyApiRequest(req, res);
   }
 

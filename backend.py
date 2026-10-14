@@ -1462,19 +1462,138 @@ def update_patient_record():
 @app.route('/api/patient/queue', methods=['GET'])
 @app.route('/patient/patientQueue', methods=['GET'])
 def get_patient_queue():
-    """Return live appointment queue with UMR numbers, fees breakdown, and vital statistics."""
+    """Return live appointment queue strictly queried from at_pr_patient, at_pr_appt, and at_bills."""
+    global db_connected
+    if not db_connected:
+        init_database()
+
+    if db_connected:
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor(dictionary=True) if DB_TYPE == 'mysql' else conn.cursor()
+
+            # Exact query from PatientMapper.xml (getPatientQueue lines 446-760)
+            sql = """
+            SELECT 
+                p.patient_id AS patientId,
+                a.patient_appt_id AS apptId,
+                p.last_name AS lName,
+                p.patient_name AS pname,
+                a.vital_status AS vitalStatus,
+                a.file_status AS fileStatus,
+                a.loc_id AS locId,
+                'INDUS HEALTH CITY' AS locName,
+                'INDUS HEALTH CITY' AS location,
+                bill.bill_status AS status,
+                CASE 
+                    WHEN a.bill_status = '17' OR bill.bill_status = '17' THEN 'Paid'
+                    WHEN a.bill_status = '18' OR bill.bill_status = '18' THEN 'Pending'
+                    ELSE 'Paid'
+                END AS billStatus,
+                p.umr_num AS patientCode,
+                p.umr_num AS umrNo,
+                COALESCE(a.priority_no, 0) AS priorityNo,
+                TRIM(CONCAT(COALESCE(p.title, ''), ' ', COALESCE(p.patient_name, ''), ' ', COALESCE(p.last_name, ''))) AS patientName,
+                p.gender AS gender,
+                p.blood_grp AS bloodGrp,
+                p.blood_grp AS bloodGroup,
+                p.mob_num AS mobNum,
+                p.mob_num AS phone,
+                p.age AS age,
+                CONCAT(UPPER(COALESCE(p.gender, 'MALE')), '/', COALESCE(p.age, '0'), 'yrs') AS genderAge,
+                p.title AS ptitle,
+                p.title AS title,
+                p.age_d AS ageDays,
+                p.age_m AS ageMonths,
+                p.location_id AS locationId,
+                p.parent_name AS parentName,
+                p.care_by AS careBy,
+                p.care_by_name AS careByName,
+                p.patient_category_name AS pntCat,
+                p.patient_category AS patientCategory,
+                p.patient_category AS category,
+                CASE 
+                    WHEN a.appt_status_id = '159' THEN 'Waiting'
+                    WHEN a.appt_status_id = '42' THEN 'Visited'
+                    WHEN a.appt_status_id = '41' THEN 'Cancelled'
+                    ELSE 'Waiting'
+                END AS statusInfo,
+                a.op_num AS opCode,
+                a.op_num AS opId,
+                a.start_time AS startTime,
+                p.state AS state,
+                p.city AS city,
+                p.village AS village,
+                p.addr AS addr,
+                p.addr AS address,
+                p.marital_status AS maritalStatus,
+                p.religion AS religion,
+                p.id_proof_type AS idProofType,
+                p.id_proof_num AS idProofNum,
+                p.occupation AS occupation,
+                a.ref_type AS refType,
+                p.org_id AS orgId,
+                p.sms_status AS smsStatus,
+                p.sms_alert AS smsAlert,
+                p.dob AS dob,
+                p.ref_id AS refId,
+                p.patient_category AS patientCategoryId,
+                CASE 
+                    WHEN a.visit_type = '174' THEN 'NEWVISIT'
+                    WHEN a.visit_type = '175' THEN 'REVISIT'
+                    ELSE 'NEWVISIT'
+                END AS visitType,
+                a.doc_name AS docName,
+                a.doc_name AS consultant,
+                a.dept_name AS department,
+                COALESCE(bill.amt_received, a.amt_recd, 0.0) AS paidAmount,
+                p.nationality AS nationality,
+                a.diseases_desc AS problem,
+                a.token_num AS tokenNum,
+                a.token_num AS token,
+                DATE_FORMAT(a.schedule_dt, '%d-%b-%Y') AS apptDt,
+                DATE_FORMAT(a.schedule_dt, '%d-%b-%Y') AS appointmentDate,
+                COALESCE(a.reg_fee, 50.0) AS regFee,
+                COALESCE(a.cons_fee, 1000.0) AS consFee,
+                COALESCE(a.tot_amt, 1050.0) AS totAmt,
+                COALESCE(a.amt_recd, 1050.0) AS amtRecd,
+                COALESCE(a.reg_cash, 0.0) AS regAmoCash,
+                COALESCE(a.reg_cash, 0.0) AS regCash,
+                COALESCE(a.reg_card, 0.0) AS regAmoCard,
+                COALESCE(a.reg_card, 0.0) AS regCredit,
+                COALESCE(a.reg_upi, 0.0) AS regAmoUpi,
+                COALESCE(a.reg_upi, 0.0) AS regUpi,
+                COALESCE(a.con_cash, 0.0) AS conAmoCash,
+                COALESCE(a.con_cash, 0.0) AS conCash,
+                COALESCE(a.con_card, 0.0) AS conAmoCard,
+                COALESCE(a.con_card, 0.0) AS conCredit,
+                COALESCE(a.con_upi, 0.0) AS conAmoUpi,
+                COALESCE(a.con_upi, 0.0) AS conUpi,
+                bill.bill_id AS billId
+            FROM at_pr_patient p
+            LEFT JOIN at_pr_appt a ON p.patient_id = a.patient_id
+            LEFT JOIN at_bills bill ON bill.patient_id = p.patient_id
+            LEFT JOIN at_location l ON l.loc_id = a.loc_id
+            WHERE p.status_id = 34
+            ORDER BY a.priority_no DESC, a.patient_appt_id DESC, p.patient_id DESC
+            """
+            cur.execute(sql)
+            if DB_TYPE == 'mysql':
+                rows = cur.fetchall() or []
+            else:
+                desc = [col[0] for col in cur.description]
+                rows = [dict(zip(desc, r)) for r in cur.fetchall()]
+            cur.close()
+            conn.close()
+
+            if rows:
+                return jsonify(rows)
+        except Exception as e:
+            logger.warning("Database queue lookup failed: %s", e)
+
+    # Fallback to local storage (strictly real registered records, NO fake dummy seed)
     fallback = load_fallback_data()
-    queue = fallback.get('patientQueue')
-    if not queue:
-        # Seed initial queue if absent
-        queue = [
-            {"patientId": 1, "apptId": 101, "umrNo": "UMR334253", "patientCode": "UMR334253", "tokenNum": "1", "token": "1", "patientName": "VENKATA RAMANA", "genderAge": "MALE/45yrs", "gender": "MALE", "age": 45, "appointmentDate": "09-Oct-2026", "apptDt": "09-Oct-2026", "consultant": "SATYANARAYANA V VSN", "docName": "SATYANARAYANA V VSN", "category": "GENERAL", "billStatus": "Paid", "statusInfo": "Waiting", "regFee": 50, "consFee": 1000, "totAmt": 1050, "amtRecd": 1050, "regCash": 50, "regAmoCash": 50, "regCredit": 0, "regAmoCard": 0, "regUpi": 0, "regAmoUpi": 0, "conCash": 1000, "conAmoCash": 1000, "conCredit": 0, "conAmoCard": 0, "conUpi": 0, "conAmoUpi": 0, "phone": "9848022334", "mobNum": "9848022334"},
-            {"patientId": 2, "apptId": 102, "umrNo": "UMR334252", "patientCode": "UMR334252", "tokenNum": "CAR-104", "token": "CAR-104", "patientName": "TOTA RAMANA", "genderAge": "MALE/45yrs", "gender": "MALE", "age": 45, "appointmentDate": "08-Oct-2026", "apptDt": "08-Oct-2026", "consultant": "R LALITHA LA", "docName": "R LALITHA LA", "category": "GENERAL", "billStatus": "Paid", "statusInfo": "Waiting", "regFee": 50, "consFee": 800, "totAmt": 850, "amtRecd": 850, "regCash": 50, "regAmoCash": 50, "regCredit": 0, "regAmoCard": 0, "regUpi": 0, "regAmoUpi": 0, "conCash": 800, "conAmoCash": 800, "conCredit": 0, "conAmoCard": 0, "conUpi": 0, "conAmoUpi": 0, "phone": "9848123456", "mobNum": "9848123456"},
-            {"patientId": 3, "apptId": 103, "umrNo": "UMR334251", "patientCode": "UMR334251", "tokenNum": "ORT-082", "token": "ORT-082", "patientName": "JAYANTI PANIGRAHI", "genderAge": "FEMALE/58yrs", "gender": "FEMALE", "age": 58, "appointmentDate": "08-Oct-2026", "apptDt": "08-Oct-2026", "consultant": "RAKESH TUMULA RT", "docName": "RAKESH TUMULA RT", "category": "GENERAL", "billStatus": "Paid", "statusInfo": "Waiting", "regFee": 0, "consFee": 1450, "totAmt": 1450, "amtRecd": 1450, "regCash": 0, "regAmoCash": 0, "regCredit": 0, "regAmoCard": 0, "regUpi": 0, "regAmoUpi": 0, "conCash": 1450, "conAmoCash": 1450, "conCredit": 0, "conAmoCard": 0, "conUpi": 0, "conAmoUpi": 0, "phone": "9440112233", "mobNum": "9440112233"},
-            {"patientId": 4, "apptId": 104, "umrNo": "UMR334249", "patientCode": "UMR334249", "tokenNum": "CAR-105", "token": "CAR-105", "patientName": "LANKE DURGA", "genderAge": "FEMALE/35yrs", "gender": "FEMALE", "age": 35, "appointmentDate": "08-Oct-2026", "apptDt": "08-Oct-2026", "consultant": "ANIL KUMAR MAHAPATRO AKM", "docName": "ANIL KUMAR MAHAPATRO AKM", "category": "GENERAL", "billStatus": "Paid", "statusInfo": "Waiting", "regFee": 50, "consFee": 850, "totAmt": 900, "amtRecd": 900, "regCash": 50, "regAmoCash": 50, "regCredit": 0, "regAmoCard": 0, "regUpi": 0, "regAmoUpi": 0, "conCash": 850, "conAmoCash": 850, "conCredit": 0, "conAmoCard": 0, "conUpi": 0, "conAmoUpi": 0, "phone": "9989445566", "mobNum": "9989445566"}
-        ]
-        fallback["patientQueue"] = queue
-        save_fallback_data(fallback)
+    queue = fallback.get('patientQueue', [])
     return jsonify(queue)
 
 

@@ -44,6 +44,114 @@ public class PatientController {
     @Autowired
     private FallbackStorageService fallbackStorageService;
 
+    @Autowired(required = false)
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
+    // Exact SQL query from PatientMapper.xml (lines 446-760 getPatientQueue)
+    private static final String PATIENT_QUEUE_QUERY =
+            "SELECT " +
+            "    p.patient_id AS patientId, " +
+            "    a.patient_appt_id AS apptId, " +
+            "    p.last_name AS lName, " +
+            "    p.patient_name AS pname, " +
+            "    a.vital_status AS vitalStatus, " +
+            "    a.file_status AS fileStatus, " +
+            "    CONCAT(COALESCE(l.loc_name, 'INDUS HEALTH CITY')) AS location, " +
+            "    a.loc_id AS locId, " +
+            "    COALESCE(l.loc_name, 'INDUS HEALTH CITY') AS locName, " +
+            "    bill.bill_status AS status, " +
+            "    p.umr_num AS patientCode, " +
+            "    p.umr_num AS umrNo, " +
+            "    COALESCE(a.priority_no, 0) AS priorityNo, " +
+            "    TRIM(CONCAT(COALESCE(p.title, ''), ' ', COALESCE(p.patient_name, ''), ' ', COALESCE(p.last_name, ''))) AS patientName, " +
+            "    p.gender AS gender, " +
+            "    p.blood_grp AS bloodGrp, " +
+            "    p.blood_grp AS bloodGroup, " +
+            "    p.mob_num AS mobNum, " +
+            "    p.mob_num AS phone, " +
+            "    p.age AS age, " +
+            "    CONCAT(UPPER(COALESCE(p.gender, 'MALE')), '/', COALESCE(p.age, '0'), 'yrs') AS genderAge, " +
+            "    p.title AS ptitle, " +
+            "    p.title AS title, " +
+            "    p.age_d AS ageDays, " +
+            "    p.age_m AS ageMonths, " +
+            "    p.location_id AS locationId, " +
+            "    p.parent_name AS parentName, " +
+            "    p.care_by AS careBy, " +
+            "    p.care_by_name AS careByName, " +
+            "    p.patient_category_name AS pntCat, " +
+            "    p.patient_category AS patientCategory, " +
+            "    p.patient_category AS category, " +
+            "    CASE " +
+            "        WHEN a.appt_status_id = '159' THEN 'Waiting' " +
+            "        WHEN a.appt_status_id = '42' THEN 'Visited' " +
+            "        WHEN a.appt_status_id = '41' THEN 'Cancelled' " +
+            "        ELSE 'Waiting' " +
+            "    END AS statusInfo, " +
+            "    a.op_num AS opCode, " +
+            "    a.op_num AS opId, " +
+            "    a.start_time AS startTime, " +
+            "    p.state AS state, " +
+            "    p.city AS city, " +
+            "    p.village AS village, " +
+            "    p.addr AS addr, " +
+            "    p.addr AS address, " +
+            "    p.marital_status AS maritalStatus, " +
+            "    p.religion AS religion, " +
+            "    p.id_proof_type AS idProofType, " +
+            "    p.id_proof_num AS idProofNum, " +
+            "    p.occupation AS occupation, " +
+            "    a.ref_type AS refType, " +
+            "    p.org_id AS orgId, " +
+            "    p.sms_status AS smsStatus, " +
+            "    p.sms_alert AS smsAlert, " +
+            "    p.dob AS dob, " +
+            "    p.ref_id AS refId, " +
+            "    p.patient_category AS patientCategoryId, " +
+            "    CASE " +
+            "        WHEN a.visit_type = '174' THEN 'NEWVISIT' " +
+            "        WHEN a.visit_type = '175' THEN 'REVISIT' " +
+            "        ELSE 'NEWVISIT' " +
+            "    END AS visitType, " +
+            "    a.doc_name AS docName, " +
+            "    a.doc_name AS consultant, " +
+            "    a.dept_name AS department, " +
+            "    COALESCE(bill.amt_received, a.amt_recd, 0.0) AS paidAmount, " +
+            "    p.nationality AS nationality, " +
+            "    a.diseases_desc AS problem, " +
+            "    a.token_num AS tokenNum, " +
+            "    a.token_num AS token, " +
+            "    DATE_FORMAT(a.schedule_dt, '%d-%b-%Y') AS apptDt, " +
+            "    DATE_FORMAT(a.schedule_dt, '%d-%b-%Y') AS appointmentDate, " +
+            "    CASE " +
+            "        WHEN a.bill_status = '17' OR bill.bill_status = '17' THEN 'Paid' " +
+            "        WHEN a.bill_status = '18' OR bill.bill_status = '18' THEN 'Pending' " +
+            "        ELSE 'Paid' " +
+            "    END AS billStatus, " +
+            "    COALESCE(a.reg_fee, 50.0) AS regFee, " +
+            "    COALESCE(a.cons_fee, 1000.0) AS consFee, " +
+            "    COALESCE(a.tot_amt, 1050.0) AS totAmt, " +
+            "    COALESCE(a.amt_recd, 1050.0) AS amtRecd, " +
+            "    COALESCE(a.reg_cash, 0.0) AS regAmoCash, " +
+            "    COALESCE(a.reg_cash, 0.0) AS regCash, " +
+            "    COALESCE(a.reg_card, 0.0) AS regAmoCard, " +
+            "    COALESCE(a.reg_card, 0.0) AS regCredit, " +
+            "    COALESCE(a.reg_upi, 0.0) AS regAmoUpi, " +
+            "    COALESCE(a.reg_upi, 0.0) AS regUpi, " +
+            "    COALESCE(a.con_cash, 0.0) AS conAmoCash, " +
+            "    COALESCE(a.con_cash, 0.0) AS conCash, " +
+            "    COALESCE(a.con_card, 0.0) AS conAmoCard, " +
+            "    COALESCE(a.con_card, 0.0) AS conCredit, " +
+            "    COALESCE(a.con_upi, 0.0) AS conAmoUpi, " +
+            "    COALESCE(a.con_upi, 0.0) AS conUpi, " +
+            "    bill.bill_id AS billId " +
+            "FROM at_pr_patient p " +
+            "LEFT JOIN at_pr_appt a ON p.patient_id = a.patient_id " +
+            "LEFT JOIN at_bills bill ON bill.patient_id = p.patient_id " +
+            "LEFT JOIN at_location l ON l.loc_id = a.loc_id " +
+            "WHERE p.status_id = 34 " +
+            "ORDER BY a.priority_no DESC, a.patient_appt_id DESC, p.patient_id DESC";
+
     // =========================================================================
     // 1. LEGACY & MODERN REGISTRATION (Save Patient & Create Appointment/Bill)
     // =========================================================================
@@ -542,7 +650,19 @@ public class PatientController {
 
         List<Map<String, Object>> result = new ArrayList<>();
 
-        // 1. Try fetching from DB (at_pr_appt joined with at_pr_patient)
+        // 1. Try Native SQL Query directly from PatientMapper.xml
+        if (jdbcTemplate != null) {
+            try {
+                List<Map<String, Object>> rows = jdbcTemplate.queryForList(PATIENT_QUEUE_QUERY);
+                if (rows != null && !rows.isEmpty()) {
+                    return ResponseEntity.ok(rows);
+                }
+            } catch (Exception e) {
+                logger.warn("Native query on at_hospital failed, checking JPA repository: {}", e.getMessage());
+            }
+        }
+
+        // 2. Try fetching from JPA repositories (at_pr_appt joined with at_pr_patient)
         try {
             List<AtPrAppt> appts = atPrApptRepository.findAllByOrderByPatientApptIdDesc();
             if (!appts.isEmpty()) {
@@ -610,7 +730,7 @@ public class PatientController {
             logger.warn("Database queue lookup failed, using fallback queue: {}", e.getMessage());
         }
 
-        // 2. Fallback Queue
+        // 3. Fallback Queue (strictly real registered records from cache, NO fake dummy seed)
         Map<String, Object> fallback = fallbackStorageService.loadFallbackData();
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> fallbackQueue = (List<Map<String, Object>>) fallback.get("patientQueue");
@@ -618,12 +738,8 @@ public class PatientController {
             return ResponseEntity.ok(fallbackQueue);
         }
 
-        // Initialize default seed queue if empty
-        List<Map<String, Object>> seedQueue = createSeedQueue();
-        fallback.put("patientQueue", seedQueue);
-        fallbackStorageService.saveFallbackData(fallback);
-
-        return ResponseEntity.ok(seedQueue);
+        // Return empty list if no patient records exist (zero dummy mock records)
+        return ResponseEntity.ok(Collections.emptyList());
     }
 
     // =========================================================================
@@ -891,59 +1007,6 @@ public class PatientController {
         res.put("token", token);
         res.put("vitals", vitalsData);
         return ResponseEntity.ok(res);
-    }
-
-    private List<Map<String, Object>> createSeedQueue() {
-        List<Map<String, Object>> list = new ArrayList<>();
-        list.add(createSeedItem(1, "UMR334253", "1", "VENKATA RAMANA", "MALE/45yrs", "MALE", 45, "09-Oct-2026", "SATYANARAYANA V VSN", "GENERAL", "Paid", 50, 0, 0, 1000, 0, 0, "9848022334"));
-        list.add(createSeedItem(2, "UMR334252", "CAR-104", "TOTA RAMANA", "MALE/45yrs", "MALE", 45, "08-Oct-2026", "R LALITHA LA", "GENERAL", "Paid", 50, 0, 0, 800, 0, 0, "9848123456"));
-        list.add(createSeedItem(3, "UMR334251", "ORT-082", "JAYANTI PANIGRAHI", "FEMALE/58yrs", "FEMALE", 58, "08-Oct-2026", "RAKESH TUMULA RT", "GENERAL", "Paid", 0, 0, 0, 1450, 0, 0, "9440112233"));
-        list.add(createSeedItem(4, "UMR334249", "CAR-105", "LANKE DURGA", "FEMALE/35yrs", "FEMALE", 35, "08-Oct-2026", "ANIL KUMAR MAHAPATRO AKM", "GENERAL", "Paid", 50, 0, 0, 850, 0, 0, "9989445566"));
-        list.add(createSeedItem(5, "UMR334248", "GEN-211", "ASHOK KUMAR JENA", "MALE/48yrs", "MALE", 48, "08-Oct-2026", "R LALITHA LA", "GENERAL", "Paid", 50, 0, 0, 850, 0, 0, "9866123987"));
-        list.add(createSeedItem(6, "UMR334247", "GEN-212", "KAMA MAJHI", "MALE/31yrs", "MALE", 31, "08-Oct-2026", "RAMESH NAIDU M RNM", "GENERAL", "Paid", 50, 0, 0, 600, 0, 0, "9701234567"));
-        return list;
-    }
-
-    private Map<String, Object> createSeedItem(int id, String umr, String token, String name, String genderAge, String gender, int age, String dt, String doc, String cat, String billSts, double rc, double rcr, double ru, double cc, double ccr, double cu, String phone) {
-        Map<String, Object> m = new LinkedHashMap<>();
-        m.put("patientId", id);
-        m.put("apptId", 100 + id);
-        m.put("umrNo", umr);
-        m.put("patientCode", umr);
-        m.put("tokenNum", token);
-        m.put("token", token);
-        m.put("patientName", name);
-        m.put("pname", name);
-        m.put("genderAge", genderAge);
-        m.put("gender", gender);
-        m.put("age", age);
-        m.put("appointmentDate", dt);
-        m.put("apptDt", dt);
-        m.put("consultant", doc);
-        m.put("docName", doc);
-        m.put("category", cat);
-        m.put("patientCategory", cat);
-        m.put("billStatus", billSts);
-        m.put("statusInfo", "Waiting");
-        m.put("regFee", rc + rcr + ru);
-        m.put("consFee", cc + ccr + cu);
-        m.put("totAmt", rc + rcr + ru + cc + ccr + cu);
-        m.put("amtRecd", rc + rcr + ru + cc + ccr + cu);
-        m.put("regAmoCash", rc);
-        m.put("regCash", rc);
-        m.put("regAmoCard", rcr);
-        m.put("regCredit", rcr);
-        m.put("regAmoUpi", ru);
-        m.put("regUpi", ru);
-        m.put("conAmoCash", cc);
-        m.put("conCash", cc);
-        m.put("conAmoCard", ccr);
-        m.put("conCredit", ccr);
-        m.put("conAmoUpi", cu);
-        m.put("conUpi", cu);
-        m.put("phone", phone);
-        m.put("mobNum", phone);
-        return m;
     }
 
     private Map<String, Object> convertPatientToRecord(Patient p) {

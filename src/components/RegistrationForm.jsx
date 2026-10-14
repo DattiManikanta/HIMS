@@ -1,188 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 
-// Baseline patient appointments matching Indus Hospitals Screenshot 1 & 2
-const INITIAL_APPOINTMENTS = [
-  {
-    umrNo: 'UMR334253',
-    token: '1',
-    patientName: 'VENKATA RAMANA',
-    genderAge: 'MALE/45yrs',
-    gender: 'MALE',
-    age: 45,
-    appointmentDate: '09-Oct-2026',
-    consultant: 'SATYANARAYANA V VSN / ',
-    category: 'GENERAL',
-    billStatus: 'PAID',
-    regCash: 50,
-    regCredit: 0,
-    regUpi: 0,
-    conCash: 1000,
-    conCredit: 0,
-    conUpi: 0,
-    phone: '9848022334',
-    vitals: { bp: '120/80', pulse: '72', spo2: '99%', temp: '98.4', weight: '68' }
-  },
-  {
-    umrNo: 'UMR334252',
-    token: 'CAR-104',
-    patientName: 'TOTA RAMANA',
-    genderAge: 'MALE/45yrs',
-    gender: 'MALE',
-    age: 45,
-    appointmentDate: '08-Oct-2026',
-    consultant: 'R LALITHA LA',
-    category: 'GENERAL',
-    billStatus: 'PAID',
-    regCash: 50,
-    regCredit: 0,
-    regUpi: 0,
-    conCash: 800,
-    conCredit: 0,
-    conUpi: 0,
-    phone: '9848123456',
-    vitals: { bp: '120/80', pulse: '74', spo2: '99%', temp: '98.4', weight: '68' }
-  },
-  {
-    umrNo: 'UMR334251',
-    token: 'ORT-082',
-    patientName: 'JAYANTI PANIGRAHI',
-    genderAge: 'FEMALE/58yrs',
-    gender: 'FEMALE',
-    age: 58,
-    appointmentDate: '08-Oct-2026',
-    consultant: 'RAKESH TUMULA RT',
-    category: 'GENERAL',
-    billStatus: 'PAID',
-    regCash: 0,
-    regCredit: 0,
-    regUpi: 0,
-    conCash: 1450,
-    conCredit: 0,
-    conUpi: 0,
-    phone: '9440112233',
-    vitals: { bp: '130/85', pulse: '78', spo2: '98%', temp: '98.6', weight: '72' }
-  },
-  {
-    umrNo: 'UMR334249',
-    token: 'CAR-105',
-    patientName: 'LANKE DURGA',
-    genderAge: 'FEMALE/35yrs',
-    gender: 'FEMALE',
-    age: 35,
-    appointmentDate: '08-Oct-2026',
-    consultant: 'ANIL KUMAR MAHAPATRO AKM',
-    category: 'GENERAL',
-    billStatus: 'PAID',
-    regCash: 50,
-    regCredit: 0,
-    regUpi: 0,
-    conCash: 850,
-    conCredit: 0,
-    conUpi: 0,
-    phone: '9989445566',
-    vitals: { bp: '118/76', pulse: '72', spo2: '99%', temp: '98.4', weight: '58' }
-  },
-  {
-    umrNo: 'UMR334248',
-    token: 'GEN-211',
-    patientName: 'ASHOK KUMAR JENA',
-    genderAge: 'MALE/48yrs',
-    gender: 'MALE',
-    age: 48,
-    appointmentDate: '08-Oct-2026',
-    consultant: 'R LALITHA LA',
-    category: 'GENERAL',
-    billStatus: 'PAID',
-    regCash: 50,
-    regCredit: 0,
-    regUpi: 0,
-    conCash: 850,
-    conCredit: 0,
-    conUpi: 0,
-    phone: '9866123987',
-    vitals: { bp: '124/80', pulse: '76', spo2: '98%', temp: '98.6', weight: '75' }
-  },
-  {
-    umrNo: 'UMR334247',
-    token: 'GEN-212',
-    patientName: 'KAMA MAJHI',
-    genderAge: 'MALE/31yrs',
-    gender: 'MALE',
-    age: 31,
-    appointmentDate: '08-Oct-2026',
-    consultant: 'RAMESH NAIDU M RNM',
-    category: 'GENERAL',
-    billStatus: 'PAID',
-    regCash: 50,
-    regCredit: 0,
-    regUpi: 0,
-    conCash: 600,
-    conCredit: 0,
-    conUpi: 0,
-    phone: '9701234567',
-    vitals: { bp: '115/75', pulse: '70', spo2: '99%', temp: '98.2', weight: '64' }
-  },
-  {
-    umrNo: 'UMR334246',
-    token: 'CAR-106',
-    patientName: 'PYLA CHITTAMMA',
-    genderAge: 'FEMALE/70yrs',
-    gender: 'FEMALE',
-    age: 70,
-    appointmentDate: '08-Oct-2026',
-    consultant: 'R LALITHA LA',
-    category: 'GENERAL',
-    billStatus: 'PAID',
-    regCash: 50,
-    regCredit: 0,
-    regUpi: 0,
-    conCash: 800,
-    conCredit: 0,
-    conUpi: 0,
-    phone: '9849223344',
-    vitals: { bp: '140/90', pulse: '82', spo2: '97%', temp: '98.4', weight: '60' }
-  },
-  {
-    umrNo: 'UMR334245',
-    token: 'GEN-213',
-    patientName: 'SUREN MOHANTY',
-    genderAge: 'MALE/40yrs',
-    gender: 'MALE',
-    age: 40,
-    appointmentDate: '08-Oct-2026',
-    consultant: 'RAMESH NAIDU M RNM',
-    category: 'GENERAL',
-    billStatus: 'PAID',
-    regCash: 50,
-    regCredit: 0,
-    regUpi: 0,
-    conCash: 650,
-    conCredit: 0,
-    conUpi: 0,
-    phone: '9177334455',
-    vitals: { bp: '122/82', pulse: '75', spo2: '99%', temp: '98.5', weight: '71' }
-  },
-  {
-    umrNo: 'UMR334244',
-    token: 'ORT-083',
-    patientName: 'TANGUDU APPARAO',
-    genderAge: 'MALE/52yrs',
-    gender: 'MALE',
-    age: 52,
-    appointmentDate: '08-Oct-2026',
-    consultant: 'ANIL KUMAR MAHAPATRO AKM',
-    category: 'GENERAL',
-    billStatus: 'PAID',
-    regCash: 50,
-    regCredit: 0,
-    regUpi: 0,
-    conCash: 1450,
-    conCredit: 0,
-    conUpi: 0,
-    phone: '9948556677',
-    vitals: { bp: '128/84', pulse: '76', spo2: '98%', temp: '98.6', weight: '80' }
-  }
-];
+// Patient appointments queue initialized empty; strictly populated query-wise from database
+const INITIAL_APPOINTMENTS = [];
 
 const CONSULTANTS_ROSTER = [
   { name: 'SATYANARAYANA V VSN / ', code: 'EMP00006', spec: 'NEUROLOGIST', fee: 1000, depCode: 'NEU' },
@@ -208,14 +27,694 @@ function formatSlotTime(totalMins) {
   return `${pad(displayH)}:${pad(m)} ${ampm}`;
 }
 
-// Generate slots for a doctor & date matching Indus screenshot
+const MONTH_NAMES_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTH_NAMES_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+function formatToDdMmmYyyy(date) {
+  if (!date) return '';
+  const d = (date instanceof Date) ? date : new Date(date);
+  if (isNaN(d.getTime())) return '';
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = MONTH_NAMES_SHORT[d.getMonth()];
+  const year = d.getFullYear();
+  return `${day}-${month}-${year}`;
+}
+
+function formatToYyyyMmDd(date) {
+  if (!date) return '';
+  const d = (date instanceof Date) ? date : new Date(date);
+  if (isNaN(d.getTime())) return '';
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${year}-${month}-${day}`;
+}
+
+function parseAnyDate(str) {
+  if (!str) return null;
+  if (str instanceof Date) return isNaN(str.getTime()) ? null : str;
+  const s = String(str).trim();
+  // YYYY-MM-DD
+  if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(s)) {
+    const parts = s.split('-').map(Number);
+    return new Date(parts[0], parts[1] - 1, parts[2]);
+  }
+  // DD-MMM-YYYY (e.g. 14-Oct-2026)
+  const parts = s.split('-');
+  if (parts.length === 3) {
+    const d = Number(parts[0]);
+    const m = MONTH_NAMES_SHORT.findIndex(x => x.toLowerCase() === parts[1].toLowerCase());
+    const y = Number(parts[2]);
+    if (!isNaN(d) && m !== -1 && !isNaN(y)) {
+      return new Date(y, m, d);
+    }
+  }
+  // DD/MM/YYYY
+  const slashParts = s.split('/');
+  if (slashParts.length === 3) {
+    const d = Number(slashParts[0]);
+    const m = Number(slashParts[1]) - 1;
+    const y = Number(slashParts[2]);
+    if (!isNaN(d) && !isNaN(m) && !isNaN(y)) {
+      return new Date(y, m, d);
+    }
+  }
+  const dt = new Date(s);
+  return isNaN(dt.getTime()) ? null : dt;
+}
+
+// Age in Years, Months, Days calculation matching patientQueue.jsp lines 6511-6535
+function getAgeInYMD(dobStr) {
+  if (!dobStr) return { years: '', months: 0, days: 0 };
+  const dob = parseAnyDate(dobStr);
+  if (!dob) return { years: '', months: 0, days: 0 };
+  const today = new Date();
+
+  let years = today.getFullYear() - dob.getFullYear();
+  let months = today.getMonth() - dob.getMonth();
+  let days = today.getDate() - dob.getDate();
+
+  if (days < 0) {
+    months--;
+    const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+    days += prevMonth.getDate();
+  }
+
+  if (months < 0) {
+    years--;
+    months += 12;
+  }
+
+  return {
+    years: Math.max(0, years),
+    months: Math.max(0, months),
+    days: Math.max(0, days)
+  };
+}
+
+// Format today's date into 'dd-MMM-yyyy' (e.g. 14-Oct-2026)
+function getTodayDateFormatted() {
+  return formatToDdMmmYyyy(new Date());
+}
+
+// Format today's date range into 'D Month, YYYY - D Month, YYYY'
+function getTodayDateRangeFormatted() {
+  const d = new Date();
+  const day = d.getDate();
+  const month = MONTH_NAMES_FULL[d.getMonth()];
+  const year = d.getFullYear();
+  return `${day} ${month}, ${year} - ${day} ${month}, ${year}`;
+}
+
+// Custom DatePicker (matches bootstrap-datepicker from patientQueue.jsp)
+function CustomDatePicker({
+  value,
+  onChange,
+  placeholder = "Select date",
+  format = "dd-MMM-yyyy", // "dd-MMM-yyyy" or "yyyy-mm-dd"
+  className = "",
+  id,
+  showYearSelect = false,
+  alignRight = false,
+  disableFuture = false
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = React.useRef(null);
+
+  const initialDate = parseAnyDate(value) || new Date();
+  const [viewYear, setViewYear] = useState(initialDate.getFullYear());
+  const [viewMonth, setViewMonth] = useState(initialDate.getMonth());
+
+  useEffect(() => {
+    const d = parseAnyDate(value);
+    if (d) {
+      setViewYear(d.getFullYear());
+      setViewMonth(d.getMonth());
+    }
+  }, [value]);
+
+  useEffect(() => {
+    const handleOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener('mousedown', handleOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [isOpen]);
+
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const firstDayOfWeek = new Date(viewYear, viewMonth, 1).getDay(); // 0 is Sun
+
+  const handlePrevMonth = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (viewMonth === 0) {
+      setViewMonth(11);
+      setViewYear(y => y - 1);
+    } else {
+      setViewMonth(m => m - 1);
+    }
+  };
+
+  const handleNextMonth = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (viewMonth === 11) {
+      setViewMonth(0);
+      setViewYear(y => y + 1);
+    } else {
+      setViewMonth(m => m + 1);
+    }
+  };
+
+  const handleSelectDay = (dayNum, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const selected = new Date(viewYear, viewMonth, dayNum);
+    const formatted = format === "yyyy-mm-dd" ? formatToYyyyMmDd(selected) : formatToDdMmmYyyy(selected);
+    onChange(formatted);
+    setIsOpen(false);
+  };
+
+  const handleSelectToday = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const today = new Date();
+    setViewYear(today.getFullYear());
+    setViewMonth(today.getMonth());
+    const formatted = format === "yyyy-mm-dd" ? formatToYyyyMmDd(today) : formatToDdMmmYyyy(today);
+    onChange(formatted);
+    setIsOpen(false);
+  };
+
+  const handleClear = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onChange('');
+    setIsOpen(false);
+  };
+
+  // Year options for fast dropdown
+  const yearsOptions = [];
+  const startYr = showYearSelect ? 1920 : 2020;
+  const endYr = 2035;
+  for (let y = endYr; y >= startYr; y--) {
+    yearsOptions.push(y);
+  }
+
+  // Selected date comparison
+  const parsedVal = parseAnyDate(value);
+  const isSelected = (dayNum) => {
+    if (!parsedVal) return false;
+    return (
+      parsedVal.getFullYear() === viewYear &&
+      parsedVal.getMonth() === viewMonth &&
+      parsedVal.getDate() === dayNum
+    );
+  };
+
+  const today = new Date();
+  const isToday = (dayNum) => {
+    return (
+      today.getFullYear() === viewYear &&
+      today.getMonth() === viewMonth &&
+      today.getDate() === dayNum
+    );
+  };
+
+  const isFuture = (dayNum) => {
+    const d = new Date(viewYear, viewMonth, dayNum);
+    d.setHours(0, 0, 0, 0);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return d > now;
+  };
+
+  return (
+    <div className="hims-datepicker-container" ref={containerRef}>
+      <div className="hims-datepicker-input-wrap">
+        <button
+          type="button"
+          className="hims-datepicker-icon-btn"
+          onClick={() => setIsOpen(!isOpen)}
+          title="Open Calendar Date Picker"
+        >
+          📅
+        </button>
+        <input
+          type="text"
+          id={id}
+          value={value || ''}
+          onChange={(e) => onChange(e.target.value)}
+          onClick={() => setIsOpen(true)}
+          placeholder={placeholder}
+          className={`hims-datepicker-input ${className}`}
+          autoComplete="off"
+        />
+      </div>
+
+      {isOpen && (
+        <div className={`hims-datepicker-dropdown ${alignRight ? 'align-right' : ''}`} onClick={(e) => e.stopPropagation()}>
+          <div className="hims-dp-header">
+            <button type="button" className="hims-dp-nav-btn" onClick={handlePrevMonth} title="Previous Month">
+              ◀
+            </button>
+            <div className="hims-dp-title">
+              <select
+                value={viewMonth}
+                onChange={(e) => setViewMonth(Number(e.target.value))}
+                className="hims-dp-select"
+              >
+                {MONTH_NAMES_SHORT.map((name, i) => (
+                  <option key={name} value={i}>{MONTH_NAMES_FULL[i]}</option>
+                ))}
+              </select>
+              <select
+                value={viewYear}
+                onChange={(e) => setViewYear(Number(e.target.value))}
+                className="hims-dp-select"
+              >
+                {yearsOptions.map((y) => (
+                  <option key={y} value={y}>{y}</option>
+                ))}
+              </select>
+            </div>
+            <button type="button" className="hims-dp-nav-btn" onClick={handleNextMonth} title="Next Month">
+              ▶
+            </button>
+          </div>
+
+          <div className="hims-dp-grid">
+            {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((w) => (
+              <div key={w} className="hims-dp-weekday">{w}</div>
+            ))}
+            {Array.from({ length: firstDayOfWeek }).map((_, i) => (
+              <div key={`empty-${i}`} className="hims-dp-day empty" />
+            ))}
+            {Array.from({ length: daysInMonth }).map((_, i) => {
+              const dayNum = i + 1;
+              const sel = isSelected(dayNum);
+              const tod = isToday(dayNum);
+              const fut = disableFuture && isFuture(dayNum);
+              return (
+                <button
+                  type="button"
+                  key={dayNum}
+                  disabled={fut}
+                  onClick={(e) => !fut && handleSelectDay(dayNum, e)}
+                  className={`hims-dp-day ${sel ? 'selected' : ''} ${tod ? 'today' : ''} ${fut ? 'disabled' : ''}`}
+                >
+                  {dayNum}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="hims-dp-footer">
+            <button type="button" className="hims-dp-footer-btn" onClick={handleSelectToday}>
+              Today
+            </button>
+            <button type="button" className="hims-dp-footer-btn" onClick={handleClear}>
+              Clear
+            </button>
+            <button type="button" className="hims-dp-footer-btn" onClick={() => setIsOpen(false)}>
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+// Custom DateRangePicker matching #reportRangeDiv in patientQueue.jsp (lines 397-414 & 14060-14120)
+function CustomDateRangePicker({
+  value,
+  onChange,
+  onRangeApply
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = React.useRef(null);
+
+  const today = new Date();
+  const [rangeStart, setRangeStart] = useState(today);
+  const [rangeEnd, setRangeEnd] = useState(today);
+  const [activePreset, setActivePreset] = useState('today');
+
+  // Month navigation for left calendar
+  const [viewYear, setViewYear] = useState(today.getFullYear());
+  const [viewMonth, setViewMonth] = useState(today.getMonth());
+
+  // Fast manual input dates
+  const [inputFrom, setInputFrom] = useState(formatToDdMmmYyyy(today));
+  const [inputTo, setInputTo] = useState(formatToDdMmmYyyy(today));
+
+  useEffect(() => {
+    const handleOutside = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener('mousedown', handleOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [isOpen]);
+
+  const applyRange = (start, end, presetName = '') => {
+    const s = start || new Date();
+    const e = end || s;
+    const startStr = `${s.getDate()} ${MONTH_NAMES_FULL[s.getMonth()]}, ${s.getFullYear()}`;
+    const endStr = `${e.getDate()} ${MONTH_NAMES_FULL[e.getMonth()]}, ${e.getFullYear()}`;
+    const rangeText = `${startStr} - ${endStr}`;
+    setRangeStart(s);
+    setRangeEnd(e);
+    setInputFrom(formatToDdMmmYyyy(s));
+    setInputTo(formatToDdMmmYyyy(e));
+    if (presetName) setActivePreset(presetName);
+    onChange(rangeText);
+    if (onRangeApply) onRangeApply(s, e);
+    setIsOpen(false);
+  };
+
+  const selectPreset = (type) => {
+    const t = new Date();
+    let start = new Date(t);
+    let end = new Date(t);
+
+    if (type === 'today') {
+      start = t;
+      end = t;
+    } else if (type === 'yesterday') {
+      start = new Date(t);
+      start.setDate(t.getDate() - 1);
+      end = new Date(start);
+    } else if (type === 'last7') {
+      start = new Date(t);
+      start.setDate(t.getDate() - 6);
+      end = t;
+    } else if (type === 'last30') {
+      start = new Date(t);
+      start.setDate(t.getDate() - 29);
+      end = t;
+    } else if (type === 'thisMonth') {
+      start = new Date(t.getFullYear(), t.getMonth(), 1);
+      end = new Date(t.getFullYear(), t.getMonth() + 1, 0);
+    } else if (type === 'last6Months') {
+      start = new Date(t.getFullYear(), t.getMonth() - 6, 1);
+      end = t;
+    } else if (type === 'all') {
+      setActivePreset('all');
+      onChange("All Appointments");
+      if (onRangeApply) onRangeApply(null, null);
+      setIsOpen(false);
+      return;
+    }
+
+    applyRange(start, end, type);
+  };
+
+  const handleDayClick = (date) => {
+    setActivePreset('custom');
+    if (!rangeStart || (rangeStart && rangeEnd)) {
+      setRangeStart(date);
+      setRangeEnd(null);
+      setInputFrom(formatToDdMmmYyyy(date));
+    } else {
+      if (date < rangeStart) {
+        setRangeEnd(rangeStart);
+        setRangeStart(date);
+        setInputFrom(formatToDdMmmYyyy(date));
+        setInputTo(formatToDdMmmYyyy(rangeStart));
+      } else {
+        setRangeEnd(date);
+        setInputTo(formatToDdMmmYyyy(date));
+      }
+    }
+  };
+
+  const isInRange = (d) => {
+    if (!rangeStart || !rangeEnd) return false;
+    const s = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), rangeStart.getDate()).getTime();
+    const e = new Date(rangeEnd.getFullYear(), rangeEnd.getMonth(), rangeEnd.getDate()).getTime();
+    const cur = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    return cur > s && cur < e;
+  };
+
+  const isStart = (d) => {
+    if (!rangeStart) return false;
+    return (
+      d.getFullYear() === rangeStart.getFullYear() &&
+      d.getMonth() === rangeStart.getMonth() &&
+      d.getDate() === rangeStart.getDate()
+    );
+  };
+
+  const isEnd = (d) => {
+    if (!rangeEnd) return false;
+    return (
+      d.getFullYear() === rangeEnd.getFullYear() &&
+      d.getMonth() === rangeEnd.getMonth() &&
+      d.getDate() === rangeEnd.getDate()
+    );
+  };
+
+  const handleApplyCustom = () => {
+    const s = parseAnyDate(inputFrom) || rangeStart || new Date();
+    const e = parseAnyDate(inputTo) || rangeEnd || s;
+    applyRange(s, e, 'custom');
+  };
+
+  const renderMonthCalendar = (y, m, isLeft) => {
+    const daysCount = new Date(y, m + 1, 0).getDate();
+    const firstDay = new Date(y, m, 1).getDay();
+
+    return (
+      <div className="hims-dr-cal-box" key={`${y}-${m}`}>
+        <div className="hims-dr-cal-header">
+          {isLeft ? (
+            <button
+              type="button"
+              className="hims-dp-nav-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (viewMonth === 0) {
+                  setViewMonth(11);
+                  setViewYear(prev => prev - 1);
+                } else {
+                  setViewMonth(prev => prev - 1);
+                }
+              }}
+              title="Previous Month"
+            >
+              ◀
+            </button>
+          ) : <div style={{ width: '24px' }}></div>}
+          <span style={{ fontWeight: '700', fontSize: '12px', color: '#1e293b' }}>
+            {MONTH_NAMES_FULL[m]} {y}
+          </span>
+          {!isLeft ? (
+            <button
+              type="button"
+              className="hims-dp-nav-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (viewMonth === 11) {
+                  setViewMonth(0);
+                  setViewYear(prev => prev + 1);
+                } else {
+                  setViewMonth(prev => prev + 1);
+                }
+              }}
+              title="Next Month"
+            >
+              ▶
+            </button>
+          ) : <div style={{ width: '24px' }}></div>}
+        </div>
+
+        <div className="hims-dr-grid">
+          {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(w => (
+            <div key={w} className="hims-dr-weekday">{w}</div>
+          ))}
+          {Array.from({ length: firstDay }).map((_, i) => (
+            <div key={`empty-${i}`} className="hims-dr-day-cell empty" />
+          ))}
+          {Array.from({ length: daysCount }).map((_, i) => {
+            const dayNum = i + 1;
+            const thisDate = new Date(y, m, dayNum);
+            const startSelected = isStart(thisDate);
+            const endSelected = isEnd(thisDate);
+            const inRangeSelected = isInRange(thisDate);
+            const isTodayCell = (
+              today.getFullYear() === y &&
+              today.getMonth() === m &&
+              today.getDate() === dayNum
+            );
+
+            return (
+              <button
+                type="button"
+                key={dayNum}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDayClick(thisDate);
+                }}
+                className={`hims-dr-day-cell ${startSelected ? 'range-start' : ''} ${endSelected ? 'range-end' : ''} ${inRangeSelected ? 'in-range' : ''} ${isTodayCell ? 'today-dot' : ''}`}
+                title={formatToDdMmmYyyy(thisDate)}
+              >
+                {dayNum}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const rightYear = viewMonth === 11 ? viewYear + 1 : viewYear;
+  const rightMonth = viewMonth === 11 ? 0 : viewMonth + 1;
+
+  return (
+    <div className="hims-daterange-container" ref={containerRef}>
+      <button
+        type="button"
+        id="reportRangeDiv"
+        className="reg-date-range-box hims-report-range-btn"
+        onClick={() => setIsOpen(!isOpen)}
+        title="Click to select Date Range (patientQueue.jsp daterangepicker)"
+      >
+        <span className="cal-icon" style={{ fontSize: '15px' }}>📅</span>
+        <span className="dr-val-text">{value || getTodayDateRangeFormatted()}</span>
+        <span className="caret-icon" style={{ marginLeft: '8px', fontSize: '10px', color: '#64748b' }}>▼</span>
+      </button>
+
+      <input type="hidden" id="reportFromDt" name="reportFromDt" value={formatToDdMmmYyyy(rangeStart || today)} />
+      <input type="hidden" id="reportToDt" name="reportToDt" value={formatToDdMmmYyyy(rangeEnd || today)} />
+
+      {isOpen && (
+        <div className="hims-daterange-dropdown" onClick={(e) => e.stopPropagation()}>
+          <div className="hims-dr-main-layout">
+            {/* Presets Sidebar matching patientQueue.jsp */}
+            <div className="hims-dr-sidebar-presets">
+              <div style={{ fontSize: '11px', fontWeight: '800', color: '#475569', textTransform: 'uppercase', marginBottom: '4px' }}>
+                Quick Ranges:
+              </div>
+              <button
+                type="button"
+                className={`hims-dr-preset-item-btn ${activePreset === 'today' ? 'active' : ''}`}
+                onClick={() => selectPreset('today')}
+              >
+                📅 Today
+              </button>
+              <button
+                type="button"
+                className={`hims-dr-preset-item-btn ${activePreset === 'yesterday' ? 'active' : ''}`}
+                onClick={() => selectPreset('yesterday')}
+              >
+                ◀ Yesterday
+              </button>
+              <button
+                type="button"
+                className={`hims-dr-preset-item-btn ${activePreset === 'last7' ? 'active' : ''}`}
+                onClick={() => selectPreset('last7')}
+              >
+                7️⃣ Last 7 Days
+              </button>
+              <button
+                type="button"
+                className={`hims-dr-preset-item-btn ${activePreset === 'last30' ? 'active' : ''}`}
+                onClick={() => selectPreset('last30')}
+              >
+                🗓️ Last 30 Days
+              </button>
+              <button
+                type="button"
+                className={`hims-dr-preset-item-btn ${activePreset === 'thisMonth' ? 'active' : ''}`}
+                onClick={() => selectPreset('thisMonth')}
+              >
+                📆 This Month
+              </button>
+              <button
+                type="button"
+                className={`hims-dr-preset-item-btn ${activePreset === 'last6Months' ? 'active' : ''}`}
+                onClick={() => selectPreset('last6Months')}
+              >
+                ⏮️ Last 6 Months
+              </button>
+              <button
+                type="button"
+                className={`hims-dr-preset-item-btn ${activePreset === 'all' ? 'active' : ''}`}
+                onClick={() => selectPreset('all')}
+              >
+                🌐 Show All
+              </button>
+            </div>
+
+            {/* Dual Calendar Views */}
+            <div className="hims-dr-calendars-wrap">
+              {renderMonthCalendar(viewYear, viewMonth, true)}
+              {renderMonthCalendar(rightYear, rightMonth, false)}
+            </div>
+          </div>
+
+          {/* Bottom Bar: Manual Input & Actions */}
+          <div className="hims-dr-bottom-bar">
+            <div className="hims-dr-inputs-inline">
+              <span style={{ fontSize: '11px', fontWeight: '700', color: '#475569' }}>From:</span>
+              <input
+                type="text"
+                value={inputFrom}
+                onChange={(e) => setInputFrom(e.target.value)}
+                placeholder="dd-MMM-yyyy"
+                className="hims-dr-mini-input"
+              />
+              <span style={{ fontSize: '11px', fontWeight: '700', color: '#475569' }}>To:</span>
+              <input
+                type="text"
+                value={inputTo}
+                onChange={(e) => setInputTo(e.target.value)}
+                placeholder="dd-MMM-yyyy"
+                className="hims-dr-mini-input"
+              />
+            </div>
+            <div className="hims-dr-actions">
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() => setIsOpen(false)}
+                style={{ padding: '4px 10px', fontSize: '11.5px' }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={handleApplyCustom}
+                style={{ background: '#0284c7', borderColor: '#0284c7', color: '#fff', padding: '4px 12px', fontSize: '11.5px' }}
+              >
+                Apply Range
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Generate slots for a doctor & date matching Indus schedule (strictly query-wise)
 function generateDoctorSlots(doctorName, dateStr, appointmentsList, extraTokens = 0) {
   const startHour = 8;
   const startMin = 30;
   const totalSlotsCount = 12 + (extraTokens || 0);
   const slots = [];
 
-  // Determine booked tokens from existing appointments
+  // Determine booked tokens strictly from existing appointments query-wise (no fake dummy bookings)
   const bookedSet = new Set();
   
   if (appointmentsList && appointmentsList.length > 0) {
@@ -228,11 +727,6 @@ function generateDoctorSlots(doctorName, dateStr, appointmentsList, extraTokens 
         }
       }
     });
-  }
-
-  // By default, for Dr. SATYANARAYANA V VSN / , token 1 is booked (matching the screenshot where token 1 is RED)
-  if (doctorName && doctorName.includes('SATYANARAYANA')) {
-    bookedSet.add(1);
   }
 
   for (let i = 1; i <= totalSlotsCount; i++) {
@@ -271,21 +765,37 @@ export function RegistrationForm({
   const [searchTerm, setSearchTerm] = useState('');
   const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [selectedHospital, setSelectedHospital] = useState('INDUS HEALTH CITY');
-  const [dateRange, setDateRange] = useState('8 October, 2026 - 8 October, 2026');
+  const [dateRange, setDateRange] = useState(getTodayDateRangeFormatted());
+  const [dateFilterRange, setDateFilterRange] = useState(null);
   const [printModal, setPrintModal] = useState(null);
   const [toast, setToast] = useState(null);
   const [vitalsDrawer, setVitalsDrawer] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingPatient, setEditingPatient] = useState(null);
 
-  // Fetch live queue from backend
+  // Existing Patient Search in Tab 2 State (query-wise based on PatientMapper DetailedView)
+  const [existingSearchTerm, setExistingSearchTerm] = useState('');
+  const [existingSearchResults, setExistingSearchResults] = useState([]);
+  const [isSearchingExisting, setIsSearchingExisting] = useState(false);
+  const [isExistingPatientSelected, setIsExistingPatientSelected] = useState(false);
+  const [selectedPatientUmr, setSelectedPatientUmr] = useState('');
+
+  // Fetch live queue from backend based strictly on query-wise data retrieval
   const fetchServerQueue = async () => {
     try {
-      const res = await fetch('/api/patient/queue');
+      const res = await fetch('/patient/patientQueue');
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           setAppointments(data);
+          return;
+        }
+      }
+      const fallbackRes = await fetch('/api/patient/queue');
+      if (fallbackRes.ok) {
+        const fbData = await fallbackRes.json();
+        if (Array.isArray(fbData)) {
+          setAppointments(fbData);
         }
       }
     } catch (err) {
@@ -297,47 +807,50 @@ export function RegistrationForm({
     fetchServerQueue();
   }, []);
 
-  // Auto-merge persisted records from props/backend into appointments
+  // Merge newly registered records from App into appointments if present
   useEffect(() => {
     if (records && Object.keys(records).length > 0) {
-      const persistedList = Object.values(records).map(rec => ({
-        umrNo: rec.opId || `UMR${Math.floor(334250 + Math.random() * 50)}`,
-        token: rec.token || '1',
-        patientName: (rec.patientName || 'PATIENT').toUpperCase(),
-        genderAge: `${(rec.gender || 'MALE').toUpperCase()}/${rec.age || 40}yrs`,
-        gender: rec.gender || 'MALE',
-        age: rec.age || 40,
-        appointmentDate: rec.visitDate || '09-Oct-2026',
-        consultant: rec.doctor || 'SATYANARAYANA V VSN / ',
-        category: rec.priority === 'Emergency' ? 'EMERGENCY' : 'GENERAL',
-        billStatus: 'PAID',
-        regCash: rec.payment ? (rec.payment.regFee || 50) : 50,
-        regCredit: 0,
-        regUpi: 0,
-        conCash: rec.payment ? (rec.payment.consultationFee || 1000) : 1000,
-        conCredit: 0,
-        conUpi: 0,
-        phone: rec.phone || '',
-        vitals: rec.vitals || { bp: '120/80', pulse: '74', spo2: '99%', temp: '98.6', weight: '65' }
-      }));
+      const persistedList = Object.values(records)
+        .filter(rec => rec && (rec.umrNo || rec.opId || rec.patientCode))
+        .map(rec => ({
+          umrNo: rec.umrNo || rec.opId || rec.patientCode,
+          token: rec.token || rec.tokenNum || '1',
+          patientName: (rec.patientName || rec.pname || '').toUpperCase(),
+          genderAge: rec.genderAge || `${(rec.gender || 'MALE').toUpperCase()}/${rec.age || 40}yrs`,
+          gender: rec.gender || 'MALE',
+          age: rec.age || 40,
+          appointmentDate: rec.appointmentDate || rec.apptDt || rec.visitDate || '',
+          consultant: rec.consultant || rec.docName || rec.doctor || '',
+          category: rec.category || rec.patientCategory || 'GENERAL',
+          billStatus: rec.billStatus || 'PAID',
+          regCash: rec.payment ? (rec.payment.regFee || 50) : (rec.regCash || 50),
+          regCredit: 0,
+          regUpi: 0,
+          conCash: rec.payment ? (rec.payment.consultationFee || 1000) : (rec.conCash || 1000),
+          conCredit: 0,
+          conUpi: 0,
+          phone: rec.phone || rec.mobNum || '',
+          vitals: rec.vitals || null
+        }));
 
-      // Combine ensuring unique UMR numbers
-      setAppointments(prev => {
-        const existingUmrs = new Set(prev.map(p => p.umrNo));
-        const newToAdd = persistedList.filter(p => !existingUmrs.has(p.umrNo));
-        return [...newToAdd, ...prev];
-      });
+      if (persistedList.length > 0) {
+        setAppointments(prev => {
+          const existingUmrs = new Set(prev.map(p => p.umrNo).filter(Boolean));
+          const newToAdd = persistedList.filter(p => p.umrNo && !existingUmrs.has(p.umrNo));
+          return [...newToAdd, ...prev];
+        });
+      }
     }
   }, [records]);
 
-  // Tab 2 Form Data State (Matching Screenshot 2 & Exact Doctor Details)
+  // Tab 2 Form Data State (Matching Screenshot 2 & Exact Doctor Details - ZERO dummy data)
   const [formData, setFormData] = useState({
     title: 'Mr.',
     patientName: '',
     lastName: '',
     gender: 'Male',
-    dob: '1981-05-15',
-    years: 45,
+    dob: '',
+    years: '',
     months: 0,
     days: 0,
     mobile: '',
@@ -359,7 +872,7 @@ export function RegistrationForm({
     healthIssue: '',
     // Appointment Details (Selected dynamically on step-by-step workflow)
     location: '',
-    appointmentDate: '09-Oct-2026',
+    appointmentDate: getTodayDateFormatted(),
     token: '',
     consultant: '',
     doctorCode: '',
@@ -401,6 +914,99 @@ export function RegistrationForm({
   const showNotification = (msg) => {
     setToast(msg);
     setTimeout(() => setToast(null), 4000);
+  };
+
+  // Search Existing Patient query-wise from database
+  const handleSearchExisting = async (e) => {
+    if (e) e.preventDefault();
+    if (!existingSearchTerm.trim()) {
+      showNotification('Please enter UMR Number, Mobile, or Patient Name to search.');
+      return;
+    }
+    setIsSearchingExisting(true);
+    try {
+      const res = await fetch(`/patient/searchPatients?term=${encodeURIComponent(existingSearchTerm.trim())}`);
+      if (res.ok) {
+        const list = await res.json();
+        if (Array.isArray(list) && list.length > 0) {
+          setExistingSearchResults(list);
+          showNotification(`✓ Found ${list.length} existing patient record(s) in database.`);
+        } else {
+          setExistingSearchResults([]);
+          showNotification(`No existing records found for "${existingSearchTerm}". Enter details below to register as New Patient.`);
+        }
+      } else {
+        setExistingSearchResults([]);
+      }
+    } catch (err) {
+      console.warn('Search existing error:', err);
+      setExistingSearchResults([]);
+    } finally {
+      setIsSearchingExisting(false);
+    }
+  };
+
+  // Select an existing patient & auto-populate DetailedView fields query-wise
+  const handleSelectExistingPatient = async (item) => {
+    const umr = item.umrNo || item.patientCode;
+    try {
+      const res = await fetch(`/patient/getPatientDetails?umrNo=${encodeURIComponent(umr)}`);
+      let details = item;
+      if (res.ok) {
+        const full = await res.json();
+        if (full && !full.error) details = { ...item, ...full };
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        title: details.title || prev.title,
+        patientName: details.pname || details.patientName || '',
+        lastName: details.lastName || '',
+        gender: details.gender || 'Male',
+        dob: details.dob || '',
+        years: details.age || '',
+        mobile: details.mobNum || details.phone || '',
+        address: details.addr || details.address || '',
+        village: details.village || '',
+        city: details.city || 'Visakhapatnam',
+        state: details.state || 'Andhra Pradesh',
+        country: details.country || 'India',
+        bloodGroup: details.bloodGrp || details.bloodGroup || 'B+',
+        category: details.category || details.patientCategory || 'GENERAL - TRI',
+        idType: details.idProofType || 'Aadhaar',
+        idNumber: details.idProofNum || '',
+        parentOrHusband: details.parentName || ''
+      }));
+
+      setIsExistingPatientSelected(true);
+      setSelectedPatientUmr(umr);
+      setExistingSearchResults([]);
+      showNotification(`✓ Loaded existing patient ${details.patientName || details.pname} (${umr}) query-wise!`);
+    } catch (err) {
+      console.warn('Error fetching patient details:', err);
+    }
+  };
+
+  const handleClearExistingPatient = () => {
+    setIsExistingPatientSelected(false);
+    setSelectedPatientUmr('');
+    setExistingSearchTerm('');
+    setExistingSearchResults([]);
+    setFormData(prev => ({
+      ...prev,
+      patientName: '',
+      lastName: '',
+      dob: '',
+      years: '',
+      mobile: '',
+      village: '',
+      address: '',
+      idNumber: '',
+      parentOrHusband: '',
+      healthIssue: '',
+      token: ''
+    }));
+    showNotification('Switched to New Patient Registration mode.');
   };
 
   // Step 1: Hospital Change Handler
@@ -493,22 +1099,38 @@ export function RegistrationForm({
     showNotification(`✓ Added Extra Emergency Token #${nextTokenNum} for Dr. ${formData.consultant}`);
   };
 
-  // DOB & Age auto-sync
+  // DOB & Age auto-sync matching patientQueue.jsp (lines 6465-6535)
   const handleDobChange = (dobStr) => {
-    if (!dobStr) return;
-    const birth = new Date(dobStr);
-    const now = new Date('2026-10-08');
-    let yrs = now.getFullYear() - birth.getFullYear();
-    if (now.getMonth() < birth.getMonth() || (now.getMonth() === birth.getMonth() && now.getDate() < birth.getDate())) {
-      yrs--;
+    if (!dobStr) {
+      setFormData(prev => ({ ...prev, dob: '', years: '', months: 0, days: 0 }));
+      return;
     }
-    setFormData(prev => ({ ...prev, dob: dobStr, years: Math.max(0, yrs) }));
+    const ageParts = getAgeInYMD(dobStr);
+    setFormData(prev => ({
+      ...prev,
+      dob: dobStr,
+      years: ageParts.years,
+      months: ageParts.months,
+      days: ageParts.days
+    }));
   };
 
-  const handleYearsChange = (yrs) => {
-    const y = parseInt(yrs, 10) || 0;
-    const bYear = 2026 - y;
-    setFormData(prev => ({ ...prev, years: y, dob: `${bYear}-01-01` }));
+  const handleAgeChange = (field, val) => {
+    setFormData(prev => {
+      const numVal = val === '' ? '' : parseInt(val, 10);
+      const updated = { ...prev, [field]: numVal };
+      const y = parseInt(field === 'years' ? numVal : updated.years, 10) || 0;
+      const m = parseInt(field === 'months' ? numVal : updated.months, 10) || 0;
+      const d = parseInt(field === 'days' ? numVal : updated.days, 10) || 0;
+      if (y > 0 || m > 0 || d > 0) {
+        const today = new Date();
+        const calcDob = new Date(today.getFullYear() - y, today.getMonth() - m, today.getDate() - d);
+        updated.dob = formatToYyyyMmDd(calcDob);
+      } else if (val === '') {
+        updated.dob = '';
+      }
+      return updated;
+    });
   };
 
   // Handle Edit Patient
@@ -779,16 +1401,31 @@ export function RegistrationForm({
     showNotification("📥 Appointments list exported to Excel (CSV).");
   };
 
-  // Filtered appointments
+  // Filtered appointments (by searchTerm and dateFilterRange matching patientQueue.jsp)
   const filteredAppointments = appointments.filter(row => {
-    if (!searchTerm) return true;
-    const term = searchTerm.toLowerCase();
-    return (
-      row.umrNo.toLowerCase().includes(term) ||
-      row.patientName.toLowerCase().includes(term) ||
-      row.consultant.toLowerCase().includes(term) ||
-      (row.phone && row.phone.includes(term))
-    );
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      const matchesSearch = (
+        (row.umrNo && row.umrNo.toLowerCase().includes(term)) ||
+        (row.patientName && row.patientName.toLowerCase().includes(term)) ||
+        (row.consultant && row.consultant.toLowerCase().includes(term)) ||
+        (row.phone && row.phone.includes(term))
+      );
+      if (!matchesSearch) return false;
+    }
+    if (dateFilterRange && dateFilterRange.start && dateFilterRange.end) {
+      const rowDate = parseAnyDate(row.appointmentDate);
+      if (rowDate) {
+        const startCheck = new Date(dateFilterRange.start);
+        startCheck.setHours(0, 0, 0, 0);
+        const endCheck = new Date(dateFilterRange.end);
+        endCheck.setHours(23, 59, 59, 999);
+        if (rowDate < startCheck || rowDate > endCheck) {
+          return false;
+        }
+      }
+    }
+    return true;
   });
 
   // Calculate Summary Metrics Bar
@@ -898,15 +1535,18 @@ export function RegistrationForm({
               </select>
             </div>
 
-            <div className="reg-date-range-box">
-              <span className="cal-icon">📅</span>
-              <input 
-                type="text" 
-                value={dateRange} 
-                onChange={(e) => setDateRange(e.target.value)}
-                className="reg-date-input"
-              />
-            </div>
+            <CustomDateRangePicker 
+              value={dateRange} 
+              onChange={setDateRange} 
+              onRangeApply={(start, end) => {
+                setDateFilterRange(start && end ? { start, end } : null);
+                if (start && end) {
+                  showNotification(`✓ Filtered appointments: ${formatToDdMmmYyyy(start)} to ${formatToDdMmmYyyy(end)}`);
+                } else {
+                  showNotification(`✓ Showing all appointments`);
+                }
+              }} 
+            />
           </div>
 
           {/* Light Blue Summary Metrics Pill Bar (Matching Screenshot 1) */}
@@ -1013,7 +1653,22 @@ export function RegistrationForm({
                 </tr>
               </thead>
               <tbody>
-                {filteredAppointments.slice(0, entriesPerPage).map((row, idx) => (
+                {filteredAppointments.length === 0 ? (
+                  <tr>
+                    <td colSpan={20} style={{ textAlign: 'center', padding: '48px 20px', color: '#64748b', background: '#f8fafc' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '32px' }}>📋</span>
+                        <span style={{ fontSize: '15px', fontWeight: '600', color: '#1e293b' }}>
+                          {searchTerm ? 'No matching patient records found' : 'No patient records found in queue'}
+                        </span>
+                        <span style={{ fontSize: '13px', color: '#64748b' }}>
+                          {searchTerm ? 'Try adjusting your search criteria.' : 'Click the "Add Appointment" tab above to register a new patient into the database.'}
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  filteredAppointments.slice(0, entriesPerPage).map((row, idx) => (
                   <tr key={row.umrNo || idx} className={idx % 2 === 0 ? 'row-even' : 'row-odd'}>
                     <td className="cell-token">
                       <span className="badge-token" title={`Token Number: ${row.token || '1'}`}>
@@ -1099,7 +1754,8 @@ export function RegistrationForm({
                       </button>
                     </td>
                   </tr>
-                ))}
+                ))
+              )}
               </tbody>
             </table>
           </div>
@@ -1143,13 +1799,18 @@ export function RegistrationForm({
                     ...prev,
                     patientName: '',
                     lastName: '',
+                    dob: '',
+                    years: '',
+                    months: 0,
+                    days: 0,
                     mobile: '',
                     village: '',
                     address: '',
                     idNumber: '',
                     parentOrHusband: '',
                     healthIssue: '',
-                    token: `OPD-${Math.floor(120 + appointments.length + 2)}`
+                    appointmentDate: getTodayDateFormatted(),
+                    token: ''
                   }));
                   showNotification("Switched back to New Patient Registration mode.");
                 }}
@@ -1168,6 +1829,125 @@ export function RegistrationForm({
               </button>
             </div>
           )}
+
+          {/* ===================================================================== */}
+          {/* SEARCH EXISTING PATIENT (Query-wise from PatientMapper DetailedView)  */}
+          {/* ===================================================================== */}
+          <div className="form-section-card existing-patient-search-card" style={{
+            background: '#f0f9ff',
+            border: '1.5px solid #0284c7',
+            borderRadius: '8px',
+            padding: '12px 18px',
+            marginBottom: '15px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '18px' }}>🔍</span>
+                <h4 style={{ margin: 0, color: '#0369a1', fontSize: '15px', fontWeight: 'bold' }}>
+                  SEARCH EXISTING PATIENT (Database Query by UMR / Phone / Name):
+                </h4>
+              </div>
+              {isExistingPatientSelected && (
+                <button
+                  type="button"
+                  onClick={handleClearExistingPatient}
+                  style={{
+                    background: '#dbeafe',
+                    color: '#1e40af',
+                    border: '1px solid #93c5fd',
+                    borderRadius: '5px',
+                    padding: '4px 10px',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Clear / New Patient Mode
+                </button>
+              )}
+            </div>
+            <form onSubmit={handleSearchExisting} style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <input
+                type="text"
+                value={existingSearchTerm}
+                onChange={(e) => setExistingSearchTerm(e.target.value)}
+                placeholder="Enter UMR Number (e.g. UMR334254), Mobile, or Patient Name to query database..."
+                style={{
+                  flex: 1,
+                  padding: '7px 12px',
+                  border: '1px solid #38bdf8',
+                  borderRadius: '6px',
+                  fontSize: '13px',
+                  outline: 'none',
+                  background: '#ffffff'
+                }}
+              />
+              <button
+                type="submit"
+                disabled={isSearchingExisting}
+                style={{
+                  background: '#0284c7',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '7px 16px',
+                  fontWeight: 'bold',
+                  fontSize: '13px',
+                  cursor: 'pointer'
+                }}
+              >
+                {isSearchingExisting ? 'Searching...' : 'Search Database'}
+              </button>
+            </form>
+
+            {/* Search Results Dropdown List */}
+            {existingSearchResults.length > 0 && (
+              <div style={{
+                marginTop: '10px',
+                background: '#ffffff',
+                border: '1px solid #cbd5e1',
+                borderRadius: '6px',
+                maxHeight: '180px',
+                overflowY: 'auto',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+              }}>
+                <div style={{ padding: '6px 12px', background: '#f8fafc', fontSize: '12px', fontWeight: 'bold', color: '#64748b', borderBottom: '1px solid #e2e8f0' }}>
+                  Found {existingSearchResults.length} patient record(s) in database (Click to select & populate form):
+                </div>
+                {existingSearchResults.map((pat, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => handleSelectExistingPatient(pat)}
+                    style={{
+                      padding: '8px 12px',
+                      borderBottom: '1px solid #f1f5f9',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      fontSize: '13px'
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = '#e0f2fe'}
+                    onMouseLeave={(e) => e.currentTarget.style.background = '#ffffff'}
+                  >
+                    <div>
+                      <strong style={{ color: '#0369a1' }}>{pat.umrNo || pat.patientCode}</strong> - <span style={{ fontWeight: '600' }}>{pat.patientName || pat.pname}</span>
+                      <span style={{ color: '#64748b', marginLeft: '10px', fontSize: '12px' }}>({pat.gender || 'MALE'} / {pat.age || '-'} yrs)</span>
+                    </div>
+                    <div style={{ color: '#0f766e', fontSize: '12px', fontWeight: '500' }}>
+                      📞 {pat.mobNum || pat.phone || 'No phone'}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {isExistingPatientSelected && (
+              <div style={{ marginTop: '8px', fontSize: '12px', color: '#0369a1', fontWeight: '600' }}>
+                ✓ Active Patient: <span style={{ color: '#1e40af' }}>{formData.title} {formData.patientName} {formData.lastName}</span> (UMR: {selectedPatientUmr}) loaded query-wise from database.
+              </div>
+            )}
+          </div>
           
           {/* ===================================================================== */}
           {/* 1. TOP: PATIENT DETAILS (FULL WIDTH ACROSS SCREEN, EQUAL 6-COL GRID)  */}
@@ -1236,11 +2016,16 @@ export function RegistrationForm({
 
               <div className="input-group col-span-1">
                 <label className="field-lbl">Date of Birth</label>
-                <input 
-                  type="date" 
+                <CustomDatePicker 
+                  id="pntDob"
                   value={formData.dob} 
-                  onChange={(e) => handleDobChange(e.target.value)}
+                  onChange={handleDobChange}
+                  format="yyyy-mm-dd"
+                  placeholder="YYYY-MM-DD"
+                  showYearSelect={true}
                   className="dense-input equal-input"
+                  disableFuture={true}
+                  alignRight={true}
                 />
               </div>
 
@@ -1251,30 +2036,39 @@ export function RegistrationForm({
                   <div className="mini-age-wrap">
                     <input 
                       type="number" 
+                      id="age"
                       value={formData.years} 
-                      onChange={(e) => handleYearsChange(e.target.value)}
+                      onChange={(e) => handleAgeChange('years', e.target.value)}
                       placeholder="Y" 
                       className="dense-input age-val"
+                      min="0"
+                      max="130"
                     />
                     <span className="age-unit">Y</span>
                   </div>
                   <div className="mini-age-wrap">
                     <input 
                       type="number" 
+                      id="ageMonths"
                       value={formData.months} 
-                      onChange={(e) => setFormData({ ...formData, months: Number(e.target.value) })}
+                      onChange={(e) => handleAgeChange('months', e.target.value)}
                       placeholder="M" 
                       className="dense-input age-val"
+                      min="0"
+                      max="11"
                     />
                     <span className="age-unit">M</span>
                   </div>
                   <div className="mini-age-wrap">
                     <input 
                       type="number" 
+                      id="ageDays"
                       value={formData.days} 
-                      onChange={(e) => setFormData({ ...formData, days: Number(e.target.value) })}
+                      onChange={(e) => handleAgeChange('days', e.target.value)}
                       placeholder="D" 
                       className="dense-input age-val"
+                      min="0"
+                      max="31"
                     />
                     <span className="age-unit">D</span>
                   </div>
@@ -1586,16 +2380,17 @@ export function RegistrationForm({
                     </div>
 
                     <div className="dt-col dt-col-date">
-                      <div className="dt-date-input-wrap">
-                        <span className="dt-cal-icon">📅</span>
-                        <input 
-                          type="text" 
-                          value={formData.appointmentDate} 
-                          onChange={(e) => setFormData({ ...formData, appointmentDate: e.target.value })}
-                          className="dt-input"
-                          title="Appointment Date"
-                        />
-                      </div>
+                      <CustomDatePicker 
+                        id="scheduleDt"
+                        value={formData.appointmentDate} 
+                        onChange={(newDate) => {
+                          setFormData(prev => ({ ...prev, appointmentDate: newDate }));
+                          showNotification(`✓ Appointment Date set to: ${newDate}`);
+                        }}
+                        format="dd-MMM-yyyy"
+                        placeholder="dd-M-yyyy"
+                        className="dt-input"
+                      />
                     </div>
 
                     <div className="dt-col dt-col-token">

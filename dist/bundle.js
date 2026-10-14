@@ -17,45 +17,14 @@ const initialDepartments = [{
   room: "Cabin 101 (1st Floor)",
   doctor: "Dr. Ananya Iyer",
   specialty: "Senior Cardiologist",
-  currentToken: "CAR-104",
-  nextToken: "CAR-105",
-  waitingCount: 5,
-  avgWaitTime: "12 mins",
-  status: "In Consultation",
-  // In Consultation, Next Patient, Break
+  currentToken: "-",
+  nextToken: "-",
+  waitingCount: 0,
+  avgWaitTime: "0 mins",
+  status: "Available",
   statusColor: "emerald",
   icon: "heart-pulse",
-  queue: [{
-    token: "CAR-104",
-    patientName: "Rajesh Kumar",
-    status: "Inside",
-    time: "09:15 AM",
-    priority: "Regular"
-  }, {
-    token: "CAR-105",
-    patientName: "Meenakshi S.",
-    status: "Next",
-    time: "09:30 AM",
-    priority: "Senior Citizen"
-  }, {
-    token: "CAR-106",
-    patientName: "Arjun Verma",
-    status: "Waiting",
-    time: "09:45 AM",
-    priority: "Regular"
-  }, {
-    token: "CAR-107",
-    patientName: "Kavita Rao",
-    status: "Waiting",
-    time: "10:00 AM",
-    priority: "Regular"
-  }, {
-    token: "CAR-108",
-    patientName: "Mohammed Farooq",
-    status: "Waiting",
-    time: "10:15 AM",
-    priority: "Regular"
-  }]
+  queue: []
 }, {
   id: "dep-ortho",
   name: "Orthopedics & Joint Clinic",
@@ -64,38 +33,14 @@ const initialDepartments = [{
   room: "Cabin 102 (1st Floor)",
   doctor: "Dr. Vikramaditya Rathore",
   specialty: "Consultant Orthopedic Surgeon",
-  currentToken: "ORT-082",
-  nextToken: "ORT-083",
-  waitingCount: 4,
-  avgWaitTime: "15 mins",
-  status: "In Consultation",
+  currentToken: "-",
+  nextToken: "-",
+  waitingCount: 0,
+  avgWaitTime: "0 mins",
+  status: "Available",
   statusColor: "emerald",
   icon: "bone",
-  queue: [{
-    token: "ORT-082",
-    patientName: "David D'Souza",
-    status: "Inside",
-    time: "09:20 AM",
-    priority: "Regular"
-  }, {
-    token: "ORT-083",
-    patientName: "Sunita Patel",
-    status: "Next",
-    time: "09:35 AM",
-    priority: "Senior Citizen"
-  }, {
-    token: "ORT-084",
-    patientName: "Harpreet Singh",
-    status: "Waiting",
-    time: "09:50 AM",
-    priority: "Regular"
-  }, {
-    token: "ORT-085",
-    patientName: "Priya Nair",
-    status: "Waiting",
-    time: "10:05 AM",
-    priority: "Regular"
-  }]
+  queue: []
 }, {
   id: "dep-genmed",
   name: "General Medicine & Health",
@@ -104,44 +49,14 @@ const initialDepartments = [{
   room: "Cabin 103 (Ground Floor)",
   doctor: "Dr. Sandeep K. Banerjee",
   specialty: "Chief Physician & Diabetologist",
-  currentToken: "GEN-211",
-  nextToken: "GEN-212",
-  waitingCount: 7,
-  avgWaitTime: "8 mins",
-  status: "In Consultation",
+  currentToken: "-",
+  nextToken: "-",
+  waitingCount: 0,
+  avgWaitTime: "0 mins",
+  status: "Available",
   statusColor: "emerald",
   icon: "stethoscope",
-  queue: [{
-    token: "GEN-211",
-    patientName: "Gopal Krishna",
-    status: "Inside",
-    time: "09:10 AM",
-    priority: "Regular"
-  }, {
-    token: "GEN-212",
-    patientName: "Lakshmi Narayanan",
-    status: "Next",
-    time: "09:20 AM",
-    priority: "Senior Citizen"
-  }, {
-    token: "GEN-213",
-    patientName: "Rohan Sen",
-    status: "Waiting",
-    time: "09:30 AM",
-    priority: "Regular"
-  }, {
-    token: "GEN-214",
-    patientName: "Deepa Menon",
-    status: "Waiting",
-    time: "09:40 AM",
-    priority: "Regular"
-  }, {
-    token: "GEN-215",
-    patientName: "Amitabh Roy",
-    status: "Waiting",
-    time: "09:50 AM",
-    priority: "Regular"
-  }]
+  queue: []
 }, {
   id: "dep-ped",
   name: "Pediatrics & Child Wellness",
@@ -150,32 +65,14 @@ const initialDepartments = [{
   room: "Cabin 104 (Ground Floor)",
   doctor: "Dr. Shalini Deshmukh",
   specialty: "Senior Pediatrician & Neonatologist",
-  currentToken: "PED-049",
-  nextToken: "PED-050",
-  waitingCount: 3,
-  avgWaitTime: "10 mins",
-  status: "In Consultation",
+  currentToken: "-",
+  nextToken: "-",
+  waitingCount: 0,
+  avgWaitTime: "0 mins",
+  status: "Available",
   statusColor: "emerald",
   icon: "baby",
-  queue: [{
-    token: "PED-049",
-    patientName: "Baby Aavya (Parent: Sneha)",
-    status: "Inside",
-    time: "09:25 AM",
-    priority: "Child Care"
-  }, {
-    token: "PED-050",
-    patientName: "Master Vihaan",
-    status: "Next",
-    time: "09:40 AM",
-    priority: "Child Care"
-  }, {
-    token: "PED-051",
-    patientName: "Baby Reyansh",
-    status: "Waiting",
-    time: "09:55 AM",
-    priority: "Child Care"
-  }]
+  queue: []
 }, {
   id: "dep-derma",
   name: "Dermatology & Skin Care",
@@ -184,32 +81,14 @@ const initialDepartments = [{
   room: "Cabin 105 (2nd Floor)",
   doctor: "Dr. Neil Chatterjee",
   specialty: "Cosmetic & Clinical Dermatologist",
-  currentToken: "DER-031",
-  nextToken: "DER-032",
-  waitingCount: 2,
-  avgWaitTime: "10 mins",
-  status: "Next Patient",
-  statusColor: "amber",
+  currentToken: "-",
+  nextToken: "-",
+  waitingCount: 0,
+  avgWaitTime: "0 mins",
+  status: "Available",
+  statusColor: "emerald",
   icon: "sparkles",
-  queue: [{
-    token: "DER-031",
-    patientName: "Neha Kapoor",
-    status: "Completing",
-    time: "09:15 AM",
-    priority: "Regular"
-  }, {
-    token: "DER-032",
-    patientName: "Aditya Jain",
-    status: "Next",
-    time: "09:30 AM",
-    priority: "Regular"
-  }, {
-    token: "DER-033",
-    patientName: "Simran Kaur",
-    status: "Waiting",
-    time: "09:45 AM",
-    priority: "Regular"
-  }]
+  queue: []
 }, {
   id: "dep-ent",
   name: "ENT & Head-Neck Clinic",
@@ -218,32 +97,14 @@ const initialDepartments = [{
   room: "Cabin 106 (2nd Floor)",
   doctor: "Dr. Priya Sundaram",
   specialty: "ENT & Cochlear Implant Surgeon",
-  currentToken: "ENT-055",
-  nextToken: "ENT-056",
-  waitingCount: 4,
-  avgWaitTime: "14 mins",
-  status: "In Consultation",
+  currentToken: "-",
+  nextToken: "-",
+  waitingCount: 0,
+  avgWaitTime: "0 mins",
+  status: "Available",
   statusColor: "emerald",
   icon: "ear",
-  queue: [{
-    token: "ENT-055",
-    patientName: "Venkat Raman",
-    status: "Inside",
-    time: "09:18 AM",
-    priority: "Regular"
-  }, {
-    token: "ENT-056",
-    patientName: "Alka Pandey",
-    status: "Next",
-    time: "09:32 AM",
-    priority: "Regular"
-  }, {
-    token: "ENT-057",
-    patientName: "Karan Malhotra",
-    status: "Waiting",
-    time: "09:46 AM",
-    priority: "Regular"
-  }]
+  queue: []
 }];
 const doctorsRoster = [{
   id: "doc-1",
@@ -330,155 +191,7 @@ const doctorsRoster = [{
   languages: "English, Hindi, Tamil, Telugu",
   focus: "Microscopic Ear Surgery, Sinusitis Endoscopy, Sleep Apnea, Vertigo"
 }];
-const mockOPRecords = {
-  "CAR-104": {
-    token: "CAR-104",
-    opId: "OP-2026-8812",
-    patientName: "Rajesh Kumar",
-    age: 52,
-    gender: "Male",
-    phone: "+91 98451 22910",
-    bloodGroup: "B+",
-    department: "Cardiology & Heart Care",
-    doctor: "Dr. Ananya Iyer",
-    room: "Cabin 101",
-    visitDate: "05-Sep-2026",
-    visitType: "Follow-up Consultation",
-    vitals: {
-      bp: "138/88 mmHg",
-      pulse: "76 bpm",
-      spo2: "98%",
-      temp: "98.4 °F",
-      weight: "74 kg",
-      bmi: "25.2 (Normal)"
-    },
-    symptoms: "Mild chest tightness upon climbing stairs for 3 days; history of mild hypertension.",
-    diagnosis: "Hypertensive Heart Disease (Mild, Stage 1) - Under Evaluation",
-    prescription: [{
-      medicine: "Telmisartan 40mg",
-      timing: "1 - 0 - 0",
-      instruction: "Once daily, morning after food",
-      duration: "30 Days"
-    }, {
-      medicine: "Atorvastatin 10mg",
-      timing: "0 - 0 - 1",
-      instruction: "Night after dinner",
-      duration: "30 Days"
-    }, {
-      medicine: "Ecosprin 75mg",
-      timing: "0 - 1 - 0",
-      instruction: "After lunch",
-      duration: "30 Days"
-    }],
-    recommendedTests: [{
-      testName: "12-Lead ECG",
-      status: "Completed Today (Normal sinus rhythm)"
-    }, {
-      testName: "2D Echocardiography",
-      status: "Scheduled 11:30 AM"
-    }, {
-      testName: "Lipid Profile & Serum Creatinine",
-      status: "Fasting sample tomorrow"
-    }],
-    doctorNotes: "Low salt diet recommended (< 4g/day). 30 minutes brisk walking daily. Review in OPD after 3 weeks with 2D Echo report."
-  },
-  "GEN-211": {
-    token: "GEN-211",
-    opId: "OP-2026-8845",
-    patientName: "Gopal Krishna",
-    age: 46,
-    gender: "Male",
-    phone: "+91 98765 43210",
-    bloodGroup: "O+",
-    department: "General Medicine & Health",
-    doctor: "Dr. Sandeep K. Banerjee",
-    room: "Cabin 103",
-    visitDate: "05-Sep-2026",
-    visitType: "Routine OP Visit",
-    vitals: {
-      bp: "124/80 mmHg",
-      pulse: "72 bpm",
-      spo2: "99%",
-      temp: "99.1 °F",
-      weight: "68 kg",
-      bmi: "23.5 (Normal)"
-    },
-    symptoms: "Fatigue, low grade evening fever for past 2 days, mild dry cough.",
-    diagnosis: "Viral Upper Respiratory Tract Infection",
-    prescription: [{
-      medicine: "Paracetamol 650mg",
-      timing: "1 - 1 - 1",
-      instruction: "As needed for body aches/fever (SOS)",
-      duration: "3 Days"
-    }, {
-      medicine: "Levocetirizine 5mg",
-      timing: "0 - 0 - 1",
-      instruction: "At bedtime",
-      duration: "5 Days"
-    }, {
-      medicine: "Vitamin C + Zinc Chewable",
-      timing: "1 - 0 - 0",
-      instruction: "After breakfast",
-      duration: "10 Days"
-    }],
-    recommendedTests: [{
-      testName: "Complete Blood Count (CBC)",
-      status: "Report Awaited (12:00 PM)"
-    }, {
-      testName: "CRP Qualitative",
-      status: "Ordered"
-    }],
-    doctorNotes: "Hydrate well (minimum 3L warm water/fluids). Rest for 48 hours. If fever persists past day 4, report immediately."
-  },
-  "ORT-082": {
-    token: "ORT-082",
-    opId: "OP-2026-8790",
-    patientName: "David D'Souza",
-    age: 59,
-    gender: "Male",
-    phone: "+91 91234 56789",
-    bloodGroup: "A+",
-    department: "Orthopedics & Joint Clinic",
-    doctor: "Dr. Vikramaditya Rathore",
-    room: "Cabin 102",
-    visitDate: "05-Sep-2026",
-    visitType: "Orthopedic Review",
-    vitals: {
-      bp: "130/84 mmHg",
-      pulse: "74 bpm",
-      spo2: "98%",
-      temp: "98.2 °F",
-      weight: "82 kg",
-      bmi: "27.1 (Overweight)"
-    },
-    symptoms: "Bilateral knee joint pain aggravated by squatting and descending stairs.",
-    diagnosis: "Primary Knee Osteoarthritis (Grade II)",
-    prescription: [{
-      medicine: "Diacerein + Glucosamine",
-      timing: "1 - 0 - 1",
-      instruction: "After meals",
-      duration: "60 Days"
-    }, {
-      medicine: "Etoricoxib 90mg",
-      timing: "0 - 0 - 1",
-      instruction: "SOS when pain is severe",
-      duration: "5 Days max"
-    }, {
-      medicine: "Diclofenac Gel",
-      timing: "Local",
-      instruction: "Apply gently twice daily over knees",
-      duration: "15 Days"
-    }],
-    recommendedTests: [{
-      testName: "Digital X-Ray Both Knees (Standing AP & Lateral)",
-      status: "Completed (Reduced joint space noted)"
-    }, {
-      testName: "Serum Vitamin D3 & Uric Acid",
-      status: "Recommended"
-    }],
-    doctorNotes: "Quadriceps strengthening exercises demonstrated. Avoid cross-legged sitting. Weight management advice given."
-  }
-};
+const mockOPRecords = {};
 
 // --- src/data/pharmacyData.js ---
 // Hospital Outpatient Pharmacy & Drugs Catalog Data
@@ -2437,233 +2150,8 @@ function QueueBoard({
 
 // --- src/components/RegistrationForm.jsx ---
 
-// Baseline patient appointments matching Indus Hospitals Screenshot 1 & 2
-const INITIAL_APPOINTMENTS = [{
-  umrNo: 'UMR334253',
-  token: '1',
-  patientName: 'VENKATA RAMANA',
-  genderAge: 'MALE/45yrs',
-  gender: 'MALE',
-  age: 45,
-  appointmentDate: '09-Oct-2026',
-  consultant: 'SATYANARAYANA V VSN / ',
-  category: 'GENERAL',
-  billStatus: 'PAID',
-  regCash: 50,
-  regCredit: 0,
-  regUpi: 0,
-  conCash: 1000,
-  conCredit: 0,
-  conUpi: 0,
-  phone: '9848022334',
-  vitals: {
-    bp: '120/80',
-    pulse: '72',
-    spo2: '99%',
-    temp: '98.4',
-    weight: '68'
-  }
-}, {
-  umrNo: 'UMR334252',
-  token: 'CAR-104',
-  patientName: 'TOTA RAMANA',
-  genderAge: 'MALE/45yrs',
-  gender: 'MALE',
-  age: 45,
-  appointmentDate: '08-Oct-2026',
-  consultant: 'R LALITHA LA',
-  category: 'GENERAL',
-  billStatus: 'PAID',
-  regCash: 50,
-  regCredit: 0,
-  regUpi: 0,
-  conCash: 800,
-  conCredit: 0,
-  conUpi: 0,
-  phone: '9848123456',
-  vitals: {
-    bp: '120/80',
-    pulse: '74',
-    spo2: '99%',
-    temp: '98.4',
-    weight: '68'
-  }
-}, {
-  umrNo: 'UMR334251',
-  token: 'ORT-082',
-  patientName: 'JAYANTI PANIGRAHI',
-  genderAge: 'FEMALE/58yrs',
-  gender: 'FEMALE',
-  age: 58,
-  appointmentDate: '08-Oct-2026',
-  consultant: 'RAKESH TUMULA RT',
-  category: 'GENERAL',
-  billStatus: 'PAID',
-  regCash: 0,
-  regCredit: 0,
-  regUpi: 0,
-  conCash: 1450,
-  conCredit: 0,
-  conUpi: 0,
-  phone: '9440112233',
-  vitals: {
-    bp: '130/85',
-    pulse: '78',
-    spo2: '98%',
-    temp: '98.6',
-    weight: '72'
-  }
-}, {
-  umrNo: 'UMR334249',
-  token: 'CAR-105',
-  patientName: 'LANKE DURGA',
-  genderAge: 'FEMALE/35yrs',
-  gender: 'FEMALE',
-  age: 35,
-  appointmentDate: '08-Oct-2026',
-  consultant: 'ANIL KUMAR MAHAPATRO AKM',
-  category: 'GENERAL',
-  billStatus: 'PAID',
-  regCash: 50,
-  regCredit: 0,
-  regUpi: 0,
-  conCash: 850,
-  conCredit: 0,
-  conUpi: 0,
-  phone: '9989445566',
-  vitals: {
-    bp: '118/76',
-    pulse: '72',
-    spo2: '99%',
-    temp: '98.4',
-    weight: '58'
-  }
-}, {
-  umrNo: 'UMR334248',
-  token: 'GEN-211',
-  patientName: 'ASHOK KUMAR JENA',
-  genderAge: 'MALE/48yrs',
-  gender: 'MALE',
-  age: 48,
-  appointmentDate: '08-Oct-2026',
-  consultant: 'R LALITHA LA',
-  category: 'GENERAL',
-  billStatus: 'PAID',
-  regCash: 50,
-  regCredit: 0,
-  regUpi: 0,
-  conCash: 850,
-  conCredit: 0,
-  conUpi: 0,
-  phone: '9866123987',
-  vitals: {
-    bp: '124/80',
-    pulse: '76',
-    spo2: '98%',
-    temp: '98.6',
-    weight: '75'
-  }
-}, {
-  umrNo: 'UMR334247',
-  token: 'GEN-212',
-  patientName: 'KAMA MAJHI',
-  genderAge: 'MALE/31yrs',
-  gender: 'MALE',
-  age: 31,
-  appointmentDate: '08-Oct-2026',
-  consultant: 'RAMESH NAIDU M RNM',
-  category: 'GENERAL',
-  billStatus: 'PAID',
-  regCash: 50,
-  regCredit: 0,
-  regUpi: 0,
-  conCash: 600,
-  conCredit: 0,
-  conUpi: 0,
-  phone: '9701234567',
-  vitals: {
-    bp: '115/75',
-    pulse: '70',
-    spo2: '99%',
-    temp: '98.2',
-    weight: '64'
-  }
-}, {
-  umrNo: 'UMR334246',
-  token: 'CAR-106',
-  patientName: 'PYLA CHITTAMMA',
-  genderAge: 'FEMALE/70yrs',
-  gender: 'FEMALE',
-  age: 70,
-  appointmentDate: '08-Oct-2026',
-  consultant: 'R LALITHA LA',
-  category: 'GENERAL',
-  billStatus: 'PAID',
-  regCash: 50,
-  regCredit: 0,
-  regUpi: 0,
-  conCash: 800,
-  conCredit: 0,
-  conUpi: 0,
-  phone: '9849223344',
-  vitals: {
-    bp: '140/90',
-    pulse: '82',
-    spo2: '97%',
-    temp: '98.4',
-    weight: '60'
-  }
-}, {
-  umrNo: 'UMR334245',
-  token: 'GEN-213',
-  patientName: 'SUREN MOHANTY',
-  genderAge: 'MALE/40yrs',
-  gender: 'MALE',
-  age: 40,
-  appointmentDate: '08-Oct-2026',
-  consultant: 'RAMESH NAIDU M RNM',
-  category: 'GENERAL',
-  billStatus: 'PAID',
-  regCash: 50,
-  regCredit: 0,
-  regUpi: 0,
-  conCash: 650,
-  conCredit: 0,
-  conUpi: 0,
-  phone: '9177334455',
-  vitals: {
-    bp: '122/82',
-    pulse: '75',
-    spo2: '99%',
-    temp: '98.5',
-    weight: '71'
-  }
-}, {
-  umrNo: 'UMR334244',
-  token: 'ORT-083',
-  patientName: 'TANGUDU APPARAO',
-  genderAge: 'MALE/52yrs',
-  gender: 'MALE',
-  age: 52,
-  appointmentDate: '08-Oct-2026',
-  consultant: 'ANIL KUMAR MAHAPATRO AKM',
-  category: 'GENERAL',
-  billStatus: 'PAID',
-  regCash: 50,
-  regCredit: 0,
-  regUpi: 0,
-  conCash: 1450,
-  conCredit: 0,
-  conUpi: 0,
-  phone: '9948556677',
-  vitals: {
-    bp: '128/84',
-    pulse: '76',
-    spo2: '98%',
-    temp: '98.6',
-    weight: '80'
-  }
-}];
+// Patient appointments queue initialized empty; strictly populated query-wise from database
+const INITIAL_APPOINTMENTS = [];
 const CONSULTANTS_ROSTER = [{
   name: 'SATYANARAYANA V VSN / ',
   code: 'EMP00006',
@@ -2736,15 +2224,643 @@ function formatSlotTime(totalMins) {
   const pad = n => String(n).padStart(2, '0');
   return `${pad(displayH)}:${pad(m)} ${ampm}`;
 }
+const MONTH_NAMES_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const MONTH_NAMES_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+function formatToDdMmmYyyy(date) {
+  if (!date) return '';
+  const d = date instanceof Date ? date : new Date(date);
+  if (isNaN(d.getTime())) return '';
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = MONTH_NAMES_SHORT[d.getMonth()];
+  const year = d.getFullYear();
+  return `${day}-${month}-${year}`;
+}
+function formatToYyyyMmDd(date) {
+  if (!date) return '';
+  const d = date instanceof Date ? date : new Date(date);
+  if (isNaN(d.getTime())) return '';
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${year}-${month}-${day}`;
+}
+function parseAnyDate(str) {
+  if (!str) return null;
+  if (str instanceof Date) return isNaN(str.getTime()) ? null : str;
+  const s = String(str).trim();
+  // YYYY-MM-DD
+  if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(s)) {
+    const parts = s.split('-').map(Number);
+    return new Date(parts[0], parts[1] - 1, parts[2]);
+  }
+  // DD-MMM-YYYY (e.g. 14-Oct-2026)
+  const parts = s.split('-');
+  if (parts.length === 3) {
+    const d = Number(parts[0]);
+    const m = MONTH_NAMES_SHORT.findIndex(x => x.toLowerCase() === parts[1].toLowerCase());
+    const y = Number(parts[2]);
+    if (!isNaN(d) && m !== -1 && !isNaN(y)) {
+      return new Date(y, m, d);
+    }
+  }
+  // DD/MM/YYYY
+  const slashParts = s.split('/');
+  if (slashParts.length === 3) {
+    const d = Number(slashParts[0]);
+    const m = Number(slashParts[1]) - 1;
+    const y = Number(slashParts[2]);
+    if (!isNaN(d) && !isNaN(m) && !isNaN(y)) {
+      return new Date(y, m, d);
+    }
+  }
+  const dt = new Date(s);
+  return isNaN(dt.getTime()) ? null : dt;
+}
 
-// Generate slots for a doctor & date matching Indus screenshot
+// Age in Years, Months, Days calculation matching patientQueue.jsp lines 6511-6535
+function getAgeInYMD(dobStr) {
+  if (!dobStr) return {
+    years: '',
+    months: 0,
+    days: 0
+  };
+  const dob = parseAnyDate(dobStr);
+  if (!dob) return {
+    years: '',
+    months: 0,
+    days: 0
+  };
+  const today = new Date();
+  let years = today.getFullYear() - dob.getFullYear();
+  let months = today.getMonth() - dob.getMonth();
+  let days = today.getDate() - dob.getDate();
+  if (days < 0) {
+    months--;
+    const prevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
+    days += prevMonth.getDate();
+  }
+  if (months < 0) {
+    years--;
+    months += 12;
+  }
+  return {
+    years: Math.max(0, years),
+    months: Math.max(0, months),
+    days: Math.max(0, days)
+  };
+}
+
+// Format today's date into 'dd-MMM-yyyy' (e.g. 14-Oct-2026)
+function getTodayDateFormatted() {
+  return formatToDdMmmYyyy(new Date());
+}
+
+// Format today's date range into 'D Month, YYYY - D Month, YYYY'
+function getTodayDateRangeFormatted() {
+  const d = new Date();
+  const day = d.getDate();
+  const month = MONTH_NAMES_FULL[d.getMonth()];
+  const year = d.getFullYear();
+  return `${day} ${month}, ${year} - ${day} ${month}, ${year}`;
+}
+
+// Custom DatePicker (matches bootstrap-datepicker from patientQueue.jsp)
+function CustomDatePicker({
+  value,
+  onChange,
+  placeholder = "Select date",
+  format = "dd-MMM-yyyy",
+  // "dd-MMM-yyyy" or "yyyy-mm-dd"
+  className = "",
+  id,
+  showYearSelect = false,
+  alignRight = false,
+  disableFuture = false
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = React.useRef(null);
+  const initialDate = parseAnyDate(value) || new Date();
+  const [viewYear, setViewYear] = useState(initialDate.getFullYear());
+  const [viewMonth, setViewMonth] = useState(initialDate.getMonth());
+  useEffect(() => {
+    const d = parseAnyDate(value);
+    if (d) {
+      setViewYear(d.getFullYear());
+      setViewMonth(d.getMonth());
+    }
+  }, [value]);
+  useEffect(() => {
+    const handleOutside = e => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener('mousedown', handleOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [isOpen]);
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const firstDayOfWeek = new Date(viewYear, viewMonth, 1).getDay(); // 0 is Sun
+
+  const handlePrevMonth = e => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (viewMonth === 0) {
+      setViewMonth(11);
+      setViewYear(y => y - 1);
+    } else {
+      setViewMonth(m => m - 1);
+    }
+  };
+  const handleNextMonth = e => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (viewMonth === 11) {
+      setViewMonth(0);
+      setViewYear(y => y + 1);
+    } else {
+      setViewMonth(m => m + 1);
+    }
+  };
+  const handleSelectDay = (dayNum, e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const selected = new Date(viewYear, viewMonth, dayNum);
+    const formatted = format === "yyyy-mm-dd" ? formatToYyyyMmDd(selected) : formatToDdMmmYyyy(selected);
+    onChange(formatted);
+    setIsOpen(false);
+  };
+  const handleSelectToday = e => {
+    e.preventDefault();
+    e.stopPropagation();
+    const today = new Date();
+    setViewYear(today.getFullYear());
+    setViewMonth(today.getMonth());
+    const formatted = format === "yyyy-mm-dd" ? formatToYyyyMmDd(today) : formatToDdMmmYyyy(today);
+    onChange(formatted);
+    setIsOpen(false);
+  };
+  const handleClear = e => {
+    e.preventDefault();
+    e.stopPropagation();
+    onChange('');
+    setIsOpen(false);
+  };
+
+  // Year options for fast dropdown
+  const yearsOptions = [];
+  const startYr = showYearSelect ? 1920 : 2020;
+  const endYr = 2035;
+  for (let y = endYr; y >= startYr; y--) {
+    yearsOptions.push(y);
+  }
+
+  // Selected date comparison
+  const parsedVal = parseAnyDate(value);
+  const isSelected = dayNum => {
+    if (!parsedVal) return false;
+    return parsedVal.getFullYear() === viewYear && parsedVal.getMonth() === viewMonth && parsedVal.getDate() === dayNum;
+  };
+  const today = new Date();
+  const isToday = dayNum => {
+    return today.getFullYear() === viewYear && today.getMonth() === viewMonth && today.getDate() === dayNum;
+  };
+  const isFuture = dayNum => {
+    const d = new Date(viewYear, viewMonth, dayNum);
+    d.setHours(0, 0, 0, 0);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return d > now;
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "hims-datepicker-container",
+    ref: containerRef
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "hims-datepicker-input-wrap"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "hims-datepicker-icon-btn",
+    onClick: () => setIsOpen(!isOpen),
+    title: "Open Calendar Date Picker"
+  }, "\uD83D\uDCC5"), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    id: id,
+    value: value || '',
+    onChange: e => onChange(e.target.value),
+    onClick: () => setIsOpen(true),
+    placeholder: placeholder,
+    className: `hims-datepicker-input ${className}`,
+    autoComplete: "off"
+  })), isOpen && /*#__PURE__*/React.createElement("div", {
+    className: `hims-datepicker-dropdown ${alignRight ? 'align-right' : ''}`,
+    onClick: e => e.stopPropagation()
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "hims-dp-header"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "hims-dp-nav-btn",
+    onClick: handlePrevMonth,
+    title: "Previous Month"
+  }, "\u25C0"), /*#__PURE__*/React.createElement("div", {
+    className: "hims-dp-title"
+  }, /*#__PURE__*/React.createElement("select", {
+    value: viewMonth,
+    onChange: e => setViewMonth(Number(e.target.value)),
+    className: "hims-dp-select"
+  }, MONTH_NAMES_SHORT.map((name, i) => /*#__PURE__*/React.createElement("option", {
+    key: name,
+    value: i
+  }, MONTH_NAMES_FULL[i]))), /*#__PURE__*/React.createElement("select", {
+    value: viewYear,
+    onChange: e => setViewYear(Number(e.target.value)),
+    className: "hims-dp-select"
+  }, yearsOptions.map(y => /*#__PURE__*/React.createElement("option", {
+    key: y,
+    value: y
+  }, y)))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "hims-dp-nav-btn",
+    onClick: handleNextMonth,
+    title: "Next Month"
+  }, "\u25B6")), /*#__PURE__*/React.createElement("div", {
+    className: "hims-dp-grid"
+  }, ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(w => /*#__PURE__*/React.createElement("div", {
+    key: w,
+    className: "hims-dp-weekday"
+  }, w)), Array.from({
+    length: firstDayOfWeek
+  }).map((_, i) => /*#__PURE__*/React.createElement("div", {
+    key: `empty-${i}`,
+    className: "hims-dp-day empty"
+  })), Array.from({
+    length: daysInMonth
+  }).map((_, i) => {
+    const dayNum = i + 1;
+    const sel = isSelected(dayNum);
+    const tod = isToday(dayNum);
+    const fut = disableFuture && isFuture(dayNum);
+    return /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      key: dayNum,
+      disabled: fut,
+      onClick: e => !fut && handleSelectDay(dayNum, e),
+      className: `hims-dp-day ${sel ? 'selected' : ''} ${tod ? 'today' : ''} ${fut ? 'disabled' : ''}`
+    }, dayNum);
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "hims-dp-footer"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "hims-dp-footer-btn",
+    onClick: handleSelectToday
+  }, "Today"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "hims-dp-footer-btn",
+    onClick: handleClear
+  }, "Clear"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "hims-dp-footer-btn",
+    onClick: () => setIsOpen(false)
+  }, "Close"))));
+}
+
+// Custom DateRangePicker matching #reportRangeDiv in patientQueue.jsp (lines 397-414 & 14060-14120)
+function CustomDateRangePicker({
+  value,
+  onChange,
+  onRangeApply
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = React.useRef(null);
+  const today = new Date();
+  const [rangeStart, setRangeStart] = useState(today);
+  const [rangeEnd, setRangeEnd] = useState(today);
+  const [activePreset, setActivePreset] = useState('today');
+
+  // Month navigation for left calendar
+  const [viewYear, setViewYear] = useState(today.getFullYear());
+  const [viewMonth, setViewMonth] = useState(today.getMonth());
+
+  // Fast manual input dates
+  const [inputFrom, setInputFrom] = useState(formatToDdMmmYyyy(today));
+  const [inputTo, setInputTo] = useState(formatToDdMmmYyyy(today));
+  useEffect(() => {
+    const handleOutside = e => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener('mousedown', handleOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [isOpen]);
+  const applyRange = (start, end, presetName = '') => {
+    const s = start || new Date();
+    const e = end || s;
+    const startStr = `${s.getDate()} ${MONTH_NAMES_FULL[s.getMonth()]}, ${s.getFullYear()}`;
+    const endStr = `${e.getDate()} ${MONTH_NAMES_FULL[e.getMonth()]}, ${e.getFullYear()}`;
+    const rangeText = `${startStr} - ${endStr}`;
+    setRangeStart(s);
+    setRangeEnd(e);
+    setInputFrom(formatToDdMmmYyyy(s));
+    setInputTo(formatToDdMmmYyyy(e));
+    if (presetName) setActivePreset(presetName);
+    onChange(rangeText);
+    if (onRangeApply) onRangeApply(s, e);
+    setIsOpen(false);
+  };
+  const selectPreset = type => {
+    const t = new Date();
+    let start = new Date(t);
+    let end = new Date(t);
+    if (type === 'today') {
+      start = t;
+      end = t;
+    } else if (type === 'yesterday') {
+      start = new Date(t);
+      start.setDate(t.getDate() - 1);
+      end = new Date(start);
+    } else if (type === 'last7') {
+      start = new Date(t);
+      start.setDate(t.getDate() - 6);
+      end = t;
+    } else if (type === 'last30') {
+      start = new Date(t);
+      start.setDate(t.getDate() - 29);
+      end = t;
+    } else if (type === 'thisMonth') {
+      start = new Date(t.getFullYear(), t.getMonth(), 1);
+      end = new Date(t.getFullYear(), t.getMonth() + 1, 0);
+    } else if (type === 'last6Months') {
+      start = new Date(t.getFullYear(), t.getMonth() - 6, 1);
+      end = t;
+    } else if (type === 'all') {
+      setActivePreset('all');
+      onChange("All Appointments");
+      if (onRangeApply) onRangeApply(null, null);
+      setIsOpen(false);
+      return;
+    }
+    applyRange(start, end, type);
+  };
+  const handleDayClick = date => {
+    setActivePreset('custom');
+    if (!rangeStart || rangeStart && rangeEnd) {
+      setRangeStart(date);
+      setRangeEnd(null);
+      setInputFrom(formatToDdMmmYyyy(date));
+    } else {
+      if (date < rangeStart) {
+        setRangeEnd(rangeStart);
+        setRangeStart(date);
+        setInputFrom(formatToDdMmmYyyy(date));
+        setInputTo(formatToDdMmmYyyy(rangeStart));
+      } else {
+        setRangeEnd(date);
+        setInputTo(formatToDdMmmYyyy(date));
+      }
+    }
+  };
+  const isInRange = d => {
+    if (!rangeStart || !rangeEnd) return false;
+    const s = new Date(rangeStart.getFullYear(), rangeStart.getMonth(), rangeStart.getDate()).getTime();
+    const e = new Date(rangeEnd.getFullYear(), rangeEnd.getMonth(), rangeEnd.getDate()).getTime();
+    const cur = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+    return cur > s && cur < e;
+  };
+  const isStart = d => {
+    if (!rangeStart) return false;
+    return d.getFullYear() === rangeStart.getFullYear() && d.getMonth() === rangeStart.getMonth() && d.getDate() === rangeStart.getDate();
+  };
+  const isEnd = d => {
+    if (!rangeEnd) return false;
+    return d.getFullYear() === rangeEnd.getFullYear() && d.getMonth() === rangeEnd.getMonth() && d.getDate() === rangeEnd.getDate();
+  };
+  const handleApplyCustom = () => {
+    const s = parseAnyDate(inputFrom) || rangeStart || new Date();
+    const e = parseAnyDate(inputTo) || rangeEnd || s;
+    applyRange(s, e, 'custom');
+  };
+  const renderMonthCalendar = (y, m, isLeft) => {
+    const daysCount = new Date(y, m + 1, 0).getDate();
+    const firstDay = new Date(y, m, 1).getDay();
+    return /*#__PURE__*/React.createElement("div", {
+      className: "hims-dr-cal-box",
+      key: `${y}-${m}`
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "hims-dr-cal-header"
+    }, isLeft ? /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "hims-dp-nav-btn",
+      onClick: e => {
+        e.stopPropagation();
+        if (viewMonth === 0) {
+          setViewMonth(11);
+          setViewYear(prev => prev - 1);
+        } else {
+          setViewMonth(prev => prev - 1);
+        }
+      },
+      title: "Previous Month"
+    }, "\u25C0") : /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: '24px'
+      }
+    }), /*#__PURE__*/React.createElement("span", {
+      style: {
+        fontWeight: '700',
+        fontSize: '12px',
+        color: '#1e293b'
+      }
+    }, MONTH_NAMES_FULL[m], " ", y), !isLeft ? /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      className: "hims-dp-nav-btn",
+      onClick: e => {
+        e.stopPropagation();
+        if (viewMonth === 11) {
+          setViewMonth(0);
+          setViewYear(prev => prev + 1);
+        } else {
+          setViewMonth(prev => prev + 1);
+        }
+      },
+      title: "Next Month"
+    }, "\u25B6") : /*#__PURE__*/React.createElement("div", {
+      style: {
+        width: '24px'
+      }
+    })), /*#__PURE__*/React.createElement("div", {
+      className: "hims-dr-grid"
+    }, ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(w => /*#__PURE__*/React.createElement("div", {
+      key: w,
+      className: "hims-dr-weekday"
+    }, w)), Array.from({
+      length: firstDay
+    }).map((_, i) => /*#__PURE__*/React.createElement("div", {
+      key: `empty-${i}`,
+      className: "hims-dr-day-cell empty"
+    })), Array.from({
+      length: daysCount
+    }).map((_, i) => {
+      const dayNum = i + 1;
+      const thisDate = new Date(y, m, dayNum);
+      const startSelected = isStart(thisDate);
+      const endSelected = isEnd(thisDate);
+      const inRangeSelected = isInRange(thisDate);
+      const isTodayCell = today.getFullYear() === y && today.getMonth() === m && today.getDate() === dayNum;
+      return /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        key: dayNum,
+        onClick: e => {
+          e.stopPropagation();
+          handleDayClick(thisDate);
+        },
+        className: `hims-dr-day-cell ${startSelected ? 'range-start' : ''} ${endSelected ? 'range-end' : ''} ${inRangeSelected ? 'in-range' : ''} ${isTodayCell ? 'today-dot' : ''}`,
+        title: formatToDdMmmYyyy(thisDate)
+      }, dayNum);
+    })));
+  };
+  const rightYear = viewMonth === 11 ? viewYear + 1 : viewYear;
+  const rightMonth = viewMonth === 11 ? 0 : viewMonth + 1;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "hims-daterange-container",
+    ref: containerRef
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    id: "reportRangeDiv",
+    className: "reg-date-range-box hims-report-range-btn",
+    onClick: () => setIsOpen(!isOpen),
+    title: "Click to select Date Range (patientQueue.jsp daterangepicker)"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "cal-icon",
+    style: {
+      fontSize: '15px'
+    }
+  }, "\uD83D\uDCC5"), /*#__PURE__*/React.createElement("span", {
+    className: "dr-val-text"
+  }, value || getTodayDateRangeFormatted()), /*#__PURE__*/React.createElement("span", {
+    className: "caret-icon",
+    style: {
+      marginLeft: '8px',
+      fontSize: '10px',
+      color: '#64748b'
+    }
+  }, "\u25BC")), /*#__PURE__*/React.createElement("input", {
+    type: "hidden",
+    id: "reportFromDt",
+    name: "reportFromDt",
+    value: formatToDdMmmYyyy(rangeStart || today)
+  }), /*#__PURE__*/React.createElement("input", {
+    type: "hidden",
+    id: "reportToDt",
+    name: "reportToDt",
+    value: formatToDdMmmYyyy(rangeEnd || today)
+  }), isOpen && /*#__PURE__*/React.createElement("div", {
+    className: "hims-daterange-dropdown",
+    onClick: e => e.stopPropagation()
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "hims-dr-main-layout"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "hims-dr-sidebar-presets"
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontSize: '11px',
+      fontWeight: '800',
+      color: '#475569',
+      textTransform: 'uppercase',
+      marginBottom: '4px'
+    }
+  }, "Quick Ranges:"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: `hims-dr-preset-item-btn ${activePreset === 'today' ? 'active' : ''}`,
+    onClick: () => selectPreset('today')
+  }, "\uD83D\uDCC5 Today"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: `hims-dr-preset-item-btn ${activePreset === 'yesterday' ? 'active' : ''}`,
+    onClick: () => selectPreset('yesterday')
+  }, "\u25C0 Yesterday"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: `hims-dr-preset-item-btn ${activePreset === 'last7' ? 'active' : ''}`,
+    onClick: () => selectPreset('last7')
+  }, "7\uFE0F\u20E3 Last 7 Days"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: `hims-dr-preset-item-btn ${activePreset === 'last30' ? 'active' : ''}`,
+    onClick: () => selectPreset('last30')
+  }, "\uD83D\uDDD3\uFE0F Last 30 Days"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: `hims-dr-preset-item-btn ${activePreset === 'thisMonth' ? 'active' : ''}`,
+    onClick: () => selectPreset('thisMonth')
+  }, "\uD83D\uDCC6 This Month"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: `hims-dr-preset-item-btn ${activePreset === 'last6Months' ? 'active' : ''}`,
+    onClick: () => selectPreset('last6Months')
+  }, "\u23EE\uFE0F Last 6 Months"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: `hims-dr-preset-item-btn ${activePreset === 'all' ? 'active' : ''}`,
+    onClick: () => selectPreset('all')
+  }, "\uD83C\uDF10 Show All")), /*#__PURE__*/React.createElement("div", {
+    className: "hims-dr-calendars-wrap"
+  }, renderMonthCalendar(viewYear, viewMonth, true), renderMonthCalendar(rightYear, rightMonth, false))), /*#__PURE__*/React.createElement("div", {
+    className: "hims-dr-bottom-bar"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "hims-dr-inputs-inline"
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '11px',
+      fontWeight: '700',
+      color: '#475569'
+    }
+  }, "From:"), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    value: inputFrom,
+    onChange: e => setInputFrom(e.target.value),
+    placeholder: "dd-MMM-yyyy",
+    className: "hims-dr-mini-input"
+  }), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '11px',
+      fontWeight: '700',
+      color: '#475569'
+    }
+  }, "To:"), /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    value: inputTo,
+    onChange: e => setInputTo(e.target.value),
+    placeholder: "dd-MMM-yyyy",
+    className: "hims-dr-mini-input"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "hims-dr-actions"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "btn btn-secondary btn-sm",
+    onClick: () => setIsOpen(false),
+    style: {
+      padding: '4px 10px',
+      fontSize: '11.5px'
+    }
+  }, "Cancel"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "btn btn-primary btn-sm",
+    onClick: handleApplyCustom,
+    style: {
+      background: '#0284c7',
+      borderColor: '#0284c7',
+      color: '#fff',
+      padding: '4px 12px',
+      fontSize: '11.5px'
+    }
+  }, "Apply Range")))));
+}
+
+// Generate slots for a doctor & date matching Indus schedule (strictly query-wise)
 function generateDoctorSlots(doctorName, dateStr, appointmentsList, extraTokens = 0) {
   const startHour = 8;
   const startMin = 30;
   const totalSlotsCount = 12 + (extraTokens || 0);
   const slots = [];
 
-  // Determine booked tokens from existing appointments
+  // Determine booked tokens strictly from existing appointments query-wise (no fake dummy bookings)
   const bookedSet = new Set();
   if (appointmentsList && appointmentsList.length > 0) {
     appointmentsList.forEach(apt => {
@@ -2756,11 +2872,6 @@ function generateDoctorSlots(doctorName, dateStr, appointmentsList, extraTokens 
         }
       }
     });
-  }
-
-  // By default, for Dr. SATYANARAYANA V VSN / , token 1 is booked (matching the screenshot where token 1 is RED)
-  if (doctorName && doctorName.includes('SATYANARAYANA')) {
-    bookedSet.add(1);
   }
   for (let i = 1; i <= totalSlotsCount; i++) {
     const startMins = startHour * 60 + startMin + (i - 1) * 20;
@@ -2795,21 +2906,37 @@ function RegistrationForm({
   const [searchTerm, setSearchTerm] = useState('');
   const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [selectedHospital, setSelectedHospital] = useState('INDUS HEALTH CITY');
-  const [dateRange, setDateRange] = useState('8 October, 2026 - 8 October, 2026');
+  const [dateRange, setDateRange] = useState(getTodayDateRangeFormatted());
+  const [dateFilterRange, setDateFilterRange] = useState(null);
   const [printModal, setPrintModal] = useState(null);
   const [toast, setToast] = useState(null);
   const [vitalsDrawer, setVitalsDrawer] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingPatient, setEditingPatient] = useState(null);
 
-  // Fetch live queue from backend
+  // Existing Patient Search in Tab 2 State (query-wise based on PatientMapper DetailedView)
+  const [existingSearchTerm, setExistingSearchTerm] = useState('');
+  const [existingSearchResults, setExistingSearchResults] = useState([]);
+  const [isSearchingExisting, setIsSearchingExisting] = useState(false);
+  const [isExistingPatientSelected, setIsExistingPatientSelected] = useState(false);
+  const [selectedPatientUmr, setSelectedPatientUmr] = useState('');
+
+  // Fetch live queue from backend based strictly on query-wise data retrieval
   const fetchServerQueue = async () => {
     try {
-      const res = await fetch('/api/patient/queue');
+      const res = await fetch('/patient/patientQueue');
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
+        if (Array.isArray(data)) {
           setAppointments(data);
+          return;
+        }
+      }
+      const fallbackRes = await fetch('/api/patient/queue');
+      if (fallbackRes.ok) {
+        const fbData = await fallbackRes.json();
+        if (Array.isArray(fbData)) {
+          setAppointments(fbData);
         }
       }
     } catch (err) {
@@ -2820,53 +2947,47 @@ function RegistrationForm({
     fetchServerQueue();
   }, []);
 
-  // Auto-merge persisted records from props/backend into appointments
+  // Merge newly registered records from App into appointments if present
   useEffect(() => {
     if (records && Object.keys(records).length > 0) {
-      const persistedList = Object.values(records).map(rec => ({
-        umrNo: rec.opId || `UMR${Math.floor(334250 + Math.random() * 50)}`,
-        token: rec.token || '1',
-        patientName: (rec.patientName || 'PATIENT').toUpperCase(),
-        genderAge: `${(rec.gender || 'MALE').toUpperCase()}/${rec.age || 40}yrs`,
+      const persistedList = Object.values(records).filter(rec => rec && (rec.umrNo || rec.opId || rec.patientCode)).map(rec => ({
+        umrNo: rec.umrNo || rec.opId || rec.patientCode,
+        token: rec.token || rec.tokenNum || '1',
+        patientName: (rec.patientName || rec.pname || '').toUpperCase(),
+        genderAge: rec.genderAge || `${(rec.gender || 'MALE').toUpperCase()}/${rec.age || 40}yrs`,
         gender: rec.gender || 'MALE',
         age: rec.age || 40,
-        appointmentDate: rec.visitDate || '09-Oct-2026',
-        consultant: rec.doctor || 'SATYANARAYANA V VSN / ',
-        category: rec.priority === 'Emergency' ? 'EMERGENCY' : 'GENERAL',
-        billStatus: 'PAID',
-        regCash: rec.payment ? rec.payment.regFee || 50 : 50,
+        appointmentDate: rec.appointmentDate || rec.apptDt || rec.visitDate || '',
+        consultant: rec.consultant || rec.docName || rec.doctor || '',
+        category: rec.category || rec.patientCategory || 'GENERAL',
+        billStatus: rec.billStatus || 'PAID',
+        regCash: rec.payment ? rec.payment.regFee || 50 : rec.regCash || 50,
         regCredit: 0,
         regUpi: 0,
-        conCash: rec.payment ? rec.payment.consultationFee || 1000 : 1000,
+        conCash: rec.payment ? rec.payment.consultationFee || 1000 : rec.conCash || 1000,
         conCredit: 0,
         conUpi: 0,
-        phone: rec.phone || '',
-        vitals: rec.vitals || {
-          bp: '120/80',
-          pulse: '74',
-          spo2: '99%',
-          temp: '98.6',
-          weight: '65'
-        }
+        phone: rec.phone || rec.mobNum || '',
+        vitals: rec.vitals || null
       }));
-
-      // Combine ensuring unique UMR numbers
-      setAppointments(prev => {
-        const existingUmrs = new Set(prev.map(p => p.umrNo));
-        const newToAdd = persistedList.filter(p => !existingUmrs.has(p.umrNo));
-        return [...newToAdd, ...prev];
-      });
+      if (persistedList.length > 0) {
+        setAppointments(prev => {
+          const existingUmrs = new Set(prev.map(p => p.umrNo).filter(Boolean));
+          const newToAdd = persistedList.filter(p => p.umrNo && !existingUmrs.has(p.umrNo));
+          return [...newToAdd, ...prev];
+        });
+      }
     }
   }, [records]);
 
-  // Tab 2 Form Data State (Matching Screenshot 2 & Exact Doctor Details)
+  // Tab 2 Form Data State (Matching Screenshot 2 & Exact Doctor Details - ZERO dummy data)
   const [formData, setFormData] = useState({
     title: 'Mr.',
     patientName: '',
     lastName: '',
     gender: 'Male',
-    dob: '1981-05-15',
-    years: 45,
+    dob: '',
+    years: '',
     months: 0,
     days: 0,
     mobile: '',
@@ -2888,7 +3009,7 @@ function RegistrationForm({
     healthIssue: '',
     // Appointment Details (Selected dynamically on step-by-step workflow)
     location: '',
-    appointmentDate: '09-Oct-2026',
+    appointmentDate: getTodayDateFormatted(),
     token: '',
     consultant: '',
     doctorCode: '',
@@ -2924,6 +3045,99 @@ function RegistrationForm({
   const showNotification = msg => {
     setToast(msg);
     setTimeout(() => setToast(null), 4000);
+  };
+
+  // Search Existing Patient query-wise from database
+  const handleSearchExisting = async e => {
+    if (e) e.preventDefault();
+    if (!existingSearchTerm.trim()) {
+      showNotification('Please enter UMR Number, Mobile, or Patient Name to search.');
+      return;
+    }
+    setIsSearchingExisting(true);
+    try {
+      const res = await fetch(`/patient/searchPatients?term=${encodeURIComponent(existingSearchTerm.trim())}`);
+      if (res.ok) {
+        const list = await res.json();
+        if (Array.isArray(list) && list.length > 0) {
+          setExistingSearchResults(list);
+          showNotification(`✓ Found ${list.length} existing patient record(s) in database.`);
+        } else {
+          setExistingSearchResults([]);
+          showNotification(`No existing records found for "${existingSearchTerm}". Enter details below to register as New Patient.`);
+        }
+      } else {
+        setExistingSearchResults([]);
+      }
+    } catch (err) {
+      console.warn('Search existing error:', err);
+      setExistingSearchResults([]);
+    } finally {
+      setIsSearchingExisting(false);
+    }
+  };
+
+  // Select an existing patient & auto-populate DetailedView fields query-wise
+  const handleSelectExistingPatient = async item => {
+    const umr = item.umrNo || item.patientCode;
+    try {
+      const res = await fetch(`/patient/getPatientDetails?umrNo=${encodeURIComponent(umr)}`);
+      let details = item;
+      if (res.ok) {
+        const full = await res.json();
+        if (full && !full.error) details = {
+          ...item,
+          ...full
+        };
+      }
+      setFormData(prev => ({
+        ...prev,
+        title: details.title || prev.title,
+        patientName: details.pname || details.patientName || '',
+        lastName: details.lastName || '',
+        gender: details.gender || 'Male',
+        dob: details.dob || '',
+        years: details.age || '',
+        mobile: details.mobNum || details.phone || '',
+        address: details.addr || details.address || '',
+        village: details.village || '',
+        city: details.city || 'Visakhapatnam',
+        state: details.state || 'Andhra Pradesh',
+        country: details.country || 'India',
+        bloodGroup: details.bloodGrp || details.bloodGroup || 'B+',
+        category: details.category || details.patientCategory || 'GENERAL - TRI',
+        idType: details.idProofType || 'Aadhaar',
+        idNumber: details.idProofNum || '',
+        parentOrHusband: details.parentName || ''
+      }));
+      setIsExistingPatientSelected(true);
+      setSelectedPatientUmr(umr);
+      setExistingSearchResults([]);
+      showNotification(`✓ Loaded existing patient ${details.patientName || details.pname} (${umr}) query-wise!`);
+    } catch (err) {
+      console.warn('Error fetching patient details:', err);
+    }
+  };
+  const handleClearExistingPatient = () => {
+    setIsExistingPatientSelected(false);
+    setSelectedPatientUmr('');
+    setExistingSearchTerm('');
+    setExistingSearchResults([]);
+    setFormData(prev => ({
+      ...prev,
+      patientName: '',
+      lastName: '',
+      dob: '',
+      years: '',
+      mobile: '',
+      village: '',
+      address: '',
+      idNumber: '',
+      parentOrHusband: '',
+      healthIssue: '',
+      token: ''
+    }));
+    showNotification('Switched to New Patient Registration mode.');
   };
 
   // Step 1: Hospital Change Handler
@@ -3013,29 +3227,46 @@ function RegistrationForm({
     showNotification(`✓ Added Extra Emergency Token #${nextTokenNum} for Dr. ${formData.consultant}`);
   };
 
-  // DOB & Age auto-sync
+  // DOB & Age auto-sync matching patientQueue.jsp (lines 6465-6535)
   const handleDobChange = dobStr => {
-    if (!dobStr) return;
-    const birth = new Date(dobStr);
-    const now = new Date('2026-10-08');
-    let yrs = now.getFullYear() - birth.getFullYear();
-    if (now.getMonth() < birth.getMonth() || now.getMonth() === birth.getMonth() && now.getDate() < birth.getDate()) {
-      yrs--;
+    if (!dobStr) {
+      setFormData(prev => ({
+        ...prev,
+        dob: '',
+        years: '',
+        months: 0,
+        days: 0
+      }));
+      return;
     }
+    const ageParts = getAgeInYMD(dobStr);
     setFormData(prev => ({
       ...prev,
       dob: dobStr,
-      years: Math.max(0, yrs)
+      years: ageParts.years,
+      months: ageParts.months,
+      days: ageParts.days
     }));
   };
-  const handleYearsChange = yrs => {
-    const y = parseInt(yrs, 10) || 0;
-    const bYear = 2026 - y;
-    setFormData(prev => ({
-      ...prev,
-      years: y,
-      dob: `${bYear}-01-01`
-    }));
+  const handleAgeChange = (field, val) => {
+    setFormData(prev => {
+      const numVal = val === '' ? '' : parseInt(val, 10);
+      const updated = {
+        ...prev,
+        [field]: numVal
+      };
+      const y = parseInt(field === 'years' ? numVal : updated.years, 10) || 0;
+      const m = parseInt(field === 'months' ? numVal : updated.months, 10) || 0;
+      const d = parseInt(field === 'days' ? numVal : updated.days, 10) || 0;
+      if (y > 0 || m > 0 || d > 0) {
+        const today = new Date();
+        const calcDob = new Date(today.getFullYear() - y, today.getMonth() - m, today.getDate() - d);
+        updated.dob = formatToYyyyMmDd(calcDob);
+      } else if (val === '') {
+        updated.dob = '';
+      }
+      return updated;
+    });
   };
 
   // Handle Edit Patient
@@ -3305,11 +3536,26 @@ function RegistrationForm({
     showNotification("📥 Appointments list exported to Excel (CSV).");
   };
 
-  // Filtered appointments
+  // Filtered appointments (by searchTerm and dateFilterRange matching patientQueue.jsp)
   const filteredAppointments = appointments.filter(row => {
-    if (!searchTerm) return true;
-    const term = searchTerm.toLowerCase();
-    return row.umrNo.toLowerCase().includes(term) || row.patientName.toLowerCase().includes(term) || row.consultant.toLowerCase().includes(term) || row.phone && row.phone.includes(term);
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      const matchesSearch = row.umrNo && row.umrNo.toLowerCase().includes(term) || row.patientName && row.patientName.toLowerCase().includes(term) || row.consultant && row.consultant.toLowerCase().includes(term) || row.phone && row.phone.includes(term);
+      if (!matchesSearch) return false;
+    }
+    if (dateFilterRange && dateFilterRange.start && dateFilterRange.end) {
+      const rowDate = parseAnyDate(row.appointmentDate);
+      if (rowDate) {
+        const startCheck = new Date(dateFilterRange.start);
+        startCheck.setHours(0, 0, 0, 0);
+        const endCheck = new Date(dateFilterRange.end);
+        endCheck.setHours(23, 59, 59, 999);
+        if (rowDate < startCheck || rowDate > endCheck) {
+          return false;
+        }
+      }
+    }
+    return true;
   });
 
   // Calculate Summary Metrics Bar
@@ -3395,16 +3641,21 @@ function RegistrationForm({
     value: "INDUS SUPER SPECIALITY"
   }, "INDUS SUPER SPECIALITY"), /*#__PURE__*/React.createElement("option", {
     value: "INDUS CLINIC & DIAGNOSTICS"
-  }, "INDUS CLINIC & DIAGNOSTICS"))), /*#__PURE__*/React.createElement("div", {
-    className: "reg-date-range-box"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "cal-icon"
-  }, "\uD83D\uDCC5"), /*#__PURE__*/React.createElement("input", {
-    type: "text",
+  }, "INDUS CLINIC & DIAGNOSTICS"))), /*#__PURE__*/React.createElement(CustomDateRangePicker, {
     value: dateRange,
-    onChange: e => setDateRange(e.target.value),
-    className: "reg-date-input"
-  }))), /*#__PURE__*/React.createElement("div", {
+    onChange: setDateRange,
+    onRangeApply: (start, end) => {
+      setDateFilterRange(start && end ? {
+        start,
+        end
+      } : null);
+      if (start && end) {
+        showNotification(`✓ Filtered appointments: ${formatToDdMmmYyyy(start)} to ${formatToDdMmmYyyy(end)}`);
+      } else {
+        showNotification(`✓ Showing all appointments`);
+      }
+    }
+  })), /*#__PURE__*/React.createElement("div", {
     className: "reg-summary-pill-bar"
   }, /*#__PURE__*/React.createElement("div", {
     className: "metric-chip"
@@ -3496,7 +3747,38 @@ function RegistrationForm({
     className: "reg-table-container"
   }, /*#__PURE__*/React.createElement("table", {
     className: "reg-appointments-table"
-  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "Token No \u21C5"), /*#__PURE__*/React.createElement("th", null, "UMR No \u21C5"), /*#__PURE__*/React.createElement("th", null, "PatientName \u21C5"), /*#__PURE__*/React.createElement("th", null, "Gender/Age \u21C5"), /*#__PURE__*/React.createElement("th", null, "Appointment Date \u21C5"), /*#__PURE__*/React.createElement("th", null, "Consultant \u21C5"), /*#__PURE__*/React.createElement("th", null, "Category \u21C5"), /*#__PURE__*/React.createElement("th", null, "Bill Status \u21C5"), /*#__PURE__*/React.createElement("th", null, "Vitals \u21C5"), /*#__PURE__*/React.createElement("th", null, "Vitals Print \u21C5"), /*#__PURE__*/React.createElement("th", null, "RegistrationFeePrint \u21C5"), /*#__PURE__*/React.createElement("th", null, "ConsultationFeePrint \u21C5"), /*#__PURE__*/React.createElement("th", null, "Ip Registration \u21C5"), /*#__PURE__*/React.createElement("th", null, "Reg.Cash \u21C5"), /*#__PURE__*/React.createElement("th", null, "Reg.Credit \u21C5"), /*#__PURE__*/React.createElement("th", null, "Reg.Upi \u21C5"), /*#__PURE__*/React.createElement("th", null, "Con.Cash \u21C5"), /*#__PURE__*/React.createElement("th", null, "Con.Credit \u21C5"), /*#__PURE__*/React.createElement("th", null, "Con.Upi \u21C5"), /*#__PURE__*/React.createElement("th", null, "Actions"))), /*#__PURE__*/React.createElement("tbody", null, filteredAppointments.slice(0, entriesPerPage).map((row, idx) => /*#__PURE__*/React.createElement("tr", {
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "Token No \u21C5"), /*#__PURE__*/React.createElement("th", null, "UMR No \u21C5"), /*#__PURE__*/React.createElement("th", null, "PatientName \u21C5"), /*#__PURE__*/React.createElement("th", null, "Gender/Age \u21C5"), /*#__PURE__*/React.createElement("th", null, "Appointment Date \u21C5"), /*#__PURE__*/React.createElement("th", null, "Consultant \u21C5"), /*#__PURE__*/React.createElement("th", null, "Category \u21C5"), /*#__PURE__*/React.createElement("th", null, "Bill Status \u21C5"), /*#__PURE__*/React.createElement("th", null, "Vitals \u21C5"), /*#__PURE__*/React.createElement("th", null, "Vitals Print \u21C5"), /*#__PURE__*/React.createElement("th", null, "RegistrationFeePrint \u21C5"), /*#__PURE__*/React.createElement("th", null, "ConsultationFeePrint \u21C5"), /*#__PURE__*/React.createElement("th", null, "Ip Registration \u21C5"), /*#__PURE__*/React.createElement("th", null, "Reg.Cash \u21C5"), /*#__PURE__*/React.createElement("th", null, "Reg.Credit \u21C5"), /*#__PURE__*/React.createElement("th", null, "Reg.Upi \u21C5"), /*#__PURE__*/React.createElement("th", null, "Con.Cash \u21C5"), /*#__PURE__*/React.createElement("th", null, "Con.Credit \u21C5"), /*#__PURE__*/React.createElement("th", null, "Con.Upi \u21C5"), /*#__PURE__*/React.createElement("th", null, "Actions"))), /*#__PURE__*/React.createElement("tbody", null, filteredAppointments.length === 0 ? /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+    colSpan: 20,
+    style: {
+      textAlign: 'center',
+      padding: '48px 20px',
+      color: '#64748b',
+      background: '#f8fafc'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '8px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '32px'
+    }
+  }, "\uD83D\uDCCB"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '15px',
+      fontWeight: '600',
+      color: '#1e293b'
+    }
+  }, searchTerm ? 'No matching patient records found' : 'No patient records found in queue'), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '13px',
+      color: '#64748b'
+    }
+  }, searchTerm ? 'Try adjusting your search criteria.' : 'Click the "Add Appointment" tab above to register a new patient into the database.')))) : filteredAppointments.slice(0, entriesPerPage).map((row, idx) => /*#__PURE__*/React.createElement("tr", {
     key: row.umrNo || idx,
     className: idx % 2 === 0 ? 'row-even' : 'row-odd'
   }, /*#__PURE__*/React.createElement("td", {
@@ -3632,13 +3914,18 @@ function RegistrationForm({
         ...prev,
         patientName: '',
         lastName: '',
+        dob: '',
+        years: '',
+        months: 0,
+        days: 0,
         mobile: '',
         village: '',
         address: '',
         idNumber: '',
         parentOrHusband: '',
         healthIssue: '',
-        token: `OPD-${Math.floor(120 + appointments.length + 2)}`
+        appointmentDate: getTodayDateFormatted(),
+        token: ''
       }));
       showNotification("Switched back to New Patient Registration mode.");
     },
@@ -3653,6 +3940,150 @@ function RegistrationForm({
       fontSize: '13px'
     }
   }, "\u2715 Cancel Edit")), /*#__PURE__*/React.createElement("div", {
+    className: "form-section-card existing-patient-search-card",
+    style: {
+      background: '#f0f9ff',
+      border: '1.5px solid #0284c7',
+      borderRadius: '8px',
+      padding: '12px 18px',
+      marginBottom: '15px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '8px'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '18px'
+    }
+  }, "\uD83D\uDD0D"), /*#__PURE__*/React.createElement("h4", {
+    style: {
+      margin: 0,
+      color: '#0369a1',
+      fontSize: '15px',
+      fontWeight: 'bold'
+    }
+  }, "SEARCH EXISTING PATIENT (Database Query by UMR / Phone / Name):")), isExistingPatientSelected && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: handleClearExistingPatient,
+    style: {
+      background: '#dbeafe',
+      color: '#1e40af',
+      border: '1px solid #93c5fd',
+      borderRadius: '5px',
+      padding: '4px 10px',
+      fontSize: '12px',
+      fontWeight: 'bold',
+      cursor: 'pointer'
+    }
+  }, "Clear / New Patient Mode")), /*#__PURE__*/React.createElement("form", {
+    onSubmit: handleSearchExisting,
+    style: {
+      display: 'flex',
+      gap: '10px',
+      alignItems: 'center'
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    value: existingSearchTerm,
+    onChange: e => setExistingSearchTerm(e.target.value),
+    placeholder: "Enter UMR Number (e.g. UMR334254), Mobile, or Patient Name to query database...",
+    style: {
+      flex: 1,
+      padding: '7px 12px',
+      border: '1px solid #38bdf8',
+      borderRadius: '6px',
+      fontSize: '13px',
+      outline: 'none',
+      background: '#ffffff'
+    }
+  }), /*#__PURE__*/React.createElement("button", {
+    type: "submit",
+    disabled: isSearchingExisting,
+    style: {
+      background: '#0284c7',
+      color: '#ffffff',
+      border: 'none',
+      borderRadius: '6px',
+      padding: '7px 16px',
+      fontWeight: 'bold',
+      fontSize: '13px',
+      cursor: 'pointer'
+    }
+  }, isSearchingExisting ? 'Searching...' : 'Search Database')), existingSearchResults.length > 0 && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: '10px',
+      background: '#ffffff',
+      border: '1px solid #cbd5e1',
+      borderRadius: '6px',
+      maxHeight: '180px',
+      overflowY: 'auto',
+      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      padding: '6px 12px',
+      background: '#f8fafc',
+      fontSize: '12px',
+      fontWeight: 'bold',
+      color: '#64748b',
+      borderBottom: '1px solid #e2e8f0'
+    }
+  }, "Found ", existingSearchResults.length, " patient record(s) in database (Click to select & populate form):"), existingSearchResults.map((pat, idx) => /*#__PURE__*/React.createElement("div", {
+    key: idx,
+    onClick: () => handleSelectExistingPatient(pat),
+    style: {
+      padding: '8px 12px',
+      borderBottom: '1px solid #f1f5f9',
+      cursor: 'pointer',
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      fontSize: '13px'
+    },
+    onMouseEnter: e => e.currentTarget.style.background = '#e0f2fe',
+    onMouseLeave: e => e.currentTarget.style.background = '#ffffff'
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("strong", {
+    style: {
+      color: '#0369a1'
+    }
+  }, pat.umrNo || pat.patientCode), " - ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontWeight: '600'
+    }
+  }, pat.patientName || pat.pname), /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: '#64748b',
+      marginLeft: '10px',
+      fontSize: '12px'
+    }
+  }, "(", pat.gender || 'MALE', " / ", pat.age || '-', " yrs)")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      color: '#0f766e',
+      fontSize: '12px',
+      fontWeight: '500'
+    }
+  }, "\uD83D\uDCDE ", pat.mobNum || pat.phone || 'No phone')))), isExistingPatientSelected && /*#__PURE__*/React.createElement("div", {
+    style: {
+      marginTop: '8px',
+      fontSize: '12px',
+      color: '#0369a1',
+      fontWeight: '600'
+    }
+  }, "\u2713 Active Patient: ", /*#__PURE__*/React.createElement("span", {
+    style: {
+      color: '#1e40af'
+    }
+  }, formData.title, " ", formData.patientName, " ", formData.lastName), " (UMR: ", selectedPatientUmr, ") loaded query-wise from database.")), /*#__PURE__*/React.createElement("div", {
     className: "form-section-card patient-details-top-card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "card-header-bar"
@@ -3735,11 +4166,16 @@ function RegistrationForm({
     className: "input-group col-span-1"
   }, /*#__PURE__*/React.createElement("label", {
     className: "field-lbl"
-  }, "Date of Birth"), /*#__PURE__*/React.createElement("input", {
-    type: "date",
+  }, "Date of Birth"), /*#__PURE__*/React.createElement(CustomDatePicker, {
+    id: "pntDob",
     value: formData.dob,
-    onChange: e => handleDobChange(e.target.value),
-    className: "dense-input equal-input"
+    onChange: handleDobChange,
+    format: "yyyy-mm-dd",
+    placeholder: "YYYY-MM-DD",
+    showYearSelect: true,
+    className: "dense-input equal-input",
+    disableFuture: true,
+    alignRight: true
   })), /*#__PURE__*/React.createElement("div", {
     className: "input-group col-span-1"
   }, /*#__PURE__*/React.createElement("label", {
@@ -3750,36 +4186,39 @@ function RegistrationForm({
     className: "mini-age-wrap"
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    id: "age",
     value: formData.years,
-    onChange: e => handleYearsChange(e.target.value),
+    onChange: e => handleAgeChange('years', e.target.value),
     placeholder: "Y",
-    className: "dense-input age-val"
+    className: "dense-input age-val",
+    min: "0",
+    max: "130"
   }), /*#__PURE__*/React.createElement("span", {
     className: "age-unit"
   }, "Y")), /*#__PURE__*/React.createElement("div", {
     className: "mini-age-wrap"
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    id: "ageMonths",
     value: formData.months,
-    onChange: e => setFormData({
-      ...formData,
-      months: Number(e.target.value)
-    }),
+    onChange: e => handleAgeChange('months', e.target.value),
     placeholder: "M",
-    className: "dense-input age-val"
+    className: "dense-input age-val",
+    min: "0",
+    max: "11"
   }), /*#__PURE__*/React.createElement("span", {
     className: "age-unit"
   }, "M")), /*#__PURE__*/React.createElement("div", {
     className: "mini-age-wrap"
   }, /*#__PURE__*/React.createElement("input", {
     type: "number",
+    id: "ageDays",
     value: formData.days,
-    onChange: e => setFormData({
-      ...formData,
-      days: Number(e.target.value)
-    }),
+    onChange: e => handleAgeChange('days', e.target.value),
     placeholder: "D",
-    className: "dense-input age-val"
+    className: "dense-input age-val",
+    min: "0",
+    max: "31"
   }), /*#__PURE__*/React.createElement("span", {
     className: "age-unit"
   }, "D")))), /*#__PURE__*/React.createElement("div", {
@@ -4160,20 +4599,20 @@ function RegistrationForm({
     value: "INDUS CLINIC & DIAGNOSTICS"
   }, "INDUS CLINIC & DIAGNOSTICS"))), /*#__PURE__*/React.createElement("div", {
     className: "dt-col dt-col-date"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "dt-date-input-wrap"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "dt-cal-icon"
-  }, "\uD83D\uDCC5"), /*#__PURE__*/React.createElement("input", {
-    type: "text",
+  }, /*#__PURE__*/React.createElement(CustomDatePicker, {
+    id: "scheduleDt",
     value: formData.appointmentDate,
-    onChange: e => setFormData({
-      ...formData,
-      appointmentDate: e.target.value
-    }),
-    className: "dt-input",
-    title: "Appointment Date"
-  }))), /*#__PURE__*/React.createElement("div", {
+    onChange: newDate => {
+      setFormData(prev => ({
+        ...prev,
+        appointmentDate: newDate
+      }));
+      showNotification(`✓ Appointment Date set to: ${newDate}`);
+    },
+    format: "dd-MMM-yyyy",
+    placeholder: "dd-M-yyyy",
+    className: "dt-input"
+  })), /*#__PURE__*/React.createElement("div", {
     className: "dt-col dt-col-token"
   }, /*#__PURE__*/React.createElement("input", {
     type: "text",
@@ -8739,7 +9178,7 @@ function App() {
   });
   const [departments, setDepartments] = useState(initialDepartments);
   const [doctors] = useState(doctorsRoster);
-  const [records, setRecords] = useState(mockOPRecords);
+  const [records, setRecords] = useState({});
   const [tokenCounter, setTokenCounter] = useState(120);
 
   // Hospital Database State (MySQL at_hospital via JDBC)

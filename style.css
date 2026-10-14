@@ -5715,4 +5715,455 @@ body {
   color: #475569;
 }
 
+/* ========================================================================== */
+/* CUSTOM DATE PICKER (Bootstrap / Nifty Style matching patientQueue.jsp)      */
+/* ========================================================================== */
+.hims-datepicker-container {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.hims-datepicker-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.hims-datepicker-input {
+  width: 100%;
+  padding-left: 28px !important;
+  cursor: pointer;
+}
+
+.hims-datepicker-icon-btn {
+  position: absolute;
+  left: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.hims-datepicker-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  padding: 12px;
+  z-index: 99999;
+  min-width: 260px;
+  font-family: inherit;
+}
+
+.hims-dp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.hims-dp-nav-btn {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 3px 8px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 13px;
+  color: #334155;
+  transition: all 0.2s;
+}
+
+.hims-dp-nav-btn:hover {
+  background: #e0f2fe;
+  color: #0284c7;
+  border-color: #38bdf8;
+}
+
+.hims-dp-title {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.hims-dp-select {
+  padding: 2px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  background: #ffffff;
+  color: #0f172a;
+}
+
+.hims-dp-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  text-align: center;
+}
+
+.hims-dp-weekday {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  padding: 4px 0;
+  text-transform: uppercase;
+}
+
+.hims-dp-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 4px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  color: #0f172a;
+  transition: all 0.15s;
+}
+
+.hims-dp-day:hover {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.hims-dp-day.selected {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+  font-weight: bold;
+}
+
+.hims-dp-day.today {
+  border: 1.5px solid #0284c7;
+  font-weight: bold;
+}
+
+.hims-dp-day.empty {
+  cursor: default;
+  background: transparent !important;
+}
+
+.hims-dp-footer {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.hims-dp-footer-btn {
+  background: none;
+  border: none;
+  color: #0284c7;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.hims-dp-footer-btn:hover {
+  background: #f0f9ff;
+  text-decoration: underline;
+}
+
+/* ========================================================================== */
+/* DATE RANGE PICKER DROPDOWN (matching #reportRangeDiv in patientQueue.jsp)  */
+/* ========================================================================== */
+.hims-daterange-container {
+  position: relative;
+  display: inline-block;
+}
+
+.hims-report-range-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1.5px solid #428bca;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #1e3a8a;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  transition: all 0.2s;
+}
+
+.hims-report-range-btn:hover {
+  border-color: #0284c7;
+  background: #f0f9ff;
+}
+
+.hims-report-range-btn .caret-icon {
+  margin-left: 6px;
+  font-size: 10px;
+  color: #64748b;
+}
+
+.hims-daterange-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 6px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.2);
+  z-index: 99999;
+  min-width: 540px;
+  max-width: 95vw;
+  padding: 14px;
+}
+
+.hims-dr-main-layout {
+  display: flex;
+  gap: 16px;
+}
+
+.hims-dr-sidebar-presets {
+  width: 140px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  border-right: 1px solid #e2e8f0;
+  padding-right: 12px;
+}
+
+.hims-dr-preset-item-btn {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 5px 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+}
+
+.hims-dr-preset-item-btn:hover {
+  background: #e0f2fe;
+  color: #0284c7;
+  border-color: #38bdf8;
+}
+
+.hims-dr-preset-item-btn.active {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+  border-color: #0284c7 !important;
+}
+
+.hims-dr-calendars-wrap {
+  display: flex;
+  gap: 14px;
+  flex: 1;
+}
+
+.hims-dr-cal-box {
+  flex: 1;
+  min-width: 185px;
+}
+
+.hims-dr-cal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-weight: 700;
+  font-size: 12px;
+  color: #0f172a;
+}
+
+.hims-dr-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  text-align: center;
+}
+
+.hims-dr-weekday {
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748b;
+  padding: 3px 0;
+}
+
+.hims-dr-day-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  border-radius: 3px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  color: #0f172a;
+  transition: all 0.1s;
+}
+
+.hims-dr-day-cell:hover {
+  background: #e0f2fe;
+}
+
+.hims-dr-day-cell.range-start,
+.hims-dr-day-cell.range-end {
+  background: #0284c7 !important;
+  color: #ffffff !important;
+  font-weight: 700;
+}
+
+.hims-dr-day-cell.in-range {
+  background: #e0f2fe !important;
+  color: #0369a1 !important;
+  border-radius: 0;
+}
+
+.hims-dr-day-cell.today-dot {
+  border: 1px solid #0284c7;
+}
+
+.hims-dr-bottom-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.hims-dr-inputs-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hims-dr-mini-input {
+  width: 95px;
+  padding: 3px 6px;
+  font-size: 11px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+}
+
+.hims-dr-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.hims-dr-presets-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.hims-dr-preset-btn {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 5px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+}
+
+.hims-dr-preset-btn:hover {
+  background: #e0f2fe;
+  color: #0284c7;
+  border-color: #38bdf8;
+}
+
+.hims-dr-preset-btn.active {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #0284c7;
+}
+
+.hims-dr-custom-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 10px;
+}
+
+.hims-dr-inputs-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  margin-bottom: 8px;
+}
+
+.hims-dr-input-col {
+  flex: 1;
+}
+
+.hims-dr-input-col label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 3px;
+}
+
+.hims-dr-date-input {
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+.hims-dr-apply-btn {
+  width: 100%;
+  background: #0284c7;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  padding: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.hims-dr-apply-btn:hover {
+  background: #0369a1;
+}
+
+.hims-dp-day.disabled {
+  opacity: 0.3 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
+
+.hims-datepicker-dropdown.align-right {
+  left: auto !important;
+  right: 0 !important;
+}
+
 

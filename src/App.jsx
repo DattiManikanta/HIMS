@@ -87,7 +87,7 @@ export function App() {
 
   const [departments, setDepartments] = useState(initialDepartments);
   const [doctors] = useState(doctorsRoster);
-  const [records, setRecords] = useState(mockOPRecords);
+  const [records, setRecords] = useState({});
   const [tokenCounter, setTokenCounter] = useState(120);
 
   // Hospital Database State (MySQL at_hospital via JDBC)

@@ -833,7 +833,7 @@ const ROLES = [{
   id: 'doctor',
   label: 'Doctor',
   icon: '🩺',
-  user: 'dr.sharma',
+  user: 'dr.madam',
   color: '#059669',
   desc: 'Consultant Physician'
 }, {
@@ -896,40 +896,40 @@ function LoginPage({
   }, /*#__PURE__*/React.createElement("div", {
     className: "scenery-card-frame hospital-frame"
   }, /*#__PURE__*/React.createElement("img", {
-    src: "./hospital_building.jpg?v=20261014hd",
-    alt: "Indus Health City Hospital Building",
+    src: "./hospital_building.png?v=20261014indus",
+    alt: "Indus Hospital Building",
     className: "atri-scenery-hospital-img",
     onError: e => {
-      e.currentTarget.src = './hospital_building.png';
+      e.currentTarget.src = './hospital_building.jpg';
     }
   }), /*#__PURE__*/React.createElement("div", {
     className: "scenery-card-overlay"
   }, /*#__PURE__*/React.createElement("span", {
     className: "scenery-pill"
-  }, "\uD83C\uDFE5 NABH ACCREDITED"), /*#__PURE__*/React.createElement("div", {
+  }, "\uD83C\uDFE5 INDUS HOSPITAL"), /*#__PURE__*/React.createElement("div", {
     className: "scenery-title"
-  }, "INDUS HEALTH CITY"), /*#__PURE__*/React.createElement("div", {
+  }, "Indus Hospital"), /*#__PURE__*/React.createElement("div", {
     className: "scenery-subtitle"
-  }, "Multi-Specialty & 24/7 Emergency Care")))), /*#__PURE__*/React.createElement("div", {
+  }, "Multi-Specialty & Emergency Care")))), /*#__PURE__*/React.createElement("div", {
     className: "atri-scenery-doctor"
   }, /*#__PURE__*/React.createElement("div", {
     className: "scenery-card-frame doctor-frame"
   }, /*#__PURE__*/React.createElement("img", {
-    src: "./doctor_profile.jpg?v=20261014hd",
-    alt: "Doctor Consultant",
+    src: "./doctor_profile.png?v=20261014madam",
+    alt: "Doctor Madam",
     className: "atri-scenery-doctor-img",
     onError: e => {
-      e.currentTarget.src = './doctor_profile.png';
+      e.currentTarget.src = './doctor_profile.jpg';
     }
   }), /*#__PURE__*/React.createElement("div", {
     className: "scenery-card-overlay"
   }, /*#__PURE__*/React.createElement("span", {
     className: "scenery-pill green"
-  }, "\uD83E\uDE7A LIVE ON DUTY"), /*#__PURE__*/React.createElement("div", {
+  }, "\uD83E\uDE7A CHIEF CONSULTANT"), /*#__PURE__*/React.createElement("div", {
     className: "scenery-title"
-  }, "Dr. Shalini Sharma, MD"), /*#__PURE__*/React.createElement("div", {
+  }, "Dr. Madam"), /*#__PURE__*/React.createElement("div", {
     className: "scenery-subtitle"
-  }, "Chief Medical Consultant \u2022 Cardiology OPD")))), /*#__PURE__*/React.createElement("div", {
+  }, "Chief Medical Consultant \u2022 OPD")))), /*#__PURE__*/React.createElement("div", {
     className: "atri-login-container"
   }, /*#__PURE__*/React.createElement("div", {
     className: "atri-card-top-cap"
@@ -1334,40 +1334,40 @@ function HIMSHomeDashboard({
   }, /*#__PURE__*/React.createElement("div", {
     className: "scenery-card-frame hospital-frame"
   }, /*#__PURE__*/React.createElement("img", {
-    src: "./hospital_building.jpg?v=20261014hd",
-    alt: "Indus Health City Hospital Building",
+    src: "./hospital_building.png?v=20261014indus",
+    alt: "Indus Hospital Building",
     className: "atri-scenery-hospital-img",
     onError: e => {
-      e.currentTarget.src = './hospital_building.png';
+      e.currentTarget.src = './hospital_building.jpg';
     }
   }), /*#__PURE__*/React.createElement("div", {
     className: "scenery-card-overlay"
   }, /*#__PURE__*/React.createElement("span", {
     className: "scenery-pill"
-  }, "\uD83C\uDFE5 NABH ACCREDITED"), /*#__PURE__*/React.createElement("div", {
+  }, "\uD83C\uDFE5 INDUS HOSPITAL"), /*#__PURE__*/React.createElement("div", {
     className: "scenery-title"
-  }, "INDUS HEALTH CITY"), /*#__PURE__*/React.createElement("div", {
+  }, "Indus Hospital"), /*#__PURE__*/React.createElement("div", {
     className: "scenery-subtitle"
-  }, "Multi-Specialty & 24/7 Emergency Care")))), /*#__PURE__*/React.createElement("div", {
+  }, "Multi-Specialty & Emergency Care")))), /*#__PURE__*/React.createElement("div", {
     className: "atri-scenery-doctor"
   }, /*#__PURE__*/React.createElement("div", {
     className: "scenery-card-frame doctor-frame"
   }, /*#__PURE__*/React.createElement("img", {
-    src: "./doctor_profile.jpg?v=20261014hd",
-    alt: "Doctor Consultant",
+    src: "./doctor_profile.png?v=20261014madam",
+    alt: "Doctor Madam",
     className: "atri-scenery-doctor-img",
     onError: e => {
-      e.currentTarget.src = './doctor_profile.png';
+      e.currentTarget.src = './doctor_profile.jpg';
     }
   }), /*#__PURE__*/React.createElement("div", {
     className: "scenery-card-overlay"
   }, /*#__PURE__*/React.createElement("span", {
     className: "scenery-pill green"
-  }, "\uD83E\uDE7A LIVE ON DUTY"), /*#__PURE__*/React.createElement("div", {
+  }, "\uD83E\uDE7A CHIEF CONSULTANT"), /*#__PURE__*/React.createElement("div", {
     className: "scenery-title"
-  }, "Dr. Shalini Sharma, MD"), /*#__PURE__*/React.createElement("div", {
+  }, "Dr. Madam"), /*#__PURE__*/React.createElement("div", {
     className: "scenery-subtitle"
-  }, "Chief Medical Consultant \u2022 Cardiology OPD")))), /*#__PURE__*/React.createElement("header", {
+  }, "Chief Medical Consultant \u2022 OPD")))), /*#__PURE__*/React.createElement("header", {
     className: "hims-top-bar"
   }, /*#__PURE__*/React.createElement("div", {
     className: "hims-top-logo"

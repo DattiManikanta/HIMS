@@ -68,7 +68,7 @@ export function AtriBizLogo({ width = 120, height = 62 }) {
 
 const ROLES = [
   { id: 'admin', label: 'Admin', icon: '🛡️', user: 'admin', color: '#0284c7', desc: 'System Administrator' },
-  { id: 'doctor', label: 'Doctor', icon: '🩺', user: 'dr.sharma', color: '#059669', desc: 'Consultant Physician' },
+  { id: 'doctor', label: 'Doctor', icon: '🩺', user: 'dr.madam', color: '#059669', desc: 'Consultant Physician' },
   { id: 'reception', label: 'OPD Desk', icon: '📋', user: 'reception', color: '#7c3aed', desc: 'OP Registration Desk' },
   { id: 'pharmacy', label: 'Pharmacy', icon: '💊', user: 'pharmacy', color: '#ea580c', desc: 'Central Pharmacy' }
 ];
@@ -116,36 +116,36 @@ export function LoginPage({ onLogin }) {
       <div className="login-ambient-orb orb-1" />
       <div className="login-ambient-orb orb-2" />
 
-      {/* Left Scenery: Indus Hospital Building (HD Clarified Card) */}
+      {/* Left Scenery: Indus Hospital Building (Original High-Res) */}
       <div className="atri-scenery-hospital">
         <div className="scenery-card-frame hospital-frame">
           <img 
-            src="./hospital_building.jpg?v=20261014hd" 
-            alt="Indus Health City Hospital Building" 
+            src="./hospital_building.png?v=20261014indus" 
+            alt="Indus Hospital Building" 
             className="atri-scenery-hospital-img" 
-            onError={(e) => { e.currentTarget.src = './hospital_building.png'; }}
+            onError={(e) => { e.currentTarget.src = './hospital_building.jpg'; }}
           />
           <div className="scenery-card-overlay">
-            <span className="scenery-pill">🏥 NABH ACCREDITED</span>
-            <div className="scenery-title">INDUS HEALTH CITY</div>
-            <div className="scenery-subtitle">Multi-Specialty &amp; 24/7 Emergency Care</div>
+            <span className="scenery-pill">🏥 INDUS HOSPITAL</span>
+            <div className="scenery-title">Indus Hospital</div>
+            <div className="scenery-subtitle">Multi-Specialty &amp; Emergency Care</div>
           </div>
         </div>
       </div>
 
-      {/* Right Scenery: Doctor Photo (HD Clarified Card) */}
+      {/* Right Scenery: Madam Doctor Photo (Original High-Res) */}
       <div className="atri-scenery-doctor">
         <div className="scenery-card-frame doctor-frame">
           <img 
-            src="./doctor_profile.jpg?v=20261014hd" 
-            alt="Doctor Consultant" 
+            src="./doctor_profile.png?v=20261014madam" 
+            alt="Doctor Madam" 
             className="atri-scenery-doctor-img" 
-            onError={(e) => { e.currentTarget.src = './doctor_profile.png'; }}
+            onError={(e) => { e.currentTarget.src = './doctor_profile.jpg'; }}
           />
           <div className="scenery-card-overlay">
-            <span className="scenery-pill green">🩺 LIVE ON DUTY</span>
-            <div className="scenery-title">Dr. Shalini Sharma, MD</div>
-            <div className="scenery-subtitle">Chief Medical Consultant • Cardiology OPD</div>
+            <span className="scenery-pill green">🩺 CHIEF CONSULTANT</span>
+            <div className="scenery-title">Dr. Madam</div>
+            <div className="scenery-subtitle">Chief Medical Consultant • OPD</div>
           </div>
         </div>
       </div>

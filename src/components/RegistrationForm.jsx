@@ -1072,18 +1072,15 @@ export function RegistrationForm({
     showNotification(`✓ Doctor ${doc.name} (${doc.code}) selected — Token slots OPENED!`);
   };
 
-  // Click on a slot pill
+  // Click on a slot pill - user can select ANY token of their choice, turning it to OCCUPIED RED
   const handleSlotClick = (slot) => {
-    if (slot.isBooked) {
-      showNotification(`⚠️ Slot ${slot.timeLabel} (Token #${slot.tokenNumber}) is already Booked! Please choose an available green slot.`);
-      return;
-    }
-    setSelectedSlotToken(slot.tokenNumber);
+    const tokenNum = slot.tokenNumber;
+    setSelectedSlotToken(tokenNum);
     setFormData(prev => ({
       ...prev,
-      token: String(slot.tokenNumber)
+      token: String(tokenNum)
     }));
-    showNotification(`✓ Selected Slot: ${slot.timeLabel} for Dr. ${formData.consultant}`);
+    showNotification(`✓ Wish Token #${tokenNum} Selected! Marked as OCCUPIED (RED) for Dr. ${formData.consultant}`);
   };
 
   // Add extra / emergency token (+)
@@ -2396,11 +2393,24 @@ export function RegistrationForm({
                     <div className="dt-col dt-col-token">
                       <input 
                         type="text" 
-                        value={formData.token || '-'} 
-                        readOnly 
+                        id="tokenValue"
+                        name="apptModel.tokenNum"
+                        value={formData.token || ''} 
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, '');
+                          const num = val ? parseInt(val, 10) : null;
+                          setSelectedSlotToken(num);
+                          setFormData(prev => ({ ...prev, token: val }));
+                        }}
                         className="dt-input dt-token-val"
-                        title="Assigned Token Number"
+                        title="Assigned Token Number - Click any slot pill below to select your wish token"
                         placeholder="Token"
+                        style={formData.token ? {
+                          backgroundColor: '#fef2f2',
+                          borderColor: '#dc2626',
+                          color: '#b91c1c',
+                          fontWeight: '800'
+                        } : {}}
                       />
                     </div>
                   </div>
@@ -2473,28 +2483,61 @@ export function RegistrationForm({
                   </div>
                 ) : (
                   <div className="doctor-slots-open-wrapper">
-                    {/* Doctor Slots Details Heading */}
-                    <div className="slots-title-row">
+                    {/* Doctor Slots Details Heading with Color Legend */}
+                    <div className="slots-title-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                       <div className="doctor-slots-title" style={{ margin: 0 }}>
                         <span>Doctor Slots Details:</span>
                       </div>
-                      <span className="slots-open-badge">● Slots Open for {formData.consultant.split(' ')[0]}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '11px', fontWeight: 600 }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#15803d' }}>
+                          <span style={{ width: '10px', height: '10px', borderRadius: '2px', backgroundColor: '#008000', display: 'inline-block' }}></span> Available (Green)
+                        </span>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#b91c1c' }}>
+                          <span style={{ width: '10px', height: '10px', borderRadius: '2px', backgroundColor: '#dc2626', display: 'inline-block' }}></span> Occupied / Selected (Red)
+                        </span>
+                        <span className="slots-open-badge">● Dr. {formData.consultant.split(' ')[0]}</span>
+                      </div>
                     </div>
 
                     {/* Doctor Slots Details Container with 3 Columns of Red/Green Slot Pills */}
                     <div className="doctor-slots-details-container">
                       <div className="doctor-slots-grid">
                         {currentDoctorSlots.map((slot) => {
-                          const isSelected = selectedSlotToken === slot.tokenNumber;
+                          const isSelected = selectedSlotToken === slot.tokenNumber || String(formData.token) === String(slot.tokenNumber);
+                          const isOccupiedRed = slot.isBooked || isSelected;
                           return (
                             <button
                               key={slot.tokenNumber}
                               type="button"
-                              className={`doctor-slot-pill ${slot.isBooked ? 'slot-red' : 'slot-green'} ${isSelected ? 'slot-selected' : ''}`}
+                              className={`doctor-slot-pill ${isOccupiedRed ? 'slot-red slot-occupied' : 'slot-green'} ${isSelected ? 'slot-selected slot-wish-selected' : ''}`}
+                              style={isSelected ? {
+                                backgroundColor: '#dc2626',
+                                borderColor: '#991b1b',
+                                color: '#ffffff',
+                                fontWeight: '800',
+                                boxShadow: '0 0 12px rgba(220, 38, 38, 0.9), inset 0 0 4px rgba(255, 255, 255, 0.45)',
+                                transform: 'scale(1.05)',
+                                outline: '2px solid #fecaca',
+                                outlineOffset: '1px',
+                                zIndex: 3
+                              } : (slot.isBooked ? {
+                                backgroundColor: '#d32f2f',
+                                borderColor: '#b71c1c',
+                                color: '#ffffff',
+                                opacity: 0.95
+                              } : {
+                                backgroundColor: '#008000',
+                                borderColor: '#006400',
+                                color: '#ffffff'
+                              })}
                               onClick={() => handleSlotClick(slot)}
-                              title={slot.isBooked ? `Token #${slot.tokenNumber} is Booked` : `Click to Select Token #${slot.tokenNumber}`}
+                              title={isSelected 
+                                ? `Token #${slot.tokenNumber} (${slot.timeLabel}) - SELECTED WISH TOKEN (OCCUPIED RED)` 
+                                : (slot.isBooked 
+                                  ? `Token #${slot.tokenNumber} (${slot.timeLabel}) - Occupied / Booked (Click to select wish token)` 
+                                  : `Token #${slot.tokenNumber} (${slot.timeLabel}) - Available (Click to select wish token)`)}
                             >
-                              {slot.timeLabel}
+                              {slot.timeLabel} {isSelected ? ' 🔴' : ''}
                             </button>
                           );
                         })}

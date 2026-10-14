@@ -1962,6 +1962,7 @@ function QueueBoard({
   onPlayChime
 }) {
   const [filterQuery, setFilterQuery] = useState('');
+  const [selectedQueueToken, setSelectedQueueToken] = useState(null);
   const filtered = departments.filter(dep => dep.name.toLowerCase().includes(filterQuery.toLowerCase()) || dep.doctor.toLowerCase().includes(filterQuery.toLowerCase()) || dep.room.toLowerCase().includes(filterQuery.toLowerCase()) || dep.currentToken.toLowerCase().includes(filterQuery.toLowerCase()));
   return /*#__PURE__*/React.createElement("div", {
     className: "queue-section"
@@ -2100,19 +2101,26 @@ function QueueBoard({
         gap: '6px',
         flexWrap: 'wrap'
       }
-    }, dep.queue.slice(0, 4).map((item, idx) => /*#__PURE__*/React.createElement("span", {
-      key: item.token,
-      style: {
-        fontSize: '0.75rem',
-        padding: '3px 8px',
-        background: idx === 0 ? 'var(--primary-light)' : 'var(--bg-alt)',
-        color: idx === 0 ? 'var(--primary)' : 'var(--text-main)',
-        fontWeight: idx === 0 ? 700 : 500,
-        borderRadius: '6px',
-        border: '1px solid var(--border)'
-      },
-      title: `${item.patientName} (${item.priority})`
-    }, item.token, " ", item.priority === 'Senior Citizen' ? '👴' : '')), dep.queue.length > 4 && /*#__PURE__*/React.createElement("span", {
+    }, dep.queue.slice(0, 4).map((item, idx) => {
+      const isSelected = selectedQueueToken === item.token;
+      return /*#__PURE__*/React.createElement("span", {
+        key: item.token,
+        onClick: () => setSelectedQueueToken(isSelected ? null : item.token),
+        style: {
+          fontSize: '0.75rem',
+          padding: '3px 8px',
+          background: isSelected ? '#dc2626' : idx === 0 ? 'var(--primary-light)' : 'var(--bg-alt)',
+          color: isSelected ? '#ffffff' : idx === 0 ? 'var(--primary)' : 'var(--text-main)',
+          fontWeight: isSelected ? 800 : idx === 0 ? 700 : 500,
+          borderRadius: '6px',
+          border: isSelected ? '1.5px solid #991b1b' : '1px solid var(--border)',
+          boxShadow: isSelected ? '0 0 10px rgba(220, 38, 38, 0.7)' : 'none',
+          cursor: 'pointer',
+          transition: 'all 0.15s ease'
+        },
+        title: `${item.patientName} (${item.priority}) ${isSelected ? '— SELECTED & OCCUPIED (RED)' : '— Click to Select Token'}`
+      }, item.token, " ", isSelected ? '🔴' : item.priority === 'Senior Citizen' ? '👴' : '');
+    }), dep.queue.length > 4 && /*#__PURE__*/React.createElement("span", {
       style: {
         fontSize: '0.75rem',
         padding: '3px 6px',
@@ -3200,18 +3208,15 @@ function RegistrationForm({
     showNotification(`✓ Doctor ${doc.name} (${doc.code}) selected — Token slots OPENED!`);
   };
 
-  // Click on a slot pill
+  // Click on a slot pill - user can select ANY token of their choice, turning it to OCCUPIED RED
   const handleSlotClick = slot => {
-    if (slot.isBooked) {
-      showNotification(`⚠️ Slot ${slot.timeLabel} (Token #${slot.tokenNumber}) is already Booked! Please choose an available green slot.`);
-      return;
-    }
-    setSelectedSlotToken(slot.tokenNumber);
+    const tokenNum = slot.tokenNumber;
+    setSelectedSlotToken(tokenNum);
     setFormData(prev => ({
       ...prev,
-      token: String(slot.tokenNumber)
+      token: String(tokenNum)
     }));
-    showNotification(`✓ Selected Slot: ${slot.timeLabel} for Dr. ${formData.consultant}`);
+    showNotification(`✓ Wish Token #${tokenNum} Selected! Marked as OCCUPIED (RED) for Dr. ${formData.consultant}`);
   };
 
   // Add extra / emergency token (+)
@@ -4616,11 +4621,27 @@ function RegistrationForm({
     className: "dt-col dt-col-token"
   }, /*#__PURE__*/React.createElement("input", {
     type: "text",
-    value: formData.token || '-',
-    readOnly: true,
+    id: "tokenValue",
+    name: "apptModel.tokenNum",
+    value: formData.token || '',
+    onChange: e => {
+      const val = e.target.value.replace(/\D/g, '');
+      const num = val ? parseInt(val, 10) : null;
+      setSelectedSlotToken(num);
+      setFormData(prev => ({
+        ...prev,
+        token: val
+      }));
+    },
     className: "dt-input dt-token-val",
-    title: "Assigned Token Number",
-    placeholder: "Token"
+    title: "Assigned Token Number - Click any slot pill below to select your wish token",
+    placeholder: "Token",
+    style: formData.token ? {
+      backgroundColor: '#fef2f2',
+      borderColor: '#dc2626',
+      color: '#b91c1c',
+      fontWeight: '800'
+    } : {}
   }))), /*#__PURE__*/React.createElement("div", {
     className: "doctor-token-box-row"
   }, /*#__PURE__*/React.createElement("div", {
@@ -4669,27 +4690,93 @@ function RegistrationForm({
   }, /*#__PURE__*/React.createElement("strong", null, "Step 2: Select Doctor to OPEN Tokens"), /*#__PURE__*/React.createElement("p", null, "Hospital: ", /*#__PURE__*/React.createElement("strong", null, formData.location), " selected. Choose a Consultant Doctor from the dropdown above to OPEN available token slots."))) : /*#__PURE__*/React.createElement("div", {
     className: "doctor-slots-open-wrapper"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "slots-title-row"
+    className: "slots-title-row",
+    style: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: '8px'
+    }
   }, /*#__PURE__*/React.createElement("div", {
     className: "doctor-slots-title",
     style: {
       margin: 0
     }
-  }, /*#__PURE__*/React.createElement("span", null, "Doctor Slots Details:")), /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("span", null, "Doctor Slots Details:")), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '10px',
+      fontSize: '11px',
+      fontWeight: 600
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '4px',
+      color: '#15803d'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      width: '10px',
+      height: '10px',
+      borderRadius: '2px',
+      backgroundColor: '#008000',
+      display: 'inline-block'
+    }
+  }), " Available (Green)"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '4px',
+      color: '#b91c1c'
+    }
+  }, /*#__PURE__*/React.createElement("span", {
+    style: {
+      width: '10px',
+      height: '10px',
+      borderRadius: '2px',
+      backgroundColor: '#dc2626',
+      display: 'inline-block'
+    }
+  }), " Occupied / Selected (Red)"), /*#__PURE__*/React.createElement("span", {
     className: "slots-open-badge"
-  }, "\u25CF Slots Open for ", formData.consultant.split(' ')[0])), /*#__PURE__*/React.createElement("div", {
+  }, "\u25CF Dr. ", formData.consultant.split(' ')[0]))), /*#__PURE__*/React.createElement("div", {
     className: "doctor-slots-details-container"
   }, /*#__PURE__*/React.createElement("div", {
     className: "doctor-slots-grid"
   }, currentDoctorSlots.map(slot => {
-    const isSelected = selectedSlotToken === slot.tokenNumber;
+    const isSelected = selectedSlotToken === slot.tokenNumber || String(formData.token) === String(slot.tokenNumber);
+    const isOccupiedRed = slot.isBooked || isSelected;
     return /*#__PURE__*/React.createElement("button", {
       key: slot.tokenNumber,
       type: "button",
-      className: `doctor-slot-pill ${slot.isBooked ? 'slot-red' : 'slot-green'} ${isSelected ? 'slot-selected' : ''}`,
+      className: `doctor-slot-pill ${isOccupiedRed ? 'slot-red slot-occupied' : 'slot-green'} ${isSelected ? 'slot-selected slot-wish-selected' : ''}`,
+      style: isSelected ? {
+        backgroundColor: '#dc2626',
+        borderColor: '#991b1b',
+        color: '#ffffff',
+        fontWeight: '800',
+        boxShadow: '0 0 12px rgba(220, 38, 38, 0.9), inset 0 0 4px rgba(255, 255, 255, 0.45)',
+        transform: 'scale(1.05)',
+        outline: '2px solid #fecaca',
+        outlineOffset: '1px',
+        zIndex: 3
+      } : slot.isBooked ? {
+        backgroundColor: '#d32f2f',
+        borderColor: '#b71c1c',
+        color: '#ffffff',
+        opacity: 0.95
+      } : {
+        backgroundColor: '#008000',
+        borderColor: '#006400',
+        color: '#ffffff'
+      },
       onClick: () => handleSlotClick(slot),
-      title: slot.isBooked ? `Token #${slot.tokenNumber} is Booked` : `Click to Select Token #${slot.tokenNumber}`
-    }, slot.timeLabel);
+      title: isSelected ? `Token #${slot.tokenNumber} (${slot.timeLabel}) - SELECTED WISH TOKEN (OCCUPIED RED)` : slot.isBooked ? `Token #${slot.tokenNumber} (${slot.timeLabel}) - Occupied / Booked (Click to select wish token)` : `Token #${slot.tokenNumber} (${slot.timeLabel}) - Available (Click to select wish token)`
+    }, slot.timeLabel, " ", isSelected ? ' 🔴' : '');
   }))), /*#__PURE__*/React.createElement("div", {
     className: "add-extra-tokens-row"
   }, /*#__PURE__*/React.createElement("span", {

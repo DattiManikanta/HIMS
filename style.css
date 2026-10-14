@@ -4408,23 +4408,36 @@ body {
   transform: translateY(-1px);
 }
 
-/* Red booked slot */
-.doctor-slot-pill.slot-red {
-  background-color: #d32f2f; /* Deep Red matching screenshot */
-  border-color: #b71c1c;
-  cursor: not-allowed;
-  opacity: 0.95;
+/* Red booked / occupied slot */
+.doctor-slot-pill.slot-red,
+.doctor-slot-pill.slot-occupied {
+  background-color: #d32f2f !important; /* Deep Red matching Indus HIMS screenshot */
+  border: 1px solid #b71c1c !important;
+  color: #ffffff !important;
+  cursor: pointer;
+  opacity: 0.96;
 }
 
-.doctor-slot-pill.slot-red:hover {
-  filter: brightness(1.1);
+.doctor-slot-pill.slot-red:hover,
+.doctor-slot-pill.slot-occupied:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
 }
 
-/* Selected active slot */
-.doctor-slot-pill.slot-selected {
-  outline: 2px solid #0284c7;
+/* Selected active slot - User's chosen wish token turns OCCUPIED RED */
+.doctor-slot-pill.slot-selected,
+.doctor-slot-pill.slot-wish-selected {
+  background-color: #dc2626 !important; /* Vivid Red Occupied */
+  background: #dc2626 !important;
+  border: 2px solid #991b1b !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  box-shadow: 0 0 14px rgba(220, 38, 38, 0.9), inset 0 0 4px rgba(255, 255, 255, 0.45) !important;
+  transform: scale(1.04);
+  z-index: 3;
+  cursor: pointer;
+  outline: 2px solid #fecaca;
   outline-offset: 1px;
-  box-shadow: 0 0 6px rgba(2, 132, 199, 0.75);
 }
 
 /* Add Extra Tokens Row */

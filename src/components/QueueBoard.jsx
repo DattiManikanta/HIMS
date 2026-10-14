@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 
 export function QueueBoard({ departments, onCallNext, activeAlertToken, onPlayChime }) {
   const [filterQuery, setFilterQuery] = useState('');
+  const [selectedQueueToken, setSelectedQueueToken] = useState(null);
 
   const filtered = departments.filter(dep => 
     dep.name.toLowerCase().includes(filterQuery.toLowerCase()) ||
@@ -89,23 +90,30 @@ export function QueueBoard({ departments, onCallNext, activeAlertToken, onPlayCh
                   Queue Line ({dep.queue.length} in waiting)
                 </div>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                  {dep.queue.slice(0, 4).map((item, idx) => (
-                    <span 
-                      key={item.token}
-                      style={{
-                        fontSize: '0.75rem',
-                        padding: '3px 8px',
-                        background: idx === 0 ? 'var(--primary-light)' : 'var(--bg-alt)',
-                        color: idx === 0 ? 'var(--primary)' : 'var(--text-main)',
-                        fontWeight: idx === 0 ? 700 : 500,
-                        borderRadius: '6px',
-                        border: '1px solid var(--border)'
-                      }}
-                      title={`${item.patientName} (${item.priority})`}
-                    >
-                      {item.token} {item.priority === 'Senior Citizen' ? '👴' : ''}
-                    </span>
-                  ))}
+                  {dep.queue.slice(0, 4).map((item, idx) => {
+                    const isSelected = selectedQueueToken === item.token;
+                    return (
+                      <span 
+                        key={item.token}
+                        onClick={() => setSelectedQueueToken(isSelected ? null : item.token)}
+                        style={{
+                          fontSize: '0.75rem',
+                          padding: '3px 8px',
+                          background: isSelected ? '#dc2626' : (idx === 0 ? 'var(--primary-light)' : 'var(--bg-alt)'),
+                          color: isSelected ? '#ffffff' : (idx === 0 ? 'var(--primary)' : 'var(--text-main)'),
+                          fontWeight: isSelected ? 800 : (idx === 0 ? 700 : 500),
+                          borderRadius: '6px',
+                          border: isSelected ? '1.5px solid #991b1b' : '1px solid var(--border)',
+                          boxShadow: isSelected ? '0 0 10px rgba(220, 38, 38, 0.7)' : 'none',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease'
+                        }}
+                        title={`${item.patientName} (${item.priority}) ${isSelected ? '— SELECTED & OCCUPIED (RED)' : '— Click to Select Token'}`}
+                      >
+                        {item.token} {isSelected ? '🔴' : (item.priority === 'Senior Citizen' ? '👴' : '')}
+                      </span>
+                    );
+                  })}
                   {dep.queue.length > 4 && (
                     <span style={{ fontSize: '0.75rem', padding: '3px 6px', color: 'var(--text-muted)' }}>
                       +{dep.queue.length - 4} more

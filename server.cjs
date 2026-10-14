@@ -114,6 +114,66 @@ const server = http.createServer((req, res) => {
     return proxyApiRequest(req, res);
   }
 
+  const os = require('os');
+  function getLocalIps() {
+    const interfaces = os.networkInterfaces();
+    const ips = [];
+    for (const name of Object.keys(interfaces)) {
+      for (const net of interfaces[name]) {
+        if (net.family === 'IPv4' && !net.internal) {
+          ips.push(net.address);
+        }
+      }
+    }
+    return ips;
+  }
+
+  // QR Code / Mobile Helper Route
+  if (pathname === '/mobile' || pathname === '/qr') {
+    const ips = getLocalIps();
+    const primaryIp = ips[0] || '10.150.250.111';
+    const mobileUrl = `http://${primaryIp}:${PORT}`;
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=10&data=${encodeURIComponent(mobileUrl)}`;
+    
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(`<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mobile &amp; Other Laptop Access - INDUS HEALTH CITY</title>
+  <style>
+    body { font-family: system-ui, -apple-system, sans-serif; background: #0f172a; color: #f8fafc; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+    .card { background: #1e293b; border: 1px solid #334155; border-radius: 20px; padding: 32px; max-width: 440px; width: 100%; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+    h1 { font-size: 1.4rem; margin: 0 0 8px; color: #38bdf8; }
+    p { color: #94a3b8; font-size: 0.95rem; margin: 0 0 24px; line-height: 1.5; }
+    .qr-box { background: white; padding: 16px; border-radius: 16px; display: inline-block; margin-bottom: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+    .qr-box img { display: block; border-radius: 8px; width: 220px; height: 220px; }
+    .url-box { background: #0f172a; border: 1px solid #38bdf8; color: #38bdf8; padding: 12px 16px; border-radius: 12px; font-family: monospace; font-size: 1.05rem; font-weight: bold; word-break: break-all; margin-bottom: 16px; }
+    .btn { display: inline-block; background: #0284c7; color: white; text-decoration: none; padding: 12px 24px; border-radius: 12px; font-weight: 600; font-size: 0.95rem; transition: background 0.2s; }
+    .btn:hover { background: #0369a1; }
+    .note { font-size: 0.8rem; color: #64748b; margin-top: 20px; line-height: 1.4; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>📱 Connect Phone / Other Laptop</h1>
+    <p>Scan this QR code with your phone camera, or open the link below on any laptop or phone connected to the same Wi-Fi:</p>
+    <div class="qr-box">
+      <img src="${qrUrl}" alt="Scan QR Code to open on phone">
+    </div>
+    <div class="url-box">${mobileUrl}</div>
+    <a href="${mobileUrl}" class="btn" target="_blank">Open App</a>
+    <div class="note">
+      Ensure your phone or other laptop is connected to the same Wi-Fi / network.<br>
+      To open from mobile data anywhere in the world, double-click <strong>start_mobile_access.bat</strong>!
+    </div>
+  </div>
+</body>
+</html>`);
+    return;
+  }
+
   if (pathname === '/') pathname = '/index.html';
 
   const filePath = path.join(ROOT, pathname);
@@ -144,8 +204,26 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(PORT, '0.0.0.0', () => {
+  const os = require('os');
+  const interfaces = os.networkInterfaces();
+  const localIps = [];
+  for (const name of Object.keys(interfaces)) {
+    for (const net of interfaces[name]) {
+      if (net.family === 'IPv4' && !net.internal) {
+        localIps.push(net.address);
+      }
+    }
+  }
+
   console.log(`================================================================`);
-  console.log(`INDUS HEALTH CITY - HIMS Server running at: http://localhost:${PORT}`);
-  console.log(`PostgreSQL API Proxy active -> http://localhost:${PORT}/api/* -> :${BACKEND_PORT}`);
+  console.log(`🏥 INDUS HEALTH CITY — MULTI-DEVICE NETWORK SERVER RUNNING`);
+  console.log(`================================================================`);
+  console.log(`💻 This Computer:        http://localhost:${PORT}`);
+  localIps.forEach(ip => {
+    console.log(`📱 Phones & Other PCs:   http://${ip}:${PORT}`);
+  });
+  console.log(`📷 Phone QR Code Screen: http://localhost:${PORT}/qr`);
+  console.log(`⚡ Spring Boot Backend:  http://localhost:${BACKEND_PORT}/api/health`);
+  console.log(`🌐 Anywhere Access:      Run start_mobile_access.bat`);
   console.log(`================================================================`);
 });

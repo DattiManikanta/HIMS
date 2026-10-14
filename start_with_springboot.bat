@@ -13,7 +13,14 @@ echo [2/2] Starting React Web Server on port 3000...
 set "NODE_CMD=%~dp0tools\node.exe"
 if not exist "%NODE_CMD%" set "NODE_CMD=node"
 
-echo Waiting for services to initialize...
+echo.
+echo ================================================================
+echo 💻 THIS LAPTOP / PC:        http://localhost:3000
+echo 📱 PHONES & OTHER LAPTOPS:  http://10.150.250.111:3000
+echo 📷 SCAN PHONE QR CODE:      http://localhost:3000/qr
+echo ================================================================
+echo.
+
 timeout /t 4 >nul
 start http://localhost:3000
 

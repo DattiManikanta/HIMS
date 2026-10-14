@@ -18,19 +18,15 @@ if %ERRORLEVEL% NEQ 0 (
 )
 
 echo.
-echo Starting INDUS HEALTH CITY Server...
-echo Hospital Web Portal: http://localhost:3000
-echo Backend API Proxy:   http://localhost:3000/api
+echo ================================================================
+echo 💻 THIS COMPUTER:           http://localhost:3000
+echo 📱 PHONES & OTHER LAPTOPS:  http://10.150.250.111:3000
+echo 📷 SCAN PHONE QR CODE:      http://localhost:3000/qr
+echo 🌐 ACCESS FROM ANYWHERE:    Run start_mobile_access.bat
+echo ================================================================
 echo.
-echo Opening browser at http://localhost:3000 ...
-start http://localhost:3000
 
-echo.
-echo ================================================================
-echo Keep this window OPEN while using INDUS HEALTH CITY!
-echo To stop the server, press Ctrl+C or close this window.
-echo ================================================================
-echo.
+start http://localhost:3000
 
 "%NODE_CMD%" server.cjs
 pause

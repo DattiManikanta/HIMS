@@ -95,6 +95,27 @@ npm start
 
 ---
 
+## 📱 Access from Mobile Phones, Tablets & Other Laptops
+
+INDUS HEALTH CITY is fully configured for multi-device access across your entire hospital or office network:
+
+### Method A: Local Wi-Fi / LAN Network (Fastest)
+1. Run [allow_firewall.bat](file:///c:/Users/USER/Pictures/HEALTH-CITY/allow_firewall.bat) once (grants Windows Firewall permission for incoming connections on ports 3000 & 5000).
+2. On any phone, tablet, or other laptop connected to the same Wi-Fi, open:
+   ```
+   http://10.150.250.111:3000
+   ```
+3. **Instant Phone QR Code**: Open [http://localhost:3000/qr](http://localhost:3000/qr) on this computer and point your smartphone's camera at the screen to open the app instantly!
+
+### Method B: Access from Anywhere in the World (4G/5G / Remote)
+Double-click:
+```bat
+start_mobile_access.bat
+```
+This automatically establishes an encrypted Cloudflare Tunnel and generates a public HTTPS link (e.g. `https://*.trycloudflare.com`) accessible on any phone or laptop anywhere without needing to be on the same Wi-Fi!
+
+---
+
 ## 🗄️ MySQL Database Configuration
 
 Configured in `backend-spring/src/main/resources/application.properties` or `.env`:

@@ -2075,11 +2075,9 @@ body {
   width: 100%;
   position: relative;
   overflow-x: hidden;
-  background-color: #eaf1f8;
-  background-image: url('./doctor_bg.jpg');
-  background-repeat: no-repeat;
-  background-position: center right;
-  background-size: cover;
+  background: 
+    linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(240, 248, 255, 0.18) 40%, rgba(255, 255, 255, 0.48) 100%),
+    url('./healthcare_unity_tree.jpg') center center / cover no-repeat fixed !important;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -2087,12 +2085,7 @@ body {
 }
 
 .hims-home-screen::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 30% 50%, rgba(255, 255, 255, 0.45) 0%, transparent 75%);
-  pointer-events: none;
-  z-index: 1;
+  display: none !important;
 }
 
 /* Top Bar */
@@ -2100,9 +2093,14 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 48px;
+  padding: 14px 48px;
   position: relative;
   z-index: 30;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
 }
 
 .hims-top-logo {
@@ -2189,7 +2187,15 @@ body {
 
 /* Text Banner */
 .hims-headline-banner {
-  margin-bottom: 24px;
+  background: rgba(255, 255, 255, 0.84);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1.5px solid rgba(255, 255, 255, 0.95);
+  border-radius: 18px;
+  padding: 16px 24px;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(226, 232, 240, 0.6);
+  display: inline-block;
+  margin-bottom: 22px;
 }
 
 .hims-headline-title {
@@ -2584,8 +2590,8 @@ body {
 
 .hims-home-screen {
   background: 
-    linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(244, 248, 251, 0.92) 100%),
-    url('./healthcare_unity_tree.jpg') center bottom / cover no-repeat fixed !important;
+    linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(240, 248, 255, 0.18) 40%, rgba(255, 255, 255, 0.48) 100%),
+    url('./healthcare_unity_tree.jpg') center center / cover no-repeat fixed !important;
 }
 
 @media (max-width: 900px) {
@@ -2816,7 +2822,9 @@ body {
   position: relative;
   overflow-x: hidden;
   overflow-y: auto !important;
-  background: radial-gradient(circle at 50% 50%, #ffffff 0%, #edf3f8 50%, #e2ebf4 100%);
+  background: 
+    linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, rgba(240, 248, 255, 0.18) 40%, rgba(255, 255, 255, 0.48) 100%),
+    url('./healthcare_unity_tree.jpg') center center / cover no-repeat fixed !important;
   margin: 0;
   padding: 0 0 45px 0;
   display: flex;

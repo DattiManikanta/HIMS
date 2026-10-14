@@ -1802,8 +1802,11 @@ body {
   min-height: 100vh;
   width: 100%;
   position: relative;
-  overflow: hidden;
-  background: radial-gradient(circle at 50% 45%, #ffffff 0%, #f4f8fb 60%, #e6eff7 100%);
+  overflow-x: hidden;
+  overflow-y: auto;
+  background: 
+    linear-gradient(180deg, rgba(15, 23, 42, 0.38) 0%, rgba(15, 23, 42, 0.12) 40%, rgba(15, 23, 42, 0.45) 100%),
+    url('./healthcare_unity_tree.jpg') center center / cover no-repeat fixed !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2574,13 +2577,15 @@ body {
 }
 
 .atri-login-screen {
-  background: radial-gradient(circle at 50% 45%, #ffffff 0%, #f4f8fb 60%, #e6eff7 100%) !important;
-  background-color: #f4f8fb !important;
+  background: 
+    linear-gradient(180deg, rgba(15, 23, 42, 0.22) 0%, rgba(15, 23, 42, 0.08) 50%, rgba(15, 23, 42, 0.35) 100%),
+    url('./healthcare_unity_tree.jpg') center bottom / cover no-repeat fixed !important;
 }
 
 .hims-home-screen {
-  background: radial-gradient(circle at 50% 45%, #ffffff 0%, #f4f8fb 60%, #e6eff7 100%) !important;
-  background-color: #f4f8fb !important;
+  background: 
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88) 0%, rgba(244, 248, 251, 0.92) 100%),
+    url('./healthcare_unity_tree.jpg') center bottom / cover no-repeat fixed !important;
 }
 
 @media (max-width: 900px) {
@@ -2758,8 +2763,8 @@ body {
   overflow-x: hidden;
   overflow-y: auto;
   background: 
-    linear-gradient(135deg, rgba(15, 23, 42, 0.42) 0%, rgba(15, 23, 42, 0.28) 100%),
-    url('./login_greenery_bg.jpg') center center / cover no-repeat;
+    linear-gradient(180deg, rgba(15, 23, 42, 0.38) 0%, rgba(15, 23, 42, 0.12) 40%, rgba(15, 23, 42, 0.45) 100%),
+    url('./healthcare_unity_tree.jpg') center center / cover no-repeat fixed !important;
   margin: 0;
   padding: 0;
   display: flex;
@@ -2819,14 +2824,14 @@ body {
   justify-content: space-between;
 }
 
-/* Left Scenery: Indus Hospital Building (HD Clarified Card) */
+/* Left Scenery: Indus Hospital Building (HD Clean Photo Card) */
 .atri-scenery-hospital {
   position: absolute;
-  left: 24px;
+  left: 20px;
   bottom: 24px;
   top: 24px;
-  width: 28vw;
-  max-width: 420px;
+  width: 22vw;
+  max-width: 320px;
   z-index: 5;
   display: flex;
   align-items: center;
@@ -2834,14 +2839,14 @@ body {
   pointer-events: auto;
 }
 
-/* Right Scenery: Doctor Photo (HD Clarified Card) */
+/* Right Scenery: Doctor Photo (HD Clean Photo Card) */
 .atri-scenery-doctor {
   position: absolute;
-  right: 24px;
+  right: 20px;
   bottom: 24px;
   top: 24px;
-  width: 28vw;
-  max-width: 420px;
+  width: 22vw;
+  max-width: 320px;
   z-index: 5;
   display: flex;
   align-items: center;
@@ -2849,7 +2854,7 @@ body {
   pointer-events: auto;
 }
 
-/* HD Scenery Card Frame */
+/* HD Scenery Card Frame - Pure Clean Border */
 .scenery-card-frame {
   position: relative;
   width: 100%;
@@ -2857,10 +2862,13 @@ body {
   border-radius: 24px;
   overflow: hidden;
   box-shadow: 
-    0 25px 50px -12px rgba(15, 23, 42, 0.35),
-    0 0 0 1.5px rgba(255, 255, 255, 0.95),
+    0 25px 50px -12px rgba(0, 0, 0, 0.42),
+    0 0 0 2px rgba(255, 255, 255, 0.95),
     inset 0 1px 1px rgba(255, 255, 255, 0.8);
   background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
   animation: sceneryEntry 0.8s ease-out backwards;
 }
@@ -2868,8 +2876,8 @@ body {
 .scenery-card-frame:hover {
   transform: translateY(-6px);
   box-shadow: 
-    0 30px 60px -15px rgba(15, 23, 42, 0.4),
-    0 0 0 2px rgba(56, 189, 248, 0.8);
+    0 30px 60px -15px rgba(0, 0, 0, 0.5),
+    0 0 0 2px rgba(56, 189, 248, 0.9);
 }
 
 .scenery-card-frame.hospital-frame {
@@ -2901,48 +2909,215 @@ body {
   transform: scale(1.02);
 }
 
+/* Completely remove overlay text banner */
 .scenery-card-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 24px 18px 16px 18px;
-  background: linear-gradient(180deg, rgba(15, 23, 42, 0) 0%, rgba(15, 23, 42, 0.85) 45%, rgba(15, 23, 42, 0.95) 100%);
-  color: #ffffff;
-  pointer-events: none;
+  display: none !important;
 }
 
-.scenery-pill {
-  display: inline-block;
-  background: rgba(2, 132, 199, 0.85);
-  backdrop-filter: blur(8px);
-  color: #ffffff;
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  padding: 3px 8px;
+/* ==========================================================================
+   HEALTHCARE UNITY TREE & MULTI-ROLE DEPARTMENT SHOWCASE
+   ========================================================================== */
+
+.unity-tree-wrapper {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 0;
+  animation: unityFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+@keyframes unityFadeIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Unity Tree Top Emblem */
+.unity-tree-emblem {
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: center;
+}
+
+.unity-tree-crest {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(15, 23, 42, 0.78);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1.5px solid rgba(52, 211, 153, 0.75);
+  padding: 8px 20px;
   border-radius: 9999px;
-  margin-bottom: 6px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.45), 0 0 24px rgba(16, 185, 129, 0.3);
 }
 
-.scenery-pill.green {
-  background: rgba(16, 185, 129, 0.85);
+.unity-tree-icon {
+  font-size: 1.6rem;
+  filter: drop-shadow(0 2px 8px rgba(16, 185, 129, 0.7));
+  animation: gentlePulse 3.5s ease-in-out infinite alternate;
 }
 
-.scenery-title {
-  font-size: 1.05rem;
+@keyframes gentlePulse {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.14); }
+}
+
+.unity-tree-title-group {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
+.unity-tree-headline {
+  font-size: 0.95rem;
   font-weight: 800;
-  letter-spacing: -0.01em;
-  color: #ffffff;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-  margin-bottom: 2px;
+  letter-spacing: 0.08em;
+  color: #a7f3d0;
+  text-transform: uppercase;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
 }
 
-.scenery-subtitle {
-  font-size: 0.78rem;
-  color: #cbd5e1;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+.unity-tree-motto {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  letter-spacing: 0.03em;
+}
+
+.unity-tree-leaf {
+  font-size: 1.15rem;
+  filter: drop-shadow(0 0 6px #10b981);
+}
+
+/* Unity Tree Wings Layout */
+.unity-tree-wings {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+
+.unity-tree-wing {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 185px;
+}
+
+.unity-branch-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1.2px solid rgba(255, 255, 255, 0.18);
+  border-radius: 14px;
+  padding: 8px 12px;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.45);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  text-align: left;
+  user-select: none;
+}
+
+.unity-branch-chip:hover {
+  transform: translateY(-2px) scale(1.03);
+  background: rgba(15, 23, 42, 0.94);
+  border-color: #34d399;
+  box-shadow: 0 12px 25px -6px rgba(16, 185, 129, 0.4);
+}
+
+.unity-branch-chip.active {
+  background: linear-gradient(135deg, rgba(6, 78, 59, 0.92) 0%, rgba(15, 23, 42, 0.95) 100%);
+  border-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.65), 0 10px 24px rgba(16, 185, 129, 0.35);
+}
+
+.branch-leaf {
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.branch-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.branch-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.branch-info strong {
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: #f8fafc;
+  line-height: 1.2;
+}
+
+.branch-info small {
+  font-size: 0.63rem;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.unity-branch-chip.active .branch-info strong {
+  color: #6ee7b7;
+}
+
+.unity-branch-chip.active .branch-info small {
+  color: #d1fae5;
+}
+
+/* Unity Tree Root Crest */
+.unity-tree-root-crest {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(15, 23, 42, 0.78);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(52, 211, 153, 0.45);
+  padding: 6px 18px;
+  border-radius: 9999px;
+  color: #a7f3d0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.unity-badge-symbol {
+  font-size: 0.9rem;
+}
+
+@media (max-width: 1250px) {
+  .unity-tree-wings {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .unity-tree-wing {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    max-width: 420px;
+    gap: 8px;
+  }
+  .unity-branch-chip {
+    flex: 1 1 120px;
+    padding: 6px 10px;
+  }
 }
 
 /* Quick Role Selector */

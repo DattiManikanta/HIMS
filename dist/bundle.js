@@ -831,18 +831,39 @@ const ROLES = [{
   desc: 'System Administrator'
 }, {
   id: 'doctor',
-  label: 'Doctor',
+  label: 'Doctors',
   icon: '🩺',
   user: 'dr.madam',
   color: '#059669',
-  desc: 'Consultant Physician'
+  desc: 'Chief & Consultant Doctors'
+}, {
+  id: 'sister',
+  label: 'Sisters',
+  icon: '👩‍⚕️',
+  user: 'sister',
+  color: '#ec4899',
+  desc: 'Nursing & Ward Stations'
 }, {
   id: 'reception',
-  label: 'OPD Desk',
+  label: 'Receptionist',
   icon: '📋',
   user: 'reception',
   color: '#7c3aed',
   desc: 'OP Registration Desk'
+}, {
+  id: 'ot',
+  label: 'Operation Theater',
+  icon: '🏥',
+  user: 'ot.lead',
+  color: '#f59e0b',
+  desc: 'OT & Surgical Suites'
+}, {
+  id: 'billing',
+  label: 'Billing',
+  icon: '💳',
+  user: 'billing',
+  color: '#10b981',
+  desc: 'Billing & Cashless TPA'
 }, {
   id: 'pharmacy',
   label: 'Pharmacy',
@@ -861,6 +882,7 @@ function LoginPage({
   const [showForgotMsg, setShowForgotMsg] = useState(false);
   const [loading, setLoading] = useState(false);
   const selectRole = role => {
+    if (!role) return;
     setSelectedRole(role.id);
     setUsername(role.user);
     setPassword('admin');
@@ -902,15 +924,7 @@ function LoginPage({
     onError: e => {
       e.currentTarget.src = './hospital_building.jpg';
     }
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "scenery-card-overlay"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "scenery-pill"
-  }, "\uD83C\uDFE5 INDUS HOSPITAL"), /*#__PURE__*/React.createElement("div", {
-    className: "scenery-title"
-  }, "Indus Hospital"), /*#__PURE__*/React.createElement("div", {
-    className: "scenery-subtitle"
-  }, "Multi-Specialty & Emergency Care")))), /*#__PURE__*/React.createElement("div", {
+  }))), /*#__PURE__*/React.createElement("div", {
     className: "atri-scenery-doctor"
   }, /*#__PURE__*/React.createElement("div", {
     className: "scenery-card-frame doctor-frame"
@@ -921,15 +935,57 @@ function LoginPage({
     onError: e => {
       e.currentTarget.src = './doctor_profile.jpg';
     }
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "scenery-card-overlay"
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "unity-tree-wrapper"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "unity-tree-emblem"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "unity-tree-crest"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "scenery-pill green"
-  }, "\uD83E\uDE7A CHIEF CONSULTANT"), /*#__PURE__*/React.createElement("div", {
-    className: "scenery-title"
-  }, "Dr. Madam"), /*#__PURE__*/React.createElement("div", {
-    className: "scenery-subtitle"
-  }, "Chief Medical Consultant \u2022 OPD")))), /*#__PURE__*/React.createElement("div", {
+    className: "unity-tree-icon"
+  }, "\uD83C\uDF33"), /*#__PURE__*/React.createElement("div", {
+    className: "unity-tree-title-group"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "unity-tree-headline"
+  }, "HEALTHCARE UNITY TREE"), /*#__PURE__*/React.createElement("span", {
+    className: "unity-tree-motto"
+  }, "One Tree \u2022 United Departments \u2022 Compassionate Healing")), /*#__PURE__*/React.createElement("span", {
+    className: "unity-tree-leaf"
+  }, "\uD83C\uDF3F"))), /*#__PURE__*/React.createElement("div", {
+    className: "unity-tree-wings"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "unity-tree-wing left-wing"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: `unity-branch-chip ${selectedRole === 'doctor' ? 'active' : ''}`,
+    onClick: () => selectRole(ROLES.find(r => r.id === 'doctor')),
+    title: "Click to select Doctors Department"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "branch-leaf"
+  }, "\uD83C\uDF3F"), /*#__PURE__*/React.createElement("span", {
+    className: "branch-icon"
+  }, "\uD83E\uDE7A"), /*#__PURE__*/React.createElement("div", {
+    className: "branch-info"
+  }, /*#__PURE__*/React.createElement("strong", null, "DOCTORS"), /*#__PURE__*/React.createElement("small", null, "Consultants & Specialists"))), /*#__PURE__*/React.createElement("div", {
+    className: `unity-branch-chip ${selectedRole === 'sister' ? 'active' : ''}`,
+    onClick: () => selectRole(ROLES.find(r => r.id === 'sister')),
+    title: "Click to select Sisters (Nursing) Department"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "branch-leaf"
+  }, "\uD83C\uDF3F"), /*#__PURE__*/React.createElement("span", {
+    className: "branch-icon"
+  }, "\uD83D\uDC69\u200D\u2695\uFE0F"), /*#__PURE__*/React.createElement("div", {
+    className: "branch-info"
+  }, /*#__PURE__*/React.createElement("strong", null, "SISTERS"), /*#__PURE__*/React.createElement("small", null, "Compassionate Nursing"))), /*#__PURE__*/React.createElement("div", {
+    className: `unity-branch-chip ${selectedRole === 'ot' ? 'active' : ''}`,
+    onClick: () => selectRole(ROLES.find(r => r.id === 'ot')),
+    title: "Click to select Operation Theater Department"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "branch-leaf"
+  }, "\uD83C\uDF3F"), /*#__PURE__*/React.createElement("span", {
+    className: "branch-icon"
+  }, "\uD83C\uDFE5"), /*#__PURE__*/React.createElement("div", {
+    className: "branch-info"
+  }, /*#__PURE__*/React.createElement("strong", null, "OPERATION THEATER"), /*#__PURE__*/React.createElement("small", null, "Surgeons & Sterile OT")))), /*#__PURE__*/React.createElement("div", {
     className: "atri-login-container"
   }, /*#__PURE__*/React.createElement("div", {
     className: "atri-card-top-cap"
@@ -1012,7 +1068,45 @@ function LoginPage({
     className: "login-security-badge"
   }, /*#__PURE__*/React.createElement("span", {
     className: "security-pulse-dot"
-  }), /*#__PURE__*/React.createElement("span", null, "256-Bit SSL Encrypted \u2022 Spring Boot & MySQL Connected"))))), /*#__PURE__*/React.createElement("footer", {
+  }), /*#__PURE__*/React.createElement("span", null, "256-Bit SSL Encrypted \u2022 Spring Boot & MySQL Connected"))))), /*#__PURE__*/React.createElement("div", {
+    className: "unity-tree-wing right-wing"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: `unity-branch-chip ${selectedRole === 'reception' ? 'active' : ''}`,
+    onClick: () => selectRole(ROLES.find(r => r.id === 'reception')),
+    title: "Click to select Receptionist Department"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "branch-leaf"
+  }, "\uD83C\uDF3F"), /*#__PURE__*/React.createElement("span", {
+    className: "branch-icon"
+  }, "\uD83D\uDCCB"), /*#__PURE__*/React.createElement("div", {
+    className: "branch-info"
+  }, /*#__PURE__*/React.createElement("strong", null, "RECEPTIONIST"), /*#__PURE__*/React.createElement("small", null, "OP Desk & Registration"))), /*#__PURE__*/React.createElement("div", {
+    className: `unity-branch-chip ${selectedRole === 'billing' ? 'active' : ''}`,
+    onClick: () => selectRole(ROLES.find(r => r.id === 'billing')),
+    title: "Click to select Billing & TPA Department"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "branch-leaf"
+  }, "\uD83C\uDF3F"), /*#__PURE__*/React.createElement("span", {
+    className: "branch-icon"
+  }, "\uD83D\uDCB3"), /*#__PURE__*/React.createElement("div", {
+    className: "branch-info"
+  }, /*#__PURE__*/React.createElement("strong", null, "BILLING"), /*#__PURE__*/React.createElement("small", null, "Cashless TPA & Invoices"))), /*#__PURE__*/React.createElement("div", {
+    className: `unity-branch-chip ${selectedRole === 'pharmacy' ? 'active' : ''}`,
+    onClick: () => selectRole(ROLES.find(r => r.id === 'pharmacy')),
+    title: "Click to select Pharmacy Department"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "branch-leaf"
+  }, "\uD83C\uDF3F"), /*#__PURE__*/React.createElement("span", {
+    className: "branch-icon"
+  }, "\uD83D\uDC8A"), /*#__PURE__*/React.createElement("div", {
+    className: "branch-info"
+  }, /*#__PURE__*/React.createElement("strong", null, "PHARMACY"), /*#__PURE__*/React.createElement("small", null, "24/7 Dispensary & Stock"))))), /*#__PURE__*/React.createElement("div", {
+    className: "unity-tree-root-crest"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "unity-badge-symbol"
+  }, "\uD83C\uDF31"), /*#__PURE__*/React.createElement("span", null, "INDUS HEALTH CITY \u2022 ONE TREE, ALL ROLES UNITED FOR HEALING"), /*#__PURE__*/React.createElement("span", {
+    className: "unity-badge-symbol"
+  }, "\uD83C\uDF31"))), /*#__PURE__*/React.createElement("footer", {
     className: "atri-footer-bar"
   }, /*#__PURE__*/React.createElement("span", null, "Developed and Supported by : "), /*#__PURE__*/React.createElement("a", {
     href: "mailto:info@atribiz.com",
@@ -1340,15 +1434,7 @@ function HIMSHomeDashboard({
     onError: e => {
       e.currentTarget.src = './hospital_building.jpg';
     }
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "scenery-card-overlay"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "scenery-pill"
-  }, "\uD83C\uDFE5 INDUS HOSPITAL"), /*#__PURE__*/React.createElement("div", {
-    className: "scenery-title"
-  }, "Indus Hospital"), /*#__PURE__*/React.createElement("div", {
-    className: "scenery-subtitle"
-  }, "Multi-Specialty & Emergency Care")))), /*#__PURE__*/React.createElement("div", {
+  }))), /*#__PURE__*/React.createElement("div", {
     className: "atri-scenery-doctor"
   }, /*#__PURE__*/React.createElement("div", {
     className: "scenery-card-frame doctor-frame"
@@ -1359,15 +1445,7 @@ function HIMSHomeDashboard({
     onError: e => {
       e.currentTarget.src = './doctor_profile.jpg';
     }
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "scenery-card-overlay"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "scenery-pill green"
-  }, "\uD83E\uDE7A CHIEF CONSULTANT"), /*#__PURE__*/React.createElement("div", {
-    className: "scenery-title"
-  }, "Dr. Madam"), /*#__PURE__*/React.createElement("div", {
-    className: "scenery-subtitle"
-  }, "Chief Medical Consultant \u2022 OPD")))), /*#__PURE__*/React.createElement("header", {
+  }))), /*#__PURE__*/React.createElement("header", {
     className: "hims-top-bar"
   }, /*#__PURE__*/React.createElement("div", {
     className: "hims-top-logo"

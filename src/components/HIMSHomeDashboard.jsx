@@ -38,7 +38,7 @@ export function HIMSHomeDashboard({ onSelectModule, onLogout }) {
         </div>
       )}
 
-      {/* Left Scenery: Indus Hospital Building (Original High-Res) */}
+      {/* Left Scenery: Indus Hospital Building (Original High-Res, Clean Pure Photo) */}
       <div className="atri-scenery-hospital">
         <div className="scenery-card-frame hospital-frame">
           <img 
@@ -47,15 +47,10 @@ export function HIMSHomeDashboard({ onSelectModule, onLogout }) {
             className="atri-scenery-hospital-img" 
             onError={(e) => { e.currentTarget.src = './hospital_building.jpg'; }}
           />
-          <div className="scenery-card-overlay">
-            <span className="scenery-pill">🏥 INDUS HOSPITAL</span>
-            <div className="scenery-title">Indus Hospital</div>
-            <div className="scenery-subtitle">Multi-Specialty &amp; Emergency Care</div>
-          </div>
         </div>
       </div>
 
-      {/* Right Scenery: Madam Doctor Photo (Original High-Res) */}
+      {/* Right Scenery: Madam Doctor Photo (Original High-Res, Clean Pure Photo) */}
       <div className="atri-scenery-doctor">
         <div className="scenery-card-frame doctor-frame">
           <img 
@@ -64,11 +59,6 @@ export function HIMSHomeDashboard({ onSelectModule, onLogout }) {
             className="atri-scenery-doctor-img" 
             onError={(e) => { e.currentTarget.src = './doctor_profile.jpg'; }}
           />
-          <div className="scenery-card-overlay">
-            <span className="scenery-pill green">🩺 CHIEF CONSULTANT</span>
-            <div className="scenery-title">Dr. Madam</div>
-            <div className="scenery-subtitle">Chief Medical Consultant • OPD</div>
-          </div>
         </div>
       </div>
 

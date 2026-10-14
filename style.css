@@ -2765,6 +2765,44 @@ body {
   justify-content: center;
 }
 
+/* Background Ambient Lighting Orbs for Login Page */
+.login-ambient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.45;
+}
+
+.login-ambient-orb.orb-1 {
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle, #38bdf8 0%, rgba(56, 189, 248, 0) 70%);
+  top: 15%;
+  left: 35%;
+  animation: orbFloat1 12s ease-in-out infinite alternate;
+}
+
+.login-ambient-orb.orb-2 {
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle, #818cf8 0%, rgba(129, 140, 248, 0) 70%);
+  bottom: 15%;
+  right: 35%;
+  animation: orbFloat2 15s ease-in-out infinite alternate;
+}
+
+@keyframes orbFloat1 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(-30px, 40px) scale(1.15); }
+}
+
+@keyframes orbFloat2 {
+  0% { transform: translate(0, 0) scale(1); }
+  100% { transform: translate(40px, -30px) scale(0.9); }
+}
+
 .hims-home-screen {
   min-height: 100vh;
   width: 100vw;
@@ -2779,54 +2817,300 @@ body {
   justify-content: space-between;
 }
 
-/* Left Scenery: Indus Hospital Building */
+/* Left Scenery: Indus Hospital Building (HD Clarified Card) */
 .atri-scenery-hospital {
   position: absolute;
-  left: 0;
-  bottom: 32px;
-  top: 0;
-  width: 32vw;
-  max-width: 480px;
+  left: 24px;
+  bottom: 24px;
+  top: 24px;
+  width: 28vw;
+  max-width: 420px;
   z-index: 5;
-  pointer-events: none;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
 }
 
-.atri-scenery-hospital-img {
-  height: 100%;
-  width: 100%;
-  object-fit: contain;
-  object-position: left bottom;
-  filter: drop-shadow(4px 0 16px rgba(15, 23, 42, 0.08));
-}
-
-.atri-scenery-hospital-label {
-  display: none !important;
-}
-
-/* Right Scenery: Doctor Photo */
+/* Right Scenery: Doctor Photo (HD Clarified Card) */
 .atri-scenery-doctor {
   position: absolute;
-  right: 0;
-  bottom: 32px;
-  top: 0;
-  height: calc(100vh - 32px);
-  width: 32vw;
-  max-width: 480px;
+  right: 24px;
+  bottom: 24px;
+  top: 24px;
+  width: 28vw;
+  max-width: 420px;
   z-index: 5;
-  pointer-events: none;
   display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
 }
 
-.atri-scenery-doctor-img {
-  height: 100%;
+/* HD Scenery Card Frame */
+.scenery-card-frame {
+  position: relative;
   width: 100%;
-  object-fit: contain;
-  object-position: right bottom;
-  filter: drop-shadow(-8px 10px 24px rgba(15, 23, 42, 0.1));
+  max-height: 85vh;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 
+    0 25px 50px -12px rgba(15, 23, 42, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.9),
+    inset 0 1px 1px rgba(255, 255, 255, 0.6);
+  background: #ffffff;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+  animation: sceneryEntry 0.8s ease-out backwards;
+}
+
+.scenery-card-frame:hover {
+  transform: translateY(-6px);
+  box-shadow: 
+    0 30px 60px -15px rgba(15, 23, 42, 0.3),
+    0 0 0 1.5px rgba(56, 189, 248, 0.6);
+}
+
+.scenery-card-frame.hospital-frame {
+  animation-delay: 0.1s;
+}
+
+.scenery-card-frame.doctor-frame {
+  animation-delay: 0.2s;
+}
+
+@keyframes sceneryEntry {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.atri-scenery-hospital-img,
+.atri-scenery-doctor-img {
+  width: 100%;
+  height: 100%;
+  max-height: 85vh;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.6s ease;
+}
+
+.scenery-card-frame:hover .atri-scenery-hospital-img,
+.scenery-card-frame:hover .atri-scenery-doctor-img {
+  transform: scale(1.03);
+}
+
+.scenery-card-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 24px 18px 16px 18px;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0) 0%, rgba(15, 23, 42, 0.85) 45%, rgba(15, 23, 42, 0.95) 100%);
+  color: #ffffff;
+  pointer-events: none;
+}
+
+.scenery-pill {
+  display: inline-block;
+  background: rgba(2, 132, 199, 0.85);
+  backdrop-filter: blur(8px);
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 3px 8px;
+  border-radius: 9999px;
+  margin-bottom: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.scenery-pill.green {
+  background: rgba(16, 185, 129, 0.85);
+}
+
+.scenery-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #ffffff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  margin-bottom: 2px;
+}
+
+.scenery-subtitle {
+  font-size: 0.78rem;
+  color: #cbd5e1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+/* Quick Role Selector */
+.login-role-selector {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.login-role-hint {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.login-role-chips {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.login-role-chip {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  padding: 5px 10px;
+  color: #cbd5e1;
+  font-size: 0.74rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.login-role-chip:hover {
+  background: rgba(2, 132, 199, 0.2);
+  border-color: #38bdf8;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.login-role-chip.active {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  border-color: #38bdf8;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+}
+
+/* Input box with icon */
+.atri-input-box {
+  position: relative;
+  margin-bottom: 14px;
+}
+
+.input-prefix-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.9rem;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.atri-input-box .atri-field {
+  padding-left: 36px !important;
+}
+
+.password-box .atri-field {
+  padding-right: 38px !important;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  opacity: 0.7;
+  padding: 4px;
+  transition: opacity 0.2s;
+}
+
+.password-toggle-btn:hover {
+  opacity: 1;
+}
+
+/* Enhanced Login Button */
+.atri-login-btn.effect-btn {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid #38bdf8 !important;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.45) !important;
+  transition: all 0.25s ease;
+}
+
+.atri-login-btn.effect-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(2, 132, 199, 0.65) !important;
+  background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%) !important;
+}
+
+.atri-login-btn.effect-btn:active {
+  transform: translateY(1px);
+}
+
+.btn-loading-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+/* Security Badge */
+.login-security-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 18px;
+  font-size: 0.68rem;
+  color: #94a3b8;
+  letter-spacing: 0.02em;
+}
+
+.security-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+  animation: pulseDot 2s infinite;
+}
+
+@keyframes pulseDot {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { transform: scale(1.1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+/* Responsive Hide Scenery on small screens */
+@media (max-width: 900px) {
+  .atri-scenery-hospital,
+  .atri-scenery-doctor {
+    display: none !important;
+  }
+  .atri-login-container {
+    width: 92vw !important;
+    max-width: 380px !important;
+  }
 }
 
 /* Top-Left Floating ATRIBIZ "AB" Logo */

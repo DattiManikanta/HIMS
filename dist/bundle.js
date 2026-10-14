@@ -822,53 +822,114 @@ function AtriBizLogo({
     fill: "none"
   }));
 }
+const ROLES = [{
+  id: 'admin',
+  label: 'Admin',
+  icon: '🛡️',
+  user: 'admin',
+  color: '#0284c7',
+  desc: 'System Administrator'
+}, {
+  id: 'doctor',
+  label: 'Doctor',
+  icon: '🩺',
+  user: 'dr.sharma',
+  color: '#059669',
+  desc: 'Consultant Physician'
+}, {
+  id: 'reception',
+  label: 'OPD Desk',
+  icon: '📋',
+  user: 'reception',
+  color: '#7c3aed',
+  desc: 'OP Registration Desk'
+}, {
+  id: 'pharmacy',
+  label: 'Pharmacy',
+  icon: '💊',
+  user: 'pharmacy',
+  color: '#ea580c',
+  desc: 'Central Pharmacy'
+}];
 function LoginPage({
   onLogin
 }) {
+  const [selectedRole, setSelectedRole] = useState('admin');
   const [username, setUsername] = useState('admin');
   const [password, setPassword] = useState('admin');
+  const [showPassword, setShowPassword] = useState(false);
   const [showForgotMsg, setShowForgotMsg] = useState(false);
   const [loading, setLoading] = useState(false);
+  const selectRole = role => {
+    setSelectedRole(role.id);
+    setUsername(role.user);
+    setPassword('admin');
+  };
   const handleSubmit = e => {
     if (e) e.preventDefault();
     setLoading(true);
+    const activeRoleObj = ROLES.find(r => r.id === selectedRole) || ROLES[0];
     setTimeout(() => {
       setLoading(false);
       onLogin({
-        id: 'ADMIN-ATRIBIZ-01',
-        role: 'admin',
-        roleName: 'System Administrator (Pharmacy / HIMS)',
-        badgeColor: '#0284c7',
-        icon: '🏥',
+        id: `HIMS-${activeRoleObj.id.toUpperCase()}-01`,
+        role: activeRoleObj.id,
+        roleName: activeRoleObj.desc,
+        badgeColor: activeRoleObj.color,
+        icon: activeRoleObj.icon,
         name: username || 'Administrator',
-        qualification: 'HIMS Master Controller',
-        department: 'Central Pharmacy & OPD',
+        qualification: activeRoleObj.desc,
+        department: 'INDUS HEALTH CITY HIMS',
         initialTab: 'overview',
-        email: 'info@atribiz.com'
+        email: `${activeRoleObj.id}@healthcity.com`
       });
     }, 400);
   };
   return /*#__PURE__*/React.createElement("div", {
     className: "atri-login-screen"
   }, /*#__PURE__*/React.createElement("div", {
+    className: "login-ambient-orb orb-1"
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "login-ambient-orb orb-2"
+  }), /*#__PURE__*/React.createElement("div", {
     className: "atri-scenery-hospital"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "scenery-card-frame hospital-frame"
   }, /*#__PURE__*/React.createElement("img", {
-    src: "./hospital_building.png?v=20261008ultra",
-    alt: "Indus Hospital Building",
+    src: "./hospital_building.jpg?v=20261014hd",
+    alt: "Indus Health City Hospital Building",
     className: "atri-scenery-hospital-img",
     onError: e => {
-      e.currentTarget.src = './hospital_building.jpg';
+      e.currentTarget.src = './hospital_building.png';
     }
-  })), /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "scenery-card-overlay"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "scenery-pill"
+  }, "\uD83C\uDFE5 NABH ACCREDITED"), /*#__PURE__*/React.createElement("div", {
+    className: "scenery-title"
+  }, "INDUS HEALTH CITY"), /*#__PURE__*/React.createElement("div", {
+    className: "scenery-subtitle"
+  }, "Multi-Specialty & 24/7 Emergency Care")))), /*#__PURE__*/React.createElement("div", {
     className: "atri-scenery-doctor"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "scenery-card-frame doctor-frame"
   }, /*#__PURE__*/React.createElement("img", {
-    src: "./doctor_profile.png?v=20261008ultra",
-    alt: "Doctor Mam",
+    src: "./doctor_profile.jpg?v=20261014hd",
+    alt: "Doctor Consultant",
     className: "atri-scenery-doctor-img",
     onError: e => {
-      e.currentTarget.src = './doctor_profile.jpg';
+      e.currentTarget.src = './doctor_profile.png';
     }
-  })), /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "scenery-card-overlay"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "scenery-pill green"
+  }, "\uD83E\uDE7A LIVE ON DUTY"), /*#__PURE__*/React.createElement("div", {
+    className: "scenery-title"
+  }, "Dr. Shalini Sharma, MD"), /*#__PURE__*/React.createElement("div", {
+    className: "scenery-subtitle"
+  }, "Chief Medical Consultant \u2022 Cardiology OPD")))), /*#__PURE__*/React.createElement("div", {
     className: "atri-login-container"
   }, /*#__PURE__*/React.createElement("div", {
     className: "atri-card-top-cap"
@@ -877,35 +938,59 @@ function LoginPage({
     height: 58
   })), /*#__PURE__*/React.createElement("div", {
     className: "atri-card-dark-pod"
-  }, /*#__PURE__*/React.createElement("form", {
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "login-role-selector"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "login-role-hint"
+  }, "Quick Role Select:"), /*#__PURE__*/React.createElement("div", {
+    className: "login-role-chips"
+  }, ROLES.map(r => /*#__PURE__*/React.createElement("button", {
+    key: r.id,
+    type: "button",
+    className: `login-role-chip ${selectedRole === r.id ? 'active' : ''}`,
+    onClick: () => selectRole(r),
+    title: `Switch to ${r.label}`
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "role-chip-icon"
+  }, r.icon), /*#__PURE__*/React.createElement("span", {
+    className: "role-chip-label"
+  }, r.label))))), /*#__PURE__*/React.createElement("form", {
     onSubmit: handleSubmit,
     className: "atri-form",
     autoComplete: "off"
   }, /*#__PURE__*/React.createElement("div", {
     className: "atri-input-box"
-  }, /*#__PURE__*/React.createElement("input", {
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "input-prefix-icon"
+  }, "\uD83D\uDC64"), /*#__PURE__*/React.createElement("input", {
     type: "text",
     value: username,
     onChange: e => setUsername(e.target.value),
-    placeholder: "admin",
+    placeholder: "Username or Email",
     className: "atri-field",
     autoComplete: "off",
     autoCorrect: "off",
     autoCapitalize: "off",
     spellCheck: "false",
-    autoFocus: true,
     required: true
   })), /*#__PURE__*/React.createElement("div", {
-    className: "atri-input-box"
-  }, /*#__PURE__*/React.createElement("input", {
-    type: "password",
+    className: "atri-input-box password-box"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "input-prefix-icon"
+  }, "\uD83D\uDD12"), /*#__PURE__*/React.createElement("input", {
+    type: showPassword ? 'text' : 'password',
     value: password,
     onChange: e => setPassword(e.target.value),
-    placeholder: "\u2022\u2022\u2022\u2022\u2022",
+    placeholder: "Password",
     className: "atri-field",
     autoComplete: "off",
     required: true
-  })), /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "password-toggle-btn",
+    onClick: () => setShowPassword(!showPassword),
+    title: showPassword ? 'Hide password' : 'Show password'
+  }, showPassword ? '👁️' : '🙈')), /*#__PURE__*/React.createElement("div", {
     className: "atri-forgot-row"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -917,9 +1002,17 @@ function LoginPage({
     className: "atri-btn-row"
   }, /*#__PURE__*/React.createElement("button", {
     type: "submit",
-    className: "atri-login-btn",
+    className: "atri-login-btn effect-btn",
     disabled: loading
-  }, loading ? 'LOGGING IN...' : 'LOGIN'))))), /*#__PURE__*/React.createElement("footer", {
+  }, loading ? /*#__PURE__*/React.createElement("span", {
+    className: "btn-loading-wrap"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "btn-spinner"
+  }), /*#__PURE__*/React.createElement("span", null, "AUTHENTICATING...")) : /*#__PURE__*/React.createElement("span", null, "LOGIN TO HIMS"))), /*#__PURE__*/React.createElement("div", {
+    className: "login-security-badge"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "security-pulse-dot"
+  }), /*#__PURE__*/React.createElement("span", null, "256-Bit SSL Encrypted \u2022 Spring Boot & MySQL Connected"))))), /*#__PURE__*/React.createElement("footer", {
     className: "atri-footer-bar"
   }, /*#__PURE__*/React.createElement("span", null, "Developed and Supported by : "), /*#__PURE__*/React.createElement("a", {
     href: "mailto:info@atribiz.com",
@@ -1238,23 +1331,43 @@ function HIMSHomeDashboard({
     title: "Dismiss"
   }, "\u2715")), /*#__PURE__*/React.createElement("div", {
     className: "atri-scenery-hospital"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "scenery-card-frame hospital-frame"
   }, /*#__PURE__*/React.createElement("img", {
-    src: "./hospital_building.png?v=20261008ultra",
-    alt: "Indus Hospital Building",
+    src: "./hospital_building.jpg?v=20261014hd",
+    alt: "Indus Health City Hospital Building",
     className: "atri-scenery-hospital-img",
     onError: e => {
-      e.currentTarget.src = './hospital_building.jpg';
+      e.currentTarget.src = './hospital_building.png';
     }
-  })), /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "scenery-card-overlay"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "scenery-pill"
+  }, "\uD83C\uDFE5 NABH ACCREDITED"), /*#__PURE__*/React.createElement("div", {
+    className: "scenery-title"
+  }, "INDUS HEALTH CITY"), /*#__PURE__*/React.createElement("div", {
+    className: "scenery-subtitle"
+  }, "Multi-Specialty & 24/7 Emergency Care")))), /*#__PURE__*/React.createElement("div", {
     className: "atri-scenery-doctor"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "scenery-card-frame doctor-frame"
   }, /*#__PURE__*/React.createElement("img", {
-    src: "./doctor_profile.png?v=20261008ultra",
-    alt: "Doctor Mam",
+    src: "./doctor_profile.jpg?v=20261014hd",
+    alt: "Doctor Consultant",
     className: "atri-scenery-doctor-img",
     onError: e => {
-      e.currentTarget.src = './doctor_profile.jpg';
+      e.currentTarget.src = './doctor_profile.png';
     }
-  })), /*#__PURE__*/React.createElement("header", {
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "scenery-card-overlay"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "scenery-pill green"
+  }, "\uD83E\uDE7A LIVE ON DUTY"), /*#__PURE__*/React.createElement("div", {
+    className: "scenery-title"
+  }, "Dr. Shalini Sharma, MD"), /*#__PURE__*/React.createElement("div", {
+    className: "scenery-subtitle"
+  }, "Chief Medical Consultant \u2022 Cardiology OPD")))), /*#__PURE__*/React.createElement("header", {
     className: "hims-top-bar"
   }, /*#__PURE__*/React.createElement("div", {
     className: "hims-top-logo"

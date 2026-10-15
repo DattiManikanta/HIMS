@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  hims-app:
+    build: .
+    image: hims-app:latest
+    container_name: hims-hospital-system
+    restart: always
+    ports:
+      - "3000:3000"
+      - "5000:5000"
+    environment:
+      - PORT=3000
+      - BACKEND_PORT=5000
+      - DB_HOST=atri.cluster-ro-cdk4i6gkepve.ap-south-1.rds.amazonaws.com
+      - DB_PORT=3306
+      - DB_DATABASE=at_healthcity
+      - DB_USER=admin
+      - DB_PASSWORD=Client123

@@ -5,7 +5,8 @@ kids-video-automation/
 village-utsav-app/
 
 # Tools & Local Binaries
-tools/
+tools/*.exe
+!tools/build.cjs
 
 # Build artifacts & dependencies
 target/

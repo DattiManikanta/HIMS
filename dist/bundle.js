@@ -1045,47 +1045,7 @@ function HIMSHomeDashboard({
     className: "toast-dismiss",
     onClick: () => setReadonlyNotice(null),
     title: "Dismiss"
-  }, "\u2715")), /*#__PURE__*/React.createElement("div", {
-    className: "atri-scenery-hospital"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "https://www.indushospital.com/",
-    target: "_blank",
-    rel: "noopener noreferrer",
-    className: "scenery-card-frame hospital-frame",
-    title: "Visit Indus Hospital Official Website (https://www.indushospital.com/)",
-    style: {
-      textDecoration: 'none',
-      cursor: 'pointer',
-      display: 'flex'
-    }
-  }, /*#__PURE__*/React.createElement("img", {
-    src: "./hospital_building.png?v=20261014indus",
-    alt: "Indus Hospital Building",
-    className: "atri-scenery-hospital-img",
-    onError: e => {
-      e.currentTarget.src = './hospital_building.jpg';
-    }
-  }))), /*#__PURE__*/React.createElement("div", {
-    className: "atri-scenery-doctor"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "https://www.indushospital.com/",
-    target: "_blank",
-    rel: "noopener noreferrer",
-    className: "scenery-card-frame doctor-frame",
-    title: "Visit Indus Hospital Official Website (https://www.indushospital.com/)",
-    style: {
-      textDecoration: 'none',
-      cursor: 'pointer',
-      display: 'flex'
-    }
-  }, /*#__PURE__*/React.createElement("img", {
-    src: "./doctor_profile.png?v=20261014madam",
-    alt: "Doctor Madam",
-    className: "atri-scenery-doctor-img",
-    onError: e => {
-      e.currentTarget.src = './doctor_profile.jpg';
-    }
-  }))), /*#__PURE__*/React.createElement("header", {
+  }, "\u2715")), /*#__PURE__*/React.createElement("header", {
     className: "hims-top-bar"
   }, /*#__PURE__*/React.createElement("div", {
     className: "hims-top-logo"
@@ -2255,7 +2215,9 @@ function formatToYyyyMmDd(date) {
 function parseAnyDate(str) {
   if (!str) return null;
   if (str instanceof Date) return isNaN(str.getTime()) ? null : str;
-  const s = String(str).trim();
+  let s = String(str).trim();
+  if (s.includes('T')) s = s.split('T')[0];
+  if (s.includes(' ')) s = s.split(' ')[0];
   // YYYY-MM-DD
   if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(s)) {
     const parts = s.split('-').map(Number);
@@ -2915,12 +2877,16 @@ function RegistrationForm({
   const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [selectedHospital, setSelectedHospital] = useState('INDUS HEALTH CITY');
   const [dateRange, setDateRange] = useState(getTodayDateRangeFormatted());
-  const [dateFilterRange, setDateFilterRange] = useState(null);
+  const [dateFilterRange, setDateFilterRange] = useState(() => {
+    const today = new Date();
+    return { start: today, end: today };
+  });
   const [printModal, setPrintModal] = useState(null);
   const [toast, setToast] = useState(null);
   const [vitalsDrawer, setVitalsDrawer] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingPatient, setEditingPatient] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Existing Patient Search in Tab 2 State (query-wise based on PatientMapper DetailedView)
   const [existingSearchTerm, setExistingSearchTerm] = useState('');
@@ -3330,11 +3296,14 @@ function RegistrationForm({
   // Handle Form Submission (Save New or Update Existing Patient)
   const handleSave = async e => {
     if (e) e.preventDefault();
+    if (isSaving) return;
     if (!formData.patientName.trim()) {
       alert('Please enter Patient Name.');
       return;
     }
-    const fullName = `${formData.title} ${formData.patientName} ${formData.lastName}`.trim().toUpperCase();
+    setIsSaving(true);
+    try {
+      const fullName = `${formData.title} ${formData.patientName} ${formData.lastName}`.trim().toUpperCase();
 
     // -------------------------------------------------------------
     // UPDATE PATIENT (When in Edit Mode)
@@ -3521,7 +3490,10 @@ function RegistrationForm({
       token: `OPD-${Math.floor(120 + appointments.length + 2)}`
     }));
     fetchServerQueue();
-  };
+  } finally {
+    setIsSaving(false);
+  }
+};
 
   // Export to Excel / CSV
   const handleExportExcel = () => {
@@ -3549,28 +3521,28 @@ function RegistrationForm({
       if (!matchesSearch) return false;
     }
     if (dateFilterRange && dateFilterRange.start && dateFilterRange.end) {
-      const rowDate = parseAnyDate(row.appointmentDate);
-      if (rowDate) {
-        const startCheck = new Date(dateFilterRange.start);
-        startCheck.setHours(0, 0, 0, 0);
-        const endCheck = new Date(dateFilterRange.end);
-        endCheck.setHours(23, 59, 59, 999);
-        if (rowDate < startCheck || rowDate > endCheck) {
-          return false;
-        }
+      const dateVal = row.appointmentDate || row.apptDt || row.visitDate || row.scheduleDt || row.regDt;
+      const rowDate = parseAnyDate(dateVal);
+      if (!rowDate) return false;
+      const startCheck = new Date(dateFilterRange.start);
+      startCheck.setHours(0, 0, 0, 0);
+      const endCheck = new Date(dateFilterRange.end);
+      endCheck.setHours(23, 59, 59, 999);
+      if (rowDate < startCheck || rowDate > endCheck) {
+        return false;
       }
     }
     return true;
   });
 
-  // Calculate Summary Metrics Bar
-  const totalPatients = appointments.length;
-  const regCashTotal = appointments.reduce((sum, a) => sum + (a.regCash || 0), 0);
-  const regCardTotal = appointments.reduce((sum, a) => sum + (a.regCredit || 0), 0);
-  const regUpiTotal = appointments.reduce((sum, a) => sum + (a.regUpi || 0), 0);
-  const consCashTotal = appointments.reduce((sum, a) => sum + (a.conCash || 0), 0);
-  const consCardTotal = appointments.reduce((sum, a) => sum + (a.conCredit || 0), 0);
-  const consUpiTotal = appointments.reduce((sum, a) => sum + (a.conUpi || 0), 0);
+  // Calculate Summary Metrics Bar (Strictly computed from filtered date range)
+  const totalPatients = filteredAppointments.length;
+  const regCashTotal = filteredAppointments.reduce((sum, a) => sum + (a.regCash || 0), 0);
+  const regCardTotal = filteredAppointments.reduce((sum, a) => sum + (a.regCredit || 0), 0);
+  const regUpiTotal = filteredAppointments.reduce((sum, a) => sum + (a.regUpi || 0), 0);
+  const consCashTotal = filteredAppointments.reduce((sum, a) => sum + (a.conCash || 0), 0);
+  const consCardTotal = filteredAppointments.reduce((sum, a) => sum + (a.conCredit || 0), 0);
+  const consUpiTotal = filteredAppointments.reduce((sum, a) => sum + (a.conUpi || 0), 0);
   const paidAmtTotal = regCashTotal + regCardTotal + regUpiTotal + consCashTotal + consCardTotal + consUpiTotal;
   return /*#__PURE__*/React.createElement("div", {
     className: "patient-reg-page"
@@ -3602,7 +3574,12 @@ function RegistrationForm({
   }, "\uD83D\uDD04"), /*#__PURE__*/React.createElement("button", {
     className: "reg-icon-btn save",
     onClick: handleSave,
-    title: "Save Record"
+    disabled: isSaving,
+    style: {
+      opacity: isSaving ? 0.6 : 1,
+      cursor: isSaving ? 'not-allowed' : 'pointer'
+    },
+    title: isSaving ? "Saving..." : "Save Record"
   }, "\uD83D\uDCBE")))), /*#__PURE__*/React.createElement("div", {
     className: "reg-tabs-header"
   }, /*#__PURE__*/React.createElement("div", {
@@ -3660,7 +3637,55 @@ function RegistrationForm({
         showNotification(`✓ Showing all appointments`);
       }
     }
-  })), /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: 'flex',
+      gap: '6px',
+      alignItems: 'center',
+      marginLeft: '6px'
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: `reg-tab-btn ${dateFilterRange && dateFilterRange.start && dateFilterRange.end && formatToDdMmmYyyy(dateFilterRange.start) === formatToDdMmmYyyy(new Date()) && formatToDdMmmYyyy(dateFilterRange.end) === formatToDdMmmYyyy(new Date()) ? 'active' : ''}`,
+    style: {
+      padding: '6px 14px',
+      fontSize: '12px',
+      fontWeight: 700,
+      borderRadius: '6px',
+      height: '34px',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '4px'
+    },
+    onClick: () => {
+      const today = new Date();
+      setDateRange(getTodayDateRangeFormatted());
+      setDateFilterRange({ start: today, end: today });
+      showNotification("📅 Filtered: Showing Today's appointments");
+    },
+    title: "Show only Today's patient records"
+  }, "📅 Today"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: `reg-tab-btn ${!dateFilterRange ? 'active' : ''}`,
+    style: {
+      padding: '6px 14px',
+      fontSize: '12px',
+      fontWeight: 700,
+      borderRadius: '6px',
+      height: '34px',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '4px'
+    },
+    onClick: () => {
+      setDateRange("All Appointments");
+      setDateFilterRange(null);
+      showNotification("🌐 Showing all appointment records");
+    },
+    title: "Show all records without date filtering"
+  }, "🌐 Show All"))), /*#__PURE__*/React.createElement("div", {
     className: "reg-summary-pill-bar"
   }, /*#__PURE__*/React.createElement("div", {
     className: "metric-chip"
@@ -5031,26 +5056,34 @@ function RegistrationForm({
   }, isEditMode && editingPatient ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     type: "submit",
     className: "btn-green-save-prominent",
+    disabled: isSaving,
     style: {
       background: '#d97706',
-      borderColor: '#b45309'
+      borderColor: '#b45309',
+      opacity: isSaving ? 0.7 : 1,
+      cursor: isSaving ? 'not-allowed' : 'pointer'
     }
-  }, "\uD83D\uDCBE Update Patient Record (", editingPatient.umrNo, ")"), /*#__PURE__*/React.createElement("button", {
+  }, isSaving ? "⏳ Updating..." : ["\uD83D\uDCBE Update Patient Record (", editingPatient.umrNo, ")"]), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "btn-print-token-action",
+    disabled: isSaving,
     onClick: () => {
+      if (isSaving) return;
       setIsEditMode(false);
       setEditingPatient(null);
       handleSave();
     },
     style: {
       background: '#0284c7',
-      borderColor: '#0369a1'
+      borderColor: '#0369a1',
+      opacity: isSaving ? 0.7 : 1,
+      cursor: isSaving ? 'not-allowed' : 'pointer'
     },
     title: "Save this entry as a new patient with fresh UMR"
   }, "\u2795 Save as New Patient"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "btn-reset-form-action",
+    disabled: isSaving,
     onClick: () => {
       setIsEditMode(false);
       setEditingPatient(null);
@@ -5074,8 +5107,13 @@ function RegistrationForm({
     }
   }, "\u2715 Cancel")) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     type: "submit",
-    className: "btn-green-save-prominent"
-  }, "\uD83D\uDCBE Save Appointment"), /*#__PURE__*/React.createElement("button", {
+    className: "btn-green-save-prominent",
+    disabled: isSaving,
+    style: {
+      opacity: isSaving ? 0.7 : 1,
+      cursor: isSaving ? 'not-allowed' : 'pointer'
+    }
+  }, isSaving ? "⏳ Saving Patient..." : "\uD83D\uDCBE Save Appointment"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "btn-print-token-action",
     onClick: () => {
@@ -5278,7 +5316,54 @@ function RegistrationForm({
       setVitalsDrawer(null);
       showNotification(`✓ Vitals updated for ${vitalsDrawer.patientName}`);
     }
-  }, "\uD83D\uDCBE Save Vitals")))));
+  }, "\uD83D\uDCBE Save Vitals")))), isSaving && /*#__PURE__*/React.createElement("div", {
+    className: "print-modal-overlay",
+    style: {
+      zIndex: 99999
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      background: '#ffffff',
+      borderRadius: '16px',
+      padding: '36px 40px',
+      maxWidth: '440px',
+      width: '90%',
+      textAlign: 'center',
+      boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.4)',
+      border: '1px solid #e2e8f0',
+      animation: 'fadeIn 0.2s ease-out'
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: '56px',
+      height: '56px',
+      border: '5px solid #e2e8f0',
+      borderTopColor: '#0284c7',
+      borderRadius: '50%',
+      margin: '0 auto 20px',
+      animation: 'spin 0.8s linear infinite'
+    }
+  }), /*#__PURE__*/React.createElement("h3", {
+    style: {
+      margin: '0 0 10px',
+      fontSize: '1.35rem',
+      fontWeight: 800,
+      color: '#0f172a'
+    }
+  }, "Saving Patient Registration"), /*#__PURE__*/React.createElement("p", {
+    style: {
+      margin: '0 0 8px',
+      fontSize: '0.95rem',
+      color: '#0284c7',
+      fontWeight: 600
+    }
+  }, "Securing Doctor Token & Saving to Database..."), /*#__PURE__*/React.createElement("p", {
+    style: {
+      margin: 0,
+      fontSize: '0.85rem',
+      color: '#64748b'
+    }
+  }, "Please wait a moment while the appointment and billing records are finalized."))));
 }
 
 // --- src/components/TokenSlip.jsx ---
@@ -9395,24 +9480,8 @@ function App() {
       [generatedToken]: newRecord
     }));
 
-    // Persist new registration to PostgreSQL Backend!
-    fetch('/api/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(newRecord)
-    }).then(r => r.json()).then(res => {
-      if (res.savedToPostgres) {
-        showToast(`🐘 Saved in PostgreSQL: Patient ${newRecord.patientName} (${generatedOpId})`);
-      } else {
-        showToast(`✓ Registered: ${newRecord.patientName} (${generatedOpId}) - Cached locally`);
-      }
-      checkPostgresHealth();
-    }).catch(err => {
-      console.warn('PostgreSQL register error:', err);
-      showToast(`✓ Registered: ${newRecord.patientName} (${generatedOpId})`);
-    });
+    // Already saved directly to database in RegistrationForm.jsx
+    showToast(`✓ Registered: ${newRecord.patientName} (${generatedOpId})`);
   };
 
   // 1. If user is NOT logged in: Show starting Login Screen ("LOGIN JSP")

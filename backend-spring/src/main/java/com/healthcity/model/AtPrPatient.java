@@ -42,7 +42,7 @@ public class AtPrPatient {
     @Column(name = "mob_num", length = 30)
     private String mobNum;
 
-    @Column(name = "land_phn", length = 30)
+    @Transient
     private String landNum;
 
     @Column(name = "addr", length = 255)
@@ -60,7 +60,7 @@ public class AtPrPatient {
     @Column(name = "country", length = 100)
     private String country;
 
-    @Column(name = "pin", length = 20)
+    @Transient
     private String pin;
 
     @Column(name = "marital_status", length = 30)
@@ -90,34 +90,34 @@ public class AtPrPatient {
     @Column(name = "id_proof_num", length = 100)
     private String idProofNum;
 
-    @Column(name = "patient_category", length = 50)
-    private String patientCategory;
+    @Column(name = "patient_category")
+    private Integer patientCategory = 0;
 
     @Column(name = "patient_category_name", length = 100)
     private String patientCategoryName;
 
-    @Column(name = "credit_org_id", length = 50)
+    @Transient
     private String creditOrgId;
 
-    @Column(name = "org_id", length = 50)
+    @Transient
     private String orgId;
 
-    @Column(name = "ref_type", length = 50)
+    @Transient
     private String refType;
 
-    @Column(name = "ref_id", length = 50)
+    @Transient
     private String refId;
 
-    @Column(name = "ref_name", length = 150)
+    @Transient
     private String refName;
 
-    @Column(name = "other_staff_id", length = 50)
+    @Transient
     private String otherStaffId;
 
     @Column(name = "other_staff_name", length = 150)
     private String otherStaffName;
 
-    @Column(name = "other_hosp_id", length = 50)
+    @Transient
     private String otherHospId;
 
     @Column(name = "other_hosp_name", length = 150)
@@ -135,7 +135,7 @@ public class AtPrPatient {
     @Column(name = "status_id")
     private Integer statusId = 34;
 
-    @Column(name = "doc_status", length = 10)
+    @Transient
     private String docStatus = "y";
 
     @Column(name = "emp_id")
@@ -252,8 +252,20 @@ public class AtPrPatient {
     public String getIdProofNum() { return idProofNum; }
     public void setIdProofNum(String idProofNum) { this.idProofNum = idProofNum; }
 
-    public String getPatientCategory() { return patientCategory; }
-    public void setPatientCategory(String patientCategory) { this.patientCategory = patientCategory; }
+    public String getPatientCategory() { return patientCategory != null ? String.valueOf(patientCategory) : "0"; }
+    public void setPatientCategory(Object patientCategory) {
+        if (patientCategory instanceof Number) {
+            this.patientCategory = ((Number) patientCategory).intValue();
+        } else if (patientCategory != null) {
+            try {
+                this.patientCategory = Integer.parseInt(patientCategory.toString().replaceAll("[^0-9]", ""));
+            } catch (Exception e) {
+                this.patientCategory = 0;
+            }
+        } else {
+            this.patientCategory = 0;
+        }
+    }
 
     public String getPatientCategoryName() { return patientCategoryName; }
     public void setPatientCategoryName(String patientCategoryName) { this.patientCategoryName = patientCategoryName; }

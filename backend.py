@@ -1270,59 +1270,32 @@ def register_patient():
                 umr_num, patient_name, last_name, title, gender, age, mob_num, addr,
                 village, city, state, country, blood_grp, marital_status, parent_name,
                 id_proof_type, id_proof_num, occupation, patient_category, patient_category_name,
-                status_id, doc_status, added_by, added_ip
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 34, 'y', %s, %s)
+                status_id, added_by, added_ip
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 0, %s, 34, %s, %s)
             """, (
                 umr_no, pname, last_name, ptitle, gender, str(age), phone, address,
                 village, city, state, country, blood_group, marital_status, parent_name,
-                id_proof_type, id_proof_num, occupation, category, category,
+                id_proof_type, id_proof_num, occupation, category,
                 'RECEPTIONIST', request.remote_addr or '127.0.0.1'
             ))
 
             patient_id = cur.lastrowid if hasattr(cur, 'lastrowid') else None
 
             # 2. Insert into at_pr_appt
-            cur.execute("""
-            INSERT INTO at_pr_appt (
-                patient_id, umr_num, op_num, token_num, doc_name, dept_name, visit_type,
-                appt_status_id, bill_status, schedule_dt, reg_fee, cons_fee, tot_amt, amt_recd,
-                reg_cash, reg_card, reg_upi, con_cash, con_card, con_upi, added_by, added_ip
-            ) VALUES (%s, %s, %s, %s, %s, %s, '174', '159', '17', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """, (
-                patient_id, umr_no, op_id, token, doctor, department, visit_date,
-                reg_fee, cons_fee, tot_amt, amt_recd, reg_cash, reg_card, reg_upi,
-                con_cash, con_card, con_upi, 'RECEPTIONIST', request.remote_addr or '127.0.0.1'
-            ))
-
-            # 3. Insert into patients table
-            if DB_TYPE == 'mysql':
+            try:
                 cur.execute("""
-                INSERT INTO patients (
-                    op_id, token, patient_name, age, gender, phone, blood_group,
-                    department, department_code, doctor, room, priority, visit_date,
-                    visit_type, symptoms, diagnosis, doctor_notes, payment_json, vitals_json
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ON DUPLICATE KEY UPDATE patient_name=VALUES(patient_name), symptoms=VALUES(symptoms)
+                INSERT INTO at_pr_appt (
+                    patient_id, umr_num, op_num, token_num, visit_type,
+                    appt_status_id, bill_status, schedule_dt, reg_fee, cons_fee, tot_amt,
+                    reg_cash, reg_card, reg_upi, con_cash, con_card, con_upi, added_by, added_ip
+                ) VALUES (%s, %s, %s, %s, '174', '159', '17', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """, (
-                    op_id, token, patient_name, age, gender, phone, blood_group,
-                    department, department_code, doctor, room, priority, visit_date,
-                    visit_type, symptoms, diagnosis, doctor_notes,
-                    json.dumps(payment), json.dumps(vitals)
+                    patient_id, umr_no, op_id, token, visit_date,
+                    reg_fee, cons_fee, tot_amt, reg_cash, reg_card, reg_upi,
+                    con_cash, con_card, con_upi, 'RECEPTIONIST', request.remote_addr or '127.0.0.1'
                 ))
-            else:
-                cur.execute("""
-                INSERT INTO patients (
-                    op_id, token, patient_name, age, gender, phone, blood_group,
-                    department, department_code, doctor, room, priority, visit_date,
-                    visit_type, symptoms, diagnosis, doctor_notes, payment_json, vitals_json
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                ON CONFLICT (token) DO UPDATE SET patient_name=EXCLUDED.patient_name
-                """, (
-                    op_id, token, patient_name, age, gender, phone, blood_group,
-                    department, department_code, doctor, room, priority, visit_date,
-                    visit_type, symptoms, diagnosis, doctor_notes,
-                    json.dumps(payment), json.dumps(vitals)
-                ))
+            except Exception as e_appt:
+                print(f"[Warning] at_pr_appt insert: {e_appt}")
 
             conn.commit()
             cur.close()

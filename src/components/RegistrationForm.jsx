@@ -53,7 +53,9 @@ function formatToYyyyMmDd(date) {
 function parseAnyDate(str) {
   if (!str) return null;
   if (str instanceof Date) return isNaN(str.getTime()) ? null : str;
-  const s = String(str).trim();
+  let s = String(str).trim();
+  if (s.includes('T')) s = s.split('T')[0];
+  if (s.includes(' ')) s = s.split(' ')[0];
   // YYYY-MM-DD
   if (/^\d{4}-\d{1,2}-\d{1,2}$/.test(s)) {
     const parts = s.split('-').map(Number);
@@ -766,12 +768,16 @@ export function RegistrationForm({
   const [entriesPerPage, setEntriesPerPage] = useState(10);
   const [selectedHospital, setSelectedHospital] = useState('INDUS HEALTH CITY');
   const [dateRange, setDateRange] = useState(getTodayDateRangeFormatted());
-  const [dateFilterRange, setDateFilterRange] = useState(null);
+  const [dateFilterRange, setDateFilterRange] = useState(() => {
+    const today = new Date();
+    return { start: today, end: today };
+  });
   const [printModal, setPrintModal] = useState(null);
   const [toast, setToast] = useState(null);
   const [vitalsDrawer, setVitalsDrawer] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingPatient, setEditingPatient] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Existing Patient Search in Tab 2 State (query-wise based on PatientMapper DetailedView)
   const [existingSearchTerm, setExistingSearchTerm] = useState('');
@@ -1188,21 +1194,85 @@ export function RegistrationForm({
   // Handle Form Submission (Save New or Update Existing Patient)
   const handleSave = async (e) => {
     if (e) e.preventDefault();
+    if (isSaving) return;
 
     if (!formData.patientName.trim()) {
       alert('Please enter Patient Name.');
       return;
     }
 
-    const fullName = `${formData.title} ${formData.patientName} ${formData.lastName}`.trim().toUpperCase();
+    setIsSaving(true);
+    try {
+      const fullName = `${formData.title} ${formData.patientName} ${formData.lastName}`.trim().toUpperCase();
 
-    // -------------------------------------------------------------
-    // UPDATE PATIENT (When in Edit Mode)
-    // -------------------------------------------------------------
-    if (isEditMode && editingPatient) {
-      const updatePayload = {
-        umrNo: editingPatient.umrNo,
-        patientId: editingPatient.patientId,
+      // -------------------------------------------------------------
+      // UPDATE PATIENT (When in Edit Mode)
+      // -------------------------------------------------------------
+      if (isEditMode && editingPatient) {
+        const updatePayload = {
+          umrNo: editingPatient.umrNo,
+          patientId: editingPatient.patientId,
+          patientName: formData.patientName.trim(),
+          pname: formData.patientName.trim(),
+          lastName: formData.lastName.trim(),
+          title: formData.title,
+          gender: formData.gender,
+          age: formData.years,
+          years: formData.years,
+          phone: formData.mobile,
+          mobile: formData.mobile,
+          consultant: formData.consultant,
+          doctor: formData.consultant,
+          category: formData.category,
+          address: formData.address,
+          village: formData.village,
+          city: formData.city,
+          bloodGroup: formData.bloodGroup
+        };
+
+        try {
+          await fetch('/api/patient/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatePayload)
+          });
+        } catch (err) {
+          console.warn('Update API error:', err);
+        }
+
+        setAppointments(prev => prev.map(a => {
+          if (a.umrNo === editingPatient.umrNo) {
+            return {
+              ...a,
+              patientName: fullName,
+              pname: formData.patientName,
+              lastName: formData.lastName,
+              title: formData.title,
+              genderAge: `${formData.gender.toUpperCase()}/${formData.years}yrs`,
+              gender: formData.gender,
+              age: formData.years,
+              phone: formData.mobile,
+              consultant: formData.consultant,
+              category: formData.category,
+              address: formData.address,
+              village: formData.village
+            };
+          }
+          return a;
+        }));
+
+        showNotification(`✓ Patient ${fullName} (${editingPatient.umrNo}) updated in database!`);
+        setIsEditMode(false);
+        setEditingPatient(null);
+        setActiveTab('appointments');
+        fetchServerQueue();
+        return;
+      }
+
+      // -------------------------------------------------------------
+      // REGISTER NEW PATIENT
+      // -------------------------------------------------------------
+      const regPayload = {
         patientName: formData.patientName.trim(),
         pname: formData.patientName.trim(),
         lastName: formData.lastName.trim(),
@@ -1215,169 +1285,111 @@ export function RegistrationForm({
         consultant: formData.consultant,
         doctor: formData.consultant,
         category: formData.category,
+        paymentMode: formData.paymentMode,
+        regFee: formData.regFinalAmt,
+        consFee: formData.consFinalAmt,
+        totalAmount: formData.totalBillAmt,
         address: formData.address,
         village: formData.village,
         city: formData.city,
-        bloodGroup: formData.bloodGroup
+        bloodGroup: formData.bloodGroup,
+        healthIssue: formData.healthIssue,
+        idProofType: formData.idType,
+        idProofNum: formData.idNumber,
+        parentOrHusband: formData.parentOrHusband
       };
 
+      let newUmrNo = `UMR${334253 + appointments.length + 1}`;
+      let tokenStr = formData.token || `OPD-${120 + appointments.length + 1}`;
+
       try {
-        await fetch('/api/patient/update', {
+        const resp = await fetch('/api/patient/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updatePayload)
+          body: JSON.stringify(regPayload)
         });
+        if (resp.ok) {
+          const resJson = await resp.json();
+          if (resJson.umrNo) newUmrNo = resJson.umrNo;
+          if (resJson.tokenNum) tokenStr = resJson.tokenNum;
+        }
       } catch (err) {
-        console.warn('Update API error:', err);
+        console.warn('Register API error:', err);
       }
 
-      setAppointments(prev => prev.map(a => {
-        if (a.umrNo === editingPatient.umrNo) {
-          return {
-            ...a,
-            patientName: fullName,
-            pname: formData.patientName,
-            lastName: formData.lastName,
-            title: formData.title,
-            genderAge: `${formData.gender.toUpperCase()}/${formData.years}yrs`,
-            gender: formData.gender,
-            age: formData.years,
-            phone: formData.mobile,
-            consultant: formData.consultant,
-            category: formData.category,
-            address: formData.address,
-            village: formData.village
-          };
-        }
-        return a;
+      const newAppointmentRecord = {
+        umrNo: newUmrNo,
+        token: tokenStr,
+        patientName: fullName,
+        genderAge: `${formData.gender.toUpperCase()}/${formData.years}yrs`,
+        gender: formData.gender,
+        age: formData.years,
+        appointmentDate: formData.appointmentDate,
+        consultant: formData.consultant,
+        category: formData.category,
+        billStatus: 'PAID',
+        regCash: formData.paymentMode === 'Cash' ? formData.regFinalAmt : 0,
+        regCredit: formData.paymentMode === 'Credit' ? formData.regFinalAmt : 0,
+        regUpi: formData.paymentMode === 'UPI' ? formData.regFinalAmt : 0,
+        conCash: formData.paymentMode === 'Cash' ? formData.consFinalAmt : 0,
+        conCredit: formData.paymentMode === 'Credit' ? formData.consFinalAmt : 0,
+        conUpi: formData.paymentMode === 'UPI' ? formData.consFinalAmt : 0,
+        phone: formData.mobile,
+        vitals: { bp: '120/80', pulse: '74', spo2: '99%', temp: '98.6', weight: '65' }
+      };
+
+      // Add to local list at top
+      setAppointments(prev => [newAppointmentRecord, ...prev]);
+
+      // Parent callback
+      if (onRegisterSuccess) {
+        const matchingDoc = CONSULTANTS_ROSTER.find(c => c.name === formData.consultant);
+        onRegisterSuccess({
+          patientName: fullName,
+          age: formData.years,
+          gender: formData.gender,
+          phone: formData.mobile,
+          bloodGroup: formData.bloodGroup,
+          departmentName: matchingDoc ? matchingDoc.spec : 'General Medicine',
+          departmentCode: matchingDoc ? matchingDoc.depCode : 'GEN',
+          doctor: formData.consultant,
+          room: 'OPD Cabin 101',
+          priority: 'Regular',
+          opId: newUmrNo,
+          token: tokenStr,
+          payment: {
+            regFee: formData.regFinalAmt,
+            consultationFee: formData.consFinalAmt,
+            totalAmount: formData.totalBillAmt,
+            paymentMethod: formData.paymentMode,
+            paymentStatus: 'Paid',
+            transactionId: `TXN-${Math.floor(100000 + Math.random() * 900000)}`
+          }
+        });
+      }
+
+      // Switch to Tab 1
+      setActiveTab('appointments');
+      showNotification(`✓ Patient ${fullName} successfully registered (${newUmrNo}). Saved to database.`);
+
+      // Reset form
+      setFormData(prev => ({
+        ...prev,
+        patientName: '',
+        lastName: '',
+        mobile: '',
+        village: '',
+        address: '',
+        idNumber: '',
+        parentOrHusband: '',
+        healthIssue: '',
+        token: `OPD-${Math.floor(120 + appointments.length + 2)}`
       }));
 
-      showNotification(`✓ Patient ${fullName} (${editingPatient.umrNo}) updated in database!`);
-      setIsEditMode(false);
-      setEditingPatient(null);
-      setActiveTab('appointments');
       fetchServerQueue();
-      return;
+    } finally {
+      setIsSaving(false);
     }
-
-    // -------------------------------------------------------------
-    // REGISTER NEW PATIENT
-    // -------------------------------------------------------------
-    const regPayload = {
-      patientName: formData.patientName.trim(),
-      pname: formData.patientName.trim(),
-      lastName: formData.lastName.trim(),
-      title: formData.title,
-      gender: formData.gender,
-      age: formData.years,
-      years: formData.years,
-      phone: formData.mobile,
-      mobile: formData.mobile,
-      consultant: formData.consultant,
-      doctor: formData.consultant,
-      category: formData.category,
-      paymentMode: formData.paymentMode,
-      regFee: formData.regFinalAmt,
-      consFee: formData.consFinalAmt,
-      totalAmount: formData.totalBillAmt,
-      address: formData.address,
-      village: formData.village,
-      city: formData.city,
-      bloodGroup: formData.bloodGroup,
-      healthIssue: formData.healthIssue,
-      idProofType: formData.idType,
-      idProofNum: formData.idNumber,
-      parentOrHusband: formData.parentOrHusband
-    };
-
-    let newUmrNo = `UMR${334253 + appointments.length + 1}`;
-    let tokenStr = formData.token || `OPD-${120 + appointments.length + 1}`;
-
-    try {
-      const resp = await fetch('/api/patient/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(regPayload)
-      });
-      if (resp.ok) {
-        const resJson = await resp.json();
-        if (resJson.umrNo) newUmrNo = resJson.umrNo;
-        if (resJson.tokenNum) tokenStr = resJson.tokenNum;
-      }
-    } catch (err) {
-      console.warn('Register API error:', err);
-    }
-
-    const newAppointmentRecord = {
-      umrNo: newUmrNo,
-      token: tokenStr,
-      patientName: fullName,
-      genderAge: `${formData.gender.toUpperCase()}/${formData.years}yrs`,
-      gender: formData.gender,
-      age: formData.years,
-      appointmentDate: formData.appointmentDate,
-      consultant: formData.consultant,
-      category: formData.category,
-      billStatus: 'PAID',
-      regCash: formData.paymentMode === 'Cash' ? formData.regFinalAmt : 0,
-      regCredit: formData.paymentMode === 'Credit' ? formData.regFinalAmt : 0,
-      regUpi: formData.paymentMode === 'UPI' ? formData.regFinalAmt : 0,
-      conCash: formData.paymentMode === 'Cash' ? formData.consFinalAmt : 0,
-      conCredit: formData.paymentMode === 'Credit' ? formData.consFinalAmt : 0,
-      conUpi: formData.paymentMode === 'UPI' ? formData.consFinalAmt : 0,
-      phone: formData.mobile,
-      vitals: { bp: '120/80', pulse: '74', spo2: '99%', temp: '98.6', weight: '65' }
-    };
-
-    // Add to local list at top
-    setAppointments(prev => [newAppointmentRecord, ...prev]);
-
-    // Parent callback
-    if (onRegisterSuccess) {
-      const matchingDoc = CONSULTANTS_ROSTER.find(c => c.name === formData.consultant);
-      onRegisterSuccess({
-        patientName: fullName,
-        age: formData.years,
-        gender: formData.gender,
-        phone: formData.mobile,
-        bloodGroup: formData.bloodGroup,
-        departmentName: matchingDoc ? matchingDoc.spec : 'General Medicine',
-        departmentCode: matchingDoc ? matchingDoc.depCode : 'GEN',
-        doctor: formData.consultant,
-        room: 'OPD Cabin 101',
-        priority: 'Regular',
-        opId: newUmrNo,
-        token: tokenStr,
-        payment: {
-          regFee: formData.regFinalAmt,
-          consultationFee: formData.consFinalAmt,
-          totalAmount: formData.totalBillAmt,
-          paymentMethod: formData.paymentMode,
-          paymentStatus: 'Paid',
-          transactionId: `TXN-${Math.floor(100000 + Math.random() * 900000)}`
-        }
-      });
-    }
-
-    // Switch to Tab 1
-    setActiveTab('appointments');
-    showNotification(`✓ Patient ${fullName} successfully registered (${newUmrNo}). Saved to database.`);
-
-    // Reset form
-    setFormData(prev => ({
-      ...prev,
-      patientName: '',
-      lastName: '',
-      mobile: '',
-      village: '',
-      address: '',
-      idNumber: '',
-      parentOrHusband: '',
-      healthIssue: '',
-      token: `OPD-${Math.floor(120 + appointments.length + 2)}`
-    }));
-
-    fetchServerQueue();
   };
 
   // Export to Excel / CSV
@@ -1411,28 +1423,28 @@ export function RegistrationForm({
       if (!matchesSearch) return false;
     }
     if (dateFilterRange && dateFilterRange.start && dateFilterRange.end) {
-      const rowDate = parseAnyDate(row.appointmentDate);
-      if (rowDate) {
-        const startCheck = new Date(dateFilterRange.start);
-        startCheck.setHours(0, 0, 0, 0);
-        const endCheck = new Date(dateFilterRange.end);
-        endCheck.setHours(23, 59, 59, 999);
-        if (rowDate < startCheck || rowDate > endCheck) {
-          return false;
-        }
+      const dateVal = row.appointmentDate || row.apptDt || row.visitDate || row.scheduleDt || row.regDt;
+      const rowDate = parseAnyDate(dateVal);
+      if (!rowDate) return false;
+      const startCheck = new Date(dateFilterRange.start);
+      startCheck.setHours(0, 0, 0, 0);
+      const endCheck = new Date(dateFilterRange.end);
+      endCheck.setHours(23, 59, 59, 999);
+      if (rowDate < startCheck || rowDate > endCheck) {
+        return false;
       }
     }
     return true;
   });
 
-  // Calculate Summary Metrics Bar
-  const totalPatients = appointments.length;
-  const regCashTotal = appointments.reduce((sum, a) => sum + (a.regCash || 0), 0);
-  const regCardTotal = appointments.reduce((sum, a) => sum + (a.regCredit || 0), 0);
-  const regUpiTotal = appointments.reduce((sum, a) => sum + (a.regUpi || 0), 0);
-  const consCashTotal = appointments.reduce((sum, a) => sum + (a.conCash || 0), 0);
-  const consCardTotal = appointments.reduce((sum, a) => sum + (a.conCredit || 0), 0);
-  const consUpiTotal = appointments.reduce((sum, a) => sum + (a.conUpi || 0), 0);
+  // Calculate Summary Metrics Bar (Strictly computed from filtered date range)
+  const totalPatients = filteredAppointments.length;
+  const regCashTotal = filteredAppointments.reduce((sum, a) => sum + (a.regCash || 0), 0);
+  const regCardTotal = filteredAppointments.reduce((sum, a) => sum + (a.regCredit || 0), 0);
+  const regUpiTotal = filteredAppointments.reduce((sum, a) => sum + (a.regUpi || 0), 0);
+  const consCashTotal = filteredAppointments.reduce((sum, a) => sum + (a.conCash || 0), 0);
+  const consCardTotal = filteredAppointments.reduce((sum, a) => sum + (a.conCredit || 0), 0);
+  const consUpiTotal = filteredAppointments.reduce((sum, a) => sum + (a.conUpi || 0), 0);
   const paidAmtTotal = regCashTotal + regCardTotal + regUpiTotal + consCashTotal + consCardTotal + consUpiTotal;
 
   return (
@@ -1468,7 +1480,9 @@ export function RegistrationForm({
             <button 
               className="reg-icon-btn save" 
               onClick={handleSave} 
-              title="Save Record"
+              disabled={isSaving}
+              style={{ opacity: isSaving ? 0.6 : 1, cursor: isSaving ? 'not-allowed' : 'pointer' }}
+              title={isSaving ? "Saving..." : "Save Record"}
             >
               💾
             </button>
@@ -1544,6 +1558,36 @@ export function RegistrationForm({
                 }
               }} 
             />
+
+            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginLeft: '6px' }}>
+              <button
+                type="button"
+                className={`reg-tab-btn ${dateFilterRange && dateFilterRange.start && dateFilterRange.end && formatToDdMmmYyyy(dateFilterRange.start) === formatToDdMmmYyyy(new Date()) && formatToDdMmmYyyy(dateFilterRange.end) === formatToDdMmmYyyy(new Date()) ? 'active' : ''}`}
+                style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 700, borderRadius: '6px', height: '34px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                onClick={() => {
+                  const today = new Date();
+                  setDateRange(getTodayDateRangeFormatted());
+                  setDateFilterRange({ start: today, end: today });
+                  showNotification("📅 Filtered: Showing Today's appointments");
+                }}
+                title="Show only Today's patient records"
+              >
+                📅 Today
+              </button>
+              <button
+                type="button"
+                className={`reg-tab-btn ${!dateFilterRange ? 'active' : ''}`}
+                style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 700, borderRadius: '6px', height: '34px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                onClick={() => {
+                  setDateRange("All Appointments");
+                  setDateFilterRange(null);
+                  showNotification("🌐 Showing all appointment records");
+                }}
+                title="Show all records without date filtering"
+              >
+                🌐 Show All
+              </button>
+            </div>
           </div>
 
           {/* Light Blue Summary Metrics Pill Bar (Matching Screenshot 1) */}
@@ -2756,18 +2800,35 @@ export function RegistrationForm({
           <div className="form-equal-footer-bar">
             {isEditMode && editingPatient ? (
               <>
-                <button type="submit" className="btn-green-save-prominent" style={{ background: '#d97706', borderColor: '#b45309' }}>
-                  💾 Update Patient Record ({editingPatient.umrNo})
+                <button 
+                  type="submit" 
+                  className="btn-green-save-prominent" 
+                  disabled={isSaving}
+                  style={{ 
+                    background: '#d97706', 
+                    borderColor: '#b45309',
+                    opacity: isSaving ? 0.7 : 1,
+                    cursor: isSaving ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  {isSaving ? '⏳ Updating...' : `💾 Update Patient Record (${editingPatient.umrNo})`}
                 </button>
                 <button 
                   type="button" 
                   className="btn-print-token-action"
+                  disabled={isSaving}
                   onClick={() => {
+                    if (isSaving) return;
                     setIsEditMode(false);
                     setEditingPatient(null);
                     handleSave();
                   }}
-                  style={{ background: '#0284c7', borderColor: '#0369a1' }}
+                  style={{ 
+                    background: '#0284c7', 
+                    borderColor: '#0369a1',
+                    opacity: isSaving ? 0.7 : 1,
+                    cursor: isSaving ? 'not-allowed' : 'pointer'
+                  }}
                   title="Save this entry as a new patient with fresh UMR"
                 >
                   ➕ Save as New Patient
@@ -2775,6 +2836,7 @@ export function RegistrationForm({
                 <button 
                   type="button" 
                   className="btn-reset-form-action"
+                  disabled={isSaving}
                   onClick={() => {
                     setIsEditMode(false);
                     setEditingPatient(null);
@@ -2798,8 +2860,16 @@ export function RegistrationForm({
               </>
             ) : (
               <>
-                <button type="submit" className="btn-green-save-prominent">
-                  💾 Save Appointment
+                <button 
+                  type="submit" 
+                  className="btn-green-save-prominent"
+                  disabled={isSaving}
+                  style={{
+                    opacity: isSaving ? 0.7 : 1,
+                    cursor: isSaving ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  {isSaving ? '⏳ Saving Patient...' : '💾 Save Appointment'}
                 </button>
                 <button 
                   type="button" 
@@ -2995,6 +3065,43 @@ export function RegistrationForm({
                 💾 Save Vitals
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* ========================================================================= */}
+      {/* SAVING LOADER MODAL (Prevents Duplicates & Gives Immediate Visual Feedback) */}
+      {/* ========================================================================= */}
+      {isSaving && (
+        <div className="print-modal-overlay" style={{ zIndex: 99999 }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '16px',
+            padding: '36px 40px',
+            maxWidth: '440px',
+            width: '90%',
+            textAlign: 'center',
+            boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.4)',
+            border: '1px solid #e2e8f0',
+            animation: 'fadeIn 0.2s ease-out'
+          }}>
+            <div style={{
+              width: '56px',
+              height: '56px',
+              border: '5px solid #e2e8f0',
+              borderTopColor: '#0284c7',
+              borderRadius: '50%',
+              margin: '0 auto 20px',
+              animation: 'spin 0.8s linear infinite'
+            }} />
+            <h3 style={{ margin: '0 0 10px', fontSize: '1.35rem', fontWeight: 800, color: '#0f172a' }}>
+              Saving Patient Registration
+            </h3>
+            <p style={{ margin: '0 0 8px', fontSize: '0.95rem', color: '#0284c7', fontWeight: 600 }}>
+              Securing Doctor Token &amp; Saving to Database...
+            </p>
+            <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>
+              Please wait a moment while the appointment and billing records are finalized.
+            </p>
           </div>
         </div>
       )}

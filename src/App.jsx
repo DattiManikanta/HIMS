@@ -230,25 +230,8 @@ export function App() {
       [generatedToken]: newRecord
     }));
 
-    // Persist new registration to PostgreSQL Backend!
-    fetch('/api/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newRecord)
-    })
-    .then(r => r.json())
-    .then(res => {
-      if (res.savedToPostgres) {
-        showToast(`🐘 Saved in PostgreSQL: Patient ${newRecord.patientName} (${generatedOpId})`);
-      } else {
-        showToast(`✓ Registered: ${newRecord.patientName} (${generatedOpId}) - Cached locally`);
-      }
-      checkPostgresHealth();
-    })
-    .catch(err => {
-      console.warn('PostgreSQL register error:', err);
-      showToast(`✓ Registered: ${newRecord.patientName} (${generatedOpId})`);
-    });
+    // Already saved directly to database in RegistrationForm.jsx
+    showToast(`✓ Registered: ${newRecord.patientName} (${generatedOpId})`);
   };
 
   // 1. If user is NOT logged in: Show starting Login Screen ("LOGIN JSP")

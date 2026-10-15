@@ -15,14 +15,14 @@ public class AtPrAppt {
     @Column(name = "patient_id")
     private Integer patientId;
 
-    @Column(name = "umr_num", length = 50)
+    @Transient
     private String umrNum;
 
     @Column(name = "op_num", length = 50)
     private String opNum;
 
-    @Column(name = "token_num", length = 50)
-    private String tokenNum;
+    @Column(name = "token_num")
+    private Integer tokenNum;
 
     @Column(name = "priority_no")
     private Integer priorityNo = 1;
@@ -30,29 +30,29 @@ public class AtPrAppt {
     @Column(name = "emp_id")
     private Integer empId;
 
-    @Column(name = "doc_name", length = 150)
+    @Transient
     private String docName;
 
-    @Column(name = "dept_id")
+    @Transient
     private Integer deptId;
 
-    @Column(name = "dept_name", length = 100)
+    @Transient
     private String deptName;
 
     @Column(name = "loc_id")
     private Integer locId = 1;
 
-    @Column(name = "loc_name", length = 100)
+    @Transient
     private String locName = "Main Hospital";
 
-    @Column(name = "visit_type", length = 50)
-    private String visitType = "174"; // 174 = NEWVISIT, 175 = REVISIT
+    @Column(name = "visit_type")
+    private Integer visitType = 174; // 174 = NEWVISIT, 175 = REVISIT
 
-    @Column(name = "appt_status_id", length = 50)
-    private String apptStatusId = "159"; // 159 = Waiting, 39 = Scheduled, 42 = Visited
+    @Column(name = "appt_status_id")
+    private Integer apptStatusId = 159; // 159 = Waiting, 39 = Scheduled, 42 = Visited
 
-    @Column(name = "bill_status", length = 50)
-    private String billStatus = "17"; // 17 = Paid, 18 = Pending, 177 = Cancelled
+    @Column(name = "bill_status")
+    private Integer billStatus = 17; // 17 = Paid, 18 = Pending, 177 = Cancelled
 
     @Column(name = "diseases_desc", columnDefinition = "TEXT")
     private String diseasesDesc;
@@ -63,49 +63,49 @@ public class AtPrAppt {
     @Column(name = "start_time", length = 20)
     private String startTime;
 
-    @Column(name = "reg_fee")
+    @Transient
     private Double regFee = 0.0;
 
-    @Column(name = "cons_fee")
+    @Transient
     private Double consFee = 0.0;
 
-    @Column(name = "tot_amt")
+    @Transient
     private Double totAmt = 0.0;
 
-    @Column(name = "amt_recd")
+    @Transient
     private Double amtRecd = 0.0;
 
-    @Column(name = "reg_cash")
+    @Transient
     private Double regCash = 0.0;
 
-    @Column(name = "reg_card")
+    @Transient
     private Double regCard = 0.0;
 
-    @Column(name = "reg_upi")
+    @Transient
     private Double regUpi = 0.0;
 
-    @Column(name = "con_cash")
+    @Transient
     private Double conCash = 0.0;
 
-    @Column(name = "con_card")
+    @Transient
     private Double conCard = 0.0;
 
-    @Column(name = "con_upi")
+    @Transient
     private Double conUpi = 0.0;
 
-    @Column(name = "ref_type", length = 50)
+    @Transient
     private String refType;
 
-    @Column(name = "ref_id", length = 50)
+    @Transient
     private String refId;
 
-    @Column(name = "other_staff_id", length = 50)
+    @Transient
     private String otherStaffId;
 
-    @Column(name = "other_hosp_id", length = 50)
+    @Transient
     private String otherHospId;
 
-    @Column(name = "status_id")
+    @Transient
     private Integer statusId = 34;
 
     @Column(name = "added_by", length = 100)
@@ -135,8 +135,20 @@ public class AtPrAppt {
     public String getOpNum() { return opNum; }
     public void setOpNum(String opNum) { this.opNum = opNum; }
 
-    public String getTokenNum() { return tokenNum; }
-    public void setTokenNum(String tokenNum) { this.tokenNum = tokenNum; }
+    public String getTokenNum() { return tokenNum != null ? String.valueOf(tokenNum) : "0"; }
+    public void setTokenNum(Object tokenNum) {
+        if (tokenNum instanceof Number) {
+            this.tokenNum = ((Number) tokenNum).intValue();
+        } else if (tokenNum != null) {
+            try {
+                this.tokenNum = Integer.parseInt(tokenNum.toString().replaceAll("[^0-9]", ""));
+            } catch (Exception e) {
+                this.tokenNum = 0;
+            }
+        } else {
+            this.tokenNum = 0;
+        }
+    }
 
     public Integer getPriorityNo() { return priorityNo; }
     public void setPriorityNo(Integer priorityNo) { this.priorityNo = priorityNo; }
@@ -159,14 +171,44 @@ public class AtPrAppt {
     public String getLocName() { return locName; }
     public void setLocName(String locName) { this.locName = locName; }
 
-    public String getVisitType() { return visitType; }
-    public void setVisitType(String visitType) { this.visitType = visitType; }
+    public String getVisitType() { return visitType != null ? String.valueOf(visitType) : "174"; }
+    public void setVisitType(Object visitType) {
+        if (visitType instanceof Number) {
+            this.visitType = ((Number) visitType).intValue();
+        } else if (visitType != null) {
+            try {
+                this.visitType = Integer.parseInt(visitType.toString().replaceAll("[^0-9]", ""));
+            } catch (Exception e) {
+                this.visitType = 174;
+            }
+        }
+    }
 
-    public String getApptStatusId() { return apptStatusId; }
-    public void setApptStatusId(String apptStatusId) { this.apptStatusId = apptStatusId; }
+    public String getApptStatusId() { return apptStatusId != null ? String.valueOf(apptStatusId) : "159"; }
+    public void setApptStatusId(Object apptStatusId) {
+        if (apptStatusId instanceof Number) {
+            this.apptStatusId = ((Number) apptStatusId).intValue();
+        } else if (apptStatusId != null) {
+            try {
+                this.apptStatusId = Integer.parseInt(apptStatusId.toString().replaceAll("[^0-9]", ""));
+            } catch (Exception e) {
+                this.apptStatusId = 159;
+            }
+        }
+    }
 
-    public String getBillStatus() { return billStatus; }
-    public void setBillStatus(String billStatus) { this.billStatus = billStatus; }
+    public String getBillStatus() { return billStatus != null ? String.valueOf(billStatus) : "17"; }
+    public void setBillStatus(Object billStatus) {
+        if (billStatus instanceof Number) {
+            this.billStatus = ((Number) billStatus).intValue();
+        } else if (billStatus != null) {
+            try {
+                this.billStatus = Integer.parseInt(billStatus.toString().replaceAll("[^0-9]", ""));
+            } catch (Exception e) {
+                this.billStatus = 17;
+            }
+        }
+    }
 
     public String getDiseasesDesc() { return diseasesDesc; }
     public void setDiseasesDesc(String diseasesDesc) { this.diseasesDesc = diseasesDesc; }

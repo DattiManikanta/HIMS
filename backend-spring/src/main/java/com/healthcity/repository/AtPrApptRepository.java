@@ -12,9 +12,7 @@ public interface AtPrApptRepository extends JpaRepository<AtPrAppt, Integer> {
 
     List<AtPrAppt> findByPatientIdOrderByPatientApptIdDesc(Integer patientId);
 
-    Optional<AtPrAppt> findByTokenNum(String tokenNum);
+    Optional<AtPrAppt> findByTokenNum(Integer tokenNum);
 
     List<AtPrAppt> findAllByOrderByPatientApptIdDesc();
-
-    List<AtPrAppt> findByStatusIdOrderByPatientApptIdDesc(Integer statusId);
 }

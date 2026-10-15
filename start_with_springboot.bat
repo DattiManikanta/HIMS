@@ -6,7 +6,7 @@ echo ================================================================
 echo.
 cd /d "%~dp0"
 
-echo [1/2] Starting Spring Boot REST Backend on port 5000...
+if "%JAVA_HOME%"=="" if exist "C:\Program Files\Java\jdk-25" set "JAVA_HOME=C:\Program Files\Java\jdk-25"
 start "Spring Boot MySQL Backend" cmd /k "cd /d %~dp0backend-spring && mvnw.cmd spring-boot:run"
 
 echo [2/2] Starting React Web Server on port 3000...

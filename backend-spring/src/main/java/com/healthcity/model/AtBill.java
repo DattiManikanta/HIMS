@@ -15,26 +15,35 @@ public class AtBill {
     @Column(name = "patient_id")
     private Integer patientId;
 
-    @Column(name = "appt_id")
+    @Transient
     private Integer apptId;
 
-    @Column(name = "umr_num", length = 50)
+    @Transient
     private String umrNum;
 
-    @Column(name = "bill_no", length = 50)
+    @Column(name = "bill_type")
+    private Integer billType = 1;
+
+    @Column(name = "bill_num", length = 50)
     private String billNo;
+
+    @Column(name = "tot_amt")
+    private Double totAmt = 0.0;
 
     @Column(name = "bill_amt")
     private Double billAmt = 0.0;
 
-    @Column(name = "amt_received")
+    @Column(name = "paid_amt")
     private Double amtReceived = 0.0;
+
+    @Column(name = "bill_status")
+    private Integer billStatus = 17;
 
     @Column(name = "payment_type", length = 50)
     private String paymentType;
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "bill_date")
+    @Column(name = "bill_dt")
     private Date billDate;
 
     @Column(name = "added_by", length = 100)
@@ -72,6 +81,12 @@ public class AtBill {
 
     public String getBillNo() { return billNo; }
     public void setBillNo(String billNo) { this.billNo = billNo; }
+
+    public Double getTotAmt() { return totAmt; }
+    public void setTotAmt(Double totAmt) { this.totAmt = totAmt; }
+
+    public Integer getBillType() { return billType; }
+    public void setBillType(Integer billType) { this.billType = billType; }
 
     public Double getBillAmt() { return billAmt; }
     public void setBillAmt(Double billAmt) { this.billAmt = billAmt; }

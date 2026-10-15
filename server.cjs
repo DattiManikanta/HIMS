@@ -31,7 +31,10 @@ function ensureBackendRunning() {
     const jarPath = path.join(ROOT, 'backend-spring', 'target', 'healthcity-backend-1.0.0.jar');
     if (fs.existsSync(jarPath)) {
       console.log(`[Launcher] Starting Spring Boot MySQL backend from ${jarPath} on port ${BACKEND_PORT}...`);
-      const javaProc = spawn('java', ['-jar', jarPath], {
+      const javaArgs = process.env.JAVA_OPTS 
+        ? process.env.JAVA_OPTS.split(' ').concat(['-jar', jarPath])
+        : ['-Xmx256m', '-XX:+UseSerialGC', '-jar', jarPath];
+      const javaProc = spawn('java', javaArgs, {
         cwd: ROOT,
         stdio: 'inherit',
         detached: false

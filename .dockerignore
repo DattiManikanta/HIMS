@@ -1,0 +1,14 @@
+.git
+tools/git
+tools/node.exe
+tools/cloudflared.exe
+*.bat
+chatgpt-app/
+galaxy-striker-3d/
+kids-video-automation/
+village-utsav-app/
+node_modules/
+.vscode/
+.idea/
+Thumbs.db
+*.log

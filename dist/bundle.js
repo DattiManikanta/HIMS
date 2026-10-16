@@ -606,46 +606,6 @@ function LoginPage({
   }), /*#__PURE__*/React.createElement("div", {
     className: "login-ambient-orb orb-2"
   }), /*#__PURE__*/React.createElement("div", {
-    className: "atri-scenery-hospital"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "https://www.indushospital.com/",
-    target: "_blank",
-    rel: "noopener noreferrer",
-    className: "scenery-card-frame hospital-frame",
-    title: "Visit Indus Hospital Official Website (https://www.indushospital.com/)",
-    style: {
-      textDecoration: 'none',
-      cursor: 'pointer',
-      display: 'flex'
-    }
-  }, /*#__PURE__*/React.createElement("img", {
-    src: "./hospital_building.png?v=20261014indus",
-    alt: "Indus Hospital Building",
-    className: "atri-scenery-hospital-img",
-    onError: e => {
-      e.currentTarget.src = './hospital_building.jpg';
-    }
-  }))), /*#__PURE__*/React.createElement("div", {
-    className: "atri-scenery-doctor"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "https://www.indushospital.com/",
-    target: "_blank",
-    rel: "noopener noreferrer",
-    className: "scenery-card-frame doctor-frame",
-    title: "Visit Indus Hospital Official Website (https://www.indushospital.com/)",
-    style: {
-      textDecoration: 'none',
-      cursor: 'pointer',
-      display: 'flex'
-    }
-  }, /*#__PURE__*/React.createElement("img", {
-    src: "./doctor_profile.png?v=20261014madam",
-    alt: "Doctor Madam",
-    className: "atri-scenery-doctor-img",
-    onError: e => {
-      e.currentTarget.src = './doctor_profile.jpg';
-    }
-  }))), /*#__PURE__*/React.createElement("div", {
     className: "atri-login-container"
   }, /*#__PURE__*/React.createElement("div", {
     className: "atri-card-top-cap"

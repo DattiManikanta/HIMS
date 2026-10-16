@@ -1805,69 +1805,18 @@ body {
   overflow-x: hidden;
   overflow-y: auto;
   background: 
-    linear-gradient(180deg, rgba(15, 23, 42, 0.38) 0%, rgba(15, 23, 42, 0.12) 40%, rgba(15, 23, 42, 0.45) 100%),
-    url('./healthcare_unity_tree.jpg') center center / cover no-repeat fixed !important;
+    linear-gradient(180deg, rgba(15, 23, 42, 0.40) 0%, rgba(15, 23, 42, 0.18) 40%, rgba(15, 23, 42, 0.50) 100%),
+    url('./login_hospital_bg.png') center center / cover no-repeat fixed !important;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* Scenery: Hospital Building on Left (Photographic HD with Clean Sky) */
-.atri-scenery-hospital {
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 32px;
-  width: 32%;
-  max-width: 460px;
-  min-width: 260px;
-  z-index: 5;
-  pointer-events: none;
-  display: flex;
-  align-items: stretch;
-  overflow: hidden;
-}
-
-.atri-scenery-hospital-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: left top;
-  border-radius: 0;
-  border: none;
-  box-shadow: none;
-  mask-image: linear-gradient(to right, black 65%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to right, black 65%, transparent 100%);
-}
-
-.atri-scenery-hospital-label {
-  display: none;
-}
-
-/* Scenery: Doctor Mam Photo on Right (Clean HD Silhouette & Natural Posture) */
+/* Scenery cards hidden: Login background is now Indus Hospital building directly */
+.atri-scenery-hospital,
 .atri-scenery-doctor {
-  position: absolute;
-  right: 0;
-  bottom: 32px;
-  top: 0;
-  z-index: 8;
-  pointer-events: none;
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-}
-
-.atri-scenery-doctor-img {
-  height: 95%;
-  max-height: calc(100vh - 32px);
-  width: auto;
-  max-width: 42vw;
-  object-fit: contain;
-  object-position: right bottom;
-  filter: drop-shadow(-10px 14px 28px rgba(15, 23, 42, 0.12));
-  mask-image: none;
-  -webkit-mask-image: none;
+  display: none !important;
 }
 
 /* Top-Left Floating ATRIBIZ "AB" Logo */
@@ -2580,8 +2529,8 @@ body {
 
 .atri-login-screen {
   background: 
-    linear-gradient(180deg, rgba(15, 23, 42, 0.22) 0%, rgba(15, 23, 42, 0.08) 50%, rgba(15, 23, 42, 0.35) 100%),
-    url('./healthcare_unity_tree.jpg') center bottom / cover no-repeat fixed !important;
+    linear-gradient(180deg, rgba(15, 23, 42, 0.40) 0%, rgba(15, 23, 42, 0.18) 40%, rgba(15, 23, 42, 0.50) 100%),
+    url('./login_hospital_bg.png') center center / cover no-repeat fixed !important;
 }
 
 .hims-home-screen {
@@ -2765,8 +2714,8 @@ body {
   overflow-x: hidden;
   overflow-y: auto;
   background: 
-    linear-gradient(180deg, rgba(15, 23, 42, 0.38) 0%, rgba(15, 23, 42, 0.12) 40%, rgba(15, 23, 42, 0.45) 100%),
-    url('./healthcare_unity_tree.jpg') center center / cover no-repeat fixed !important;
+    linear-gradient(180deg, rgba(15, 23, 42, 0.40) 0%, rgba(15, 23, 42, 0.18) 40%, rgba(15, 23, 42, 0.50) 100%),
+    url('./login_hospital_bg.png') center center / cover no-repeat fixed !important;
   margin: 0;
   padding: 0;
   display: flex;
@@ -2828,34 +2777,9 @@ body {
   justify-content: space-between;
 }
 
-/* Left Scenery: Indus Hospital Building (HD Clean Photo Card) */
-.atri-scenery-hospital {
-  position: absolute;
-  left: 20px;
-  bottom: 24px;
-  top: 24px;
-  width: 22vw;
-  max-width: 320px;
-  z-index: 5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: auto;
-}
-
-/* Right Scenery: Doctor Photo (HD Clean Photo Card) */
+.atri-scenery-hospital,
 .atri-scenery-doctor {
-  position: absolute;
-  right: 20px;
-  bottom: 24px;
-  top: 24px;
-  width: 22vw;
-  max-width: 320px;
-  z-index: 5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: auto;
+  display: none !important;
 }
 
 /* HD Scenery Card Frame - Pure Clean Border */

@@ -1749,15 +1749,25 @@ def get_patient_details():
 @app.route('/patient/deletePatientRecord', methods=['POST'])
 def delete_patient_record():
     """Inactivate or remove patient from queue."""
-    umr_no = request.args.get('umrNo') or request.form.get('umrNo')
-    patient_id = request.args.get('patientId') or request.form.get('patientId')
+    umr_no = request.args.get('umrNo') or request.form.get('umrNo') or ''
+    patient_id = request.args.get('patientId') or request.form.get('patientId') or ''
+    token = request.args.get('token') or request.form.get('token') or ''
     fallback = load_fallback_data()
     queue = fallback.get('patientQueue', [])
     fallback['patientQueue'] = [
         item for item in queue
         if not ((umr_no and item.get('umrNo', '').lower() == umr_no.lower()) or
-                (patient_id and str(item.get('patientId')) == str(patient_id)))
+                (patient_id and str(item.get('patientId')) == str(patient_id)) or
+                (token and (item.get('token', '').lower() == token.lower() or item.get('tokenNum', '').lower() == token.lower())))
     ]
+    patients = fallback.get('patients', {})
+    keys_to_del = [
+        k for k, v in patients.items()
+        if (umr_no and v.get('umrNo', '').lower() == umr_no.lower()) or
+           (token and (k.lower() == token.lower() or v.get('token', '').lower() == token.lower() or v.get('tokenNum', '').lower() == token.lower()))
+    ]
+    for k in keys_to_del:
+        patients.pop(k, None)
     save_fallback_data(fallback)
     return jsonify({"success": True, "message": "Patient record deleted / inactivated."})
 

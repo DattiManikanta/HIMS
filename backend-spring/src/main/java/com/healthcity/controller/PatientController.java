@@ -106,6 +106,9 @@ public class PatientController {
             "FROM at_pr_patient p " +
             "JOIN at_pr_appt a ON p.patient_id = a.patient_id " +
             "LEFT JOIN at_hr_emp e ON a.emp_id = e.emp_id " +
+            "WHERE (a.appt_status_id IS NULL OR a.appt_status_id != 41) " +
+            "  AND p.patient_name NOT LIKE '%TEST SPEED CHECK%' " +
+            "  AND (a.token_num != '99' OR p.umr_num != 'UMR334038') " +
             "ORDER BY a.patient_appt_id DESC LIMIT 100";
 
     // =========================================================================
@@ -942,21 +945,38 @@ public class PatientController {
     @PostMapping(value = {"/api/patient/delete", "/patient/deletePatientRecord"})
     public ResponseEntity<Map<String, Object>> deletePatientRecord(
             @RequestParam(required = false) Integer patientId,
-            @RequestParam(required = false) String umrNo) {
+            @RequestParam(required = false) String umrNo,
+            @RequestParam(required = false) String token,
+            @RequestParam(required = false) Integer apptId) {
 
         boolean deleted = false;
-        try {
-            if (patientId != null) {
-                Optional<AtPrPatient> opt = atPrPatientRepository.findById(patientId);
-                if (opt.isPresent()) {
-                    AtPrPatient p = opt.get();
-                    p.setStatusId(0); // Inactive
-                    atPrPatientRepository.save(p);
+
+        // 1. Inactivate / Delete appointment in MySQL database
+        if (jdbcTemplate != null) {
+            try {
+                if (apptId != null) {
+                    jdbcTemplate.update("UPDATE at_pr_appt SET appt_status_id = 41 WHERE patient_appt_id = ?", apptId);
                     deleted = true;
                 }
+                if (token != null && !token.trim().isEmpty()) {
+                    String cleanTok = token.trim().replaceAll("(?i)^OPD-", "");
+                    jdbcTemplate.update("UPDATE at_pr_appt SET appt_status_id = 41 WHERE token_num = ? OR token_num = ?", token.trim(), cleanTok);
+                    deleted = true;
+                }
+                if (umrNo != null && !umrNo.trim().isEmpty()) {
+                    jdbcTemplate.update("UPDATE at_pr_appt SET appt_status_id = 41 WHERE umr_num = ?", umrNo.trim());
+                    deleted = true;
+                }
+                if (patientId != null) {
+                    jdbcTemplate.update("UPDATE at_pr_appt SET appt_status_id = 41 WHERE patient_id = ?", patientId);
+                    deleted = true;
+                }
+            } catch (Exception e) {
+                logger.warn("MySQL appointment delete warning: {}", e.getMessage());
             }
-        } catch (Exception ignored) {}
+        }
 
+        // 2. Fallback Storage sync (remove from both patientQueue list and patients map)
         Map<String, Object> fallback = fallbackStorageService.loadFallbackData();
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> queue = (List<Map<String, Object>>) fallback.get("patientQueue");
@@ -964,16 +984,39 @@ public class PatientController {
             queue.removeIf(item -> {
                 String u = str(item.get("umrNo"));
                 String pid = str(item.get("patientId"));
-                return (umrNo != null && umrNo.equalsIgnoreCase(u)) ||
-                       (patientId != null && String.valueOf(patientId).equals(pid));
+                String tok = str(item.get("token"));
+                String tokNum = str(item.get("tokenNum"));
+                String aId = str(item.get("apptId"));
+                return (umrNo != null && !umrNo.isEmpty() && umrNo.equalsIgnoreCase(u)) ||
+                       (patientId != null && String.valueOf(patientId).equals(pid)) ||
+                       (apptId != null && String.valueOf(apptId).equals(aId)) ||
+                       (token != null && !token.isEmpty() && (token.equalsIgnoreCase(tok) || token.equalsIgnoreCase(tokNum)));
             });
-            fallbackStorageService.saveFallbackData(fallback);
         }
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> patientsMap = (Map<String, Object>) fallback.get("patients");
+        if (patientsMap != null) {
+            patientsMap.entrySet().removeIf(entry -> {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> val = (Map<String, Object>) entry.getValue();
+                String u = str(val.get("umrNo"));
+                String pid = str(val.get("patientId"));
+                String tok = str(val.get("token"));
+                String tokNum = str(val.get("tokenNum"));
+                String aId = str(val.get("apptId"));
+                return (umrNo != null && !umrNo.isEmpty() && umrNo.equalsIgnoreCase(u)) ||
+                       (patientId != null && String.valueOf(patientId).equals(pid)) ||
+                       (apptId != null && String.valueOf(apptId).equals(aId)) ||
+                       (token != null && !token.isEmpty() && (token.equalsIgnoreCase(tok) || token.equalsIgnoreCase(tokNum)));
+            });
+        }
+        fallbackStorageService.saveFallbackData(fallback);
 
         Map<String, Object> res = new HashMap<>();
         res.put("success", true);
         res.put("deleted", deleted);
-        res.put("message", "Patient record deleted / removed from active queue.");
+        res.put("message", "Patient appointment record deleted / removed from active queue.");
         return ResponseEntity.ok(res);
     }
 

@@ -900,13 +900,28 @@ export function RegistrationForm({
     if (propOnTabChange) propOnTabChange(tab);
   };
 
+  // Helper to remove any test/dummy leftovers from queue
+  const sanitizeAppointments = (list) => {
+    if (!Array.isArray(list)) return [];
+    return list.filter(p => {
+      if (!p) return false;
+      const name = (p.patientName || p.pname || '').toUpperCase();
+      const umr = (p.umrNo || p.patientCode || '').toUpperCase();
+      const tok = String(p.token || p.tokenNum || '');
+      if (name.includes('TEST SPEED CHECK') || umr === 'UMR334254') return false;
+      if (umr === 'UMR334038' && (tok === '99' || tok === 'OPD-99')) return false;
+      return true;
+    });
+  };
+
   // Initialize appointments immediately from localStorage cache so there is ZERO waiting time on refresh!
   const [appointments, setAppointments] = useState(() => {
     try {
       const cached = localStorage.getItem('atri_hims_saved_appointments');
       if (cached) {
-        const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        const parsed = sanitizeAppointments(JSON.parse(cached));
+        localStorage.setItem('atri_hims_saved_appointments', JSON.stringify(parsed));
+        if (parsed.length > 0) return parsed;
       }
     } catch (e) {}
     return INITIAL_APPOINTMENTS;
@@ -957,9 +972,10 @@ export function RegistrationForm({
       }
       if (serverData && serverData.length > 0) {
         setAppointments(prev => {
-          const serverUmrs = new Set(serverData.map(p => p.umrNo || p.patientCode).filter(Boolean));
-          const localOnly = prev.filter(p => p.umrNo && !serverUmrs.has(p.umrNo));
-          const merged = [...localOnly, ...serverData];
+          const cleanedServer = sanitizeAppointments(serverData);
+          const serverUmrs = new Set(cleanedServer.map(p => p.umrNo || p.patientCode).filter(Boolean));
+          const localOnly = sanitizeAppointments(prev).filter(p => p.umrNo && !serverUmrs.has(p.umrNo));
+          const merged = [...localOnly, ...cleanedServer];
           try {
             localStorage.setItem('atri_hims_saved_appointments', JSON.stringify(merged));
           } catch (e) {}
@@ -1536,14 +1552,28 @@ export function RegistrationForm({
 
   // Handle Delete Patient
   const handleDeletePatient = async (row) => {
-    if (window.confirm(`Are you sure you want to remove patient ${row.patientName} (${row.umrNo}) from active queue?`)) {
+    const pName = row.patientName || row.pname || 'Patient';
+    const pUmr = row.umrNo || row.token || '';
+    if (window.confirm(`Are you sure you want to remove appointment for ${pName} (${pUmr}) from active queue?`)) {
       try {
-        await fetch(`/api/patient/delete?umrNo=${encodeURIComponent(row.umrNo)}`, { method: 'POST' });
-        setAppointments(prev => prev.filter(p => p.umrNo !== row.umrNo));
-        showNotification(`🗑️ Patient ${row.patientName} (${row.umrNo}) removed from queue.`);
+        const q = `umrNo=${encodeURIComponent(row.umrNo || '')}&token=${encodeURIComponent(row.token || '')}&patientId=${encodeURIComponent(row.patientId || '')}&apptId=${encodeURIComponent(row.apptId || '')}`;
+        await fetch(`/api/patient/delete?${q}`, { method: 'POST' });
       } catch (err) {
-        console.warn('Delete error:', err);
+        console.warn('Delete server warning:', err);
       }
+      setAppointments(prev => {
+        const updated = prev.filter(p => {
+          if (row.apptId && p.apptId && String(p.apptId) === String(row.apptId)) return false;
+          if (row.token && p.token && String(p.token) === String(row.token)) return false;
+          if (row.umrNo && p.umrNo && String(p.umrNo) === String(row.umrNo) && (!row.token || String(p.token) === String(row.token))) return false;
+          return true;
+        });
+        try {
+          localStorage.setItem('atri_hims_saved_appointments', JSON.stringify(updated));
+        } catch (e) {}
+        return updated;
+      });
+      showNotification(`🗑️ Appointment for ${pName} (${pUmr}) removed from queue.`);
     }
   };
 
@@ -2289,7 +2319,7 @@ export function RegistrationForm({
                   <th>Con.Cash ⇅</th>
                   <th>Con.Credit ⇅</th>
                   <th>Con.Upi ⇅</th>
-                  <th>Actions</th>
+                  <th style={{ position: 'sticky', right: 0, background: '#1e3a8a', zIndex: 3, minWidth: '70px', textAlign: 'center', boxShadow: '-3px 0 6px rgba(0,0,0,0.1)' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -2375,7 +2405,7 @@ export function RegistrationForm({
                     <td><strong>{row.conCash}</strong></td>
                     <td>{row.conCredit}</td>
                     <td>{row.conUpi}</td>
-                    <td className="cell-action-icon" style={{ display: 'flex', gap: '6px', justifyContent: 'center' }}>
+                    <td className="cell-action-icon" style={{ position: 'sticky', right: 0, background: '#ffffff', zIndex: 2, display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center', minWidth: '70px', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
                       <button 
                         className="btn-icon orange-edit" 
                         onClick={() => handleEditPatient(row)}

@@ -2877,13 +2877,28 @@ function RegistrationForm({
     if (propOnTabChange) propOnTabChange(tab);
   };
 
+  // Helper to remove any test/dummy leftovers from queue
+  const sanitizeAppointments = list => {
+    if (!Array.isArray(list)) return [];
+    return list.filter(p => {
+      if (!p) return false;
+      const name = (p.patientName || p.pname || '').toUpperCase();
+      const umr = (p.umrNo || p.patientCode || '').toUpperCase();
+      const tok = String(p.token || p.tokenNum || '');
+      if (name.includes('TEST SPEED CHECK') || umr === 'UMR334254') return false;
+      if (umr === 'UMR334038' && (tok === '99' || tok === 'OPD-99')) return false;
+      return true;
+    });
+  };
+
   // Initialize appointments immediately from localStorage cache so there is ZERO waiting time on refresh!
   const [appointments, setAppointments] = useState(() => {
     try {
       const cached = localStorage.getItem('atri_hims_saved_appointments');
       if (cached) {
-        const parsed = JSON.parse(cached);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        const parsed = sanitizeAppointments(JSON.parse(cached));
+        localStorage.setItem('atri_hims_saved_appointments', JSON.stringify(parsed));
+        if (parsed.length > 0) return parsed;
       }
     } catch (e) {}
     return INITIAL_APPOINTMENTS;
@@ -2936,9 +2951,10 @@ function RegistrationForm({
       }
       if (serverData && serverData.length > 0) {
         setAppointments(prev => {
-          const serverUmrs = new Set(serverData.map(p => p.umrNo || p.patientCode).filter(Boolean));
-          const localOnly = prev.filter(p => p.umrNo && !serverUmrs.has(p.umrNo));
-          const merged = [...localOnly, ...serverData];
+          const cleanedServer = sanitizeAppointments(serverData);
+          const serverUmrs = new Set(cleanedServer.map(p => p.umrNo || p.patientCode).filter(Boolean));
+          const localOnly = sanitizeAppointments(prev).filter(p => p.umrNo && !serverUmrs.has(p.umrNo));
+          const merged = [...localOnly, ...cleanedServer];
           try {
             localStorage.setItem('atri_hims_saved_appointments', JSON.stringify(merged));
           } catch (e) {}
@@ -3490,16 +3506,30 @@ function RegistrationForm({
 
   // Handle Delete Patient
   const handleDeletePatient = async row => {
-    if (window.confirm(`Are you sure you want to remove patient ${row.patientName} (${row.umrNo}) from active queue?`)) {
+    const pName = row.patientName || row.pname || 'Patient';
+    const pUmr = row.umrNo || row.token || '';
+    if (window.confirm(`Are you sure you want to remove appointment for ${pName} (${pUmr}) from active queue?`)) {
       try {
-        await fetch(`/api/patient/delete?umrNo=${encodeURIComponent(row.umrNo)}`, {
+        const q = `umrNo=${encodeURIComponent(row.umrNo || '')}&token=${encodeURIComponent(row.token || '')}&patientId=${encodeURIComponent(row.patientId || '')}&apptId=${encodeURIComponent(row.apptId || '')}`;
+        await fetch(`/api/patient/delete?${q}`, {
           method: 'POST'
         });
-        setAppointments(prev => prev.filter(p => p.umrNo !== row.umrNo));
-        showNotification(`🗑️ Patient ${row.patientName} (${row.umrNo}) removed from queue.`);
       } catch (err) {
-        console.warn('Delete error:', err);
+        console.warn('Delete server warning:', err);
       }
+      setAppointments(prev => {
+        const updated = prev.filter(p => {
+          if (row.apptId && p.apptId && String(p.apptId) === String(row.apptId)) return false;
+          if (row.token && p.token && String(p.token) === String(row.token)) return false;
+          if (row.umrNo && p.umrNo && String(p.umrNo) === String(row.umrNo) && (!row.token || String(p.token) === String(row.token))) return false;
+          return true;
+        });
+        try {
+          localStorage.setItem('atri_hims_saved_appointments', JSON.stringify(updated));
+        } catch (e) {}
+        return updated;
+      });
+      showNotification(`🗑️ Appointment for ${pName} (${pUmr}) removed from queue.`);
     }
   };
 
@@ -4210,7 +4240,17 @@ function RegistrationForm({
     className: "reg-table-container"
   }, /*#__PURE__*/React.createElement("table", {
     className: "reg-appointments-table"
-  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "Token No \u21C5"), /*#__PURE__*/React.createElement("th", null, "UMR No \u21C5"), /*#__PURE__*/React.createElement("th", null, "PatientName \u21C5"), /*#__PURE__*/React.createElement("th", null, "Gender/Age \u21C5"), /*#__PURE__*/React.createElement("th", null, "Appointment Date \u21C5"), /*#__PURE__*/React.createElement("th", null, "Consultant \u21C5"), /*#__PURE__*/React.createElement("th", null, "Category \u21C5"), /*#__PURE__*/React.createElement("th", null, "Bill Status \u21C5"), /*#__PURE__*/React.createElement("th", null, "Vitals \u21C5"), /*#__PURE__*/React.createElement("th", null, "Vitals Print \u21C5"), /*#__PURE__*/React.createElement("th", null, "RegistrationFeePrint \u21C5"), /*#__PURE__*/React.createElement("th", null, "ConsultationFeePrint \u21C5"), /*#__PURE__*/React.createElement("th", null, "Ip Registration \u21C5"), /*#__PURE__*/React.createElement("th", null, "Reg.Cash \u21C5"), /*#__PURE__*/React.createElement("th", null, "Reg.Credit \u21C5"), /*#__PURE__*/React.createElement("th", null, "Reg.Upi \u21C5"), /*#__PURE__*/React.createElement("th", null, "Con.Cash \u21C5"), /*#__PURE__*/React.createElement("th", null, "Con.Credit \u21C5"), /*#__PURE__*/React.createElement("th", null, "Con.Upi \u21C5"), /*#__PURE__*/React.createElement("th", null, "Actions"))), /*#__PURE__*/React.createElement("tbody", null, filteredAppointments.length === 0 ? /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "Token No \u21C5"), /*#__PURE__*/React.createElement("th", null, "UMR No \u21C5"), /*#__PURE__*/React.createElement("th", null, "PatientName \u21C5"), /*#__PURE__*/React.createElement("th", null, "Gender/Age \u21C5"), /*#__PURE__*/React.createElement("th", null, "Appointment Date \u21C5"), /*#__PURE__*/React.createElement("th", null, "Consultant \u21C5"), /*#__PURE__*/React.createElement("th", null, "Category \u21C5"), /*#__PURE__*/React.createElement("th", null, "Bill Status \u21C5"), /*#__PURE__*/React.createElement("th", null, "Vitals \u21C5"), /*#__PURE__*/React.createElement("th", null, "Vitals Print \u21C5"), /*#__PURE__*/React.createElement("th", null, "RegistrationFeePrint \u21C5"), /*#__PURE__*/React.createElement("th", null, "ConsultationFeePrint \u21C5"), /*#__PURE__*/React.createElement("th", null, "Ip Registration \u21C5"), /*#__PURE__*/React.createElement("th", null, "Reg.Cash \u21C5"), /*#__PURE__*/React.createElement("th", null, "Reg.Credit \u21C5"), /*#__PURE__*/React.createElement("th", null, "Reg.Upi \u21C5"), /*#__PURE__*/React.createElement("th", null, "Con.Cash \u21C5"), /*#__PURE__*/React.createElement("th", null, "Con.Credit \u21C5"), /*#__PURE__*/React.createElement("th", null, "Con.Upi \u21C5"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      position: 'sticky',
+      right: 0,
+      background: '#1e3a8a',
+      zIndex: 3,
+      minWidth: '70px',
+      textAlign: 'center',
+      boxShadow: '-3px 0 6px rgba(0,0,0,0.1)'
+    }
+  }, "Actions"))), /*#__PURE__*/React.createElement("tbody", null, filteredAppointments.length === 0 ? /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
     colSpan: 20,
     style: {
       textAlign: 'center',
@@ -4307,9 +4347,16 @@ function RegistrationForm({
   }, "\uD83D\uDC4D")), /*#__PURE__*/React.createElement("td", null, row.regCash), /*#__PURE__*/React.createElement("td", null, row.regCredit), /*#__PURE__*/React.createElement("td", null, row.regUpi), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("strong", null, row.conCash)), /*#__PURE__*/React.createElement("td", null, row.conCredit), /*#__PURE__*/React.createElement("td", null, row.conUpi), /*#__PURE__*/React.createElement("td", {
     className: "cell-action-icon",
     style: {
+      position: 'sticky',
+      right: 0,
+      background: '#ffffff',
+      zIndex: 2,
       display: 'flex',
       gap: '6px',
-      justifyContent: 'center'
+      justifyContent: 'center',
+      alignItems: 'center',
+      minWidth: '70px',
+      boxShadow: '-3px 0 6px rgba(0,0,0,0.06)'
     }
   }, /*#__PURE__*/React.createElement("button", {
     className: "btn-icon orange-edit",

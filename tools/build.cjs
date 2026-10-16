@@ -26,7 +26,6 @@ const files = [
   'src/components/PharmacyScreen.jsx',
   'src/components/StaffDashboard.jsx',
   'src/components/DatabaseViewer.jsx',
-  'src/components/DummyTableTestScreen.jsx',
   'src/components/Footer.jsx',
   'src/App.jsx'
 ];

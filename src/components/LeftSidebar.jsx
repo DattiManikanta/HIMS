@@ -7,7 +7,6 @@ export function LeftSidebar({
   activeSubTab, 
   onSelectSubTab, 
   onGoHome,
-  onOpenDummyTest,
   onLogout 
 }) {
   // Accordion state: Patient Management expanded by default
@@ -77,33 +76,6 @@ export function LeftSidebar({
           </button>
         </div>
 
-        {/* Database Test Screen Link (at_dummy_table) */}
-        {onOpenDummyTest && (
-          <div className="sidebar-menu-group" style={{ marginBottom: '8px' }}>
-            <button
-              type="button"
-              className="sidebar-nav-item"
-              onClick={onOpenDummyTest}
-              title="Test Screen (1 Field: Client Name) for at_dummy_table"
-              style={{
-                background: 'rgba(56, 189, 248, 0.12)',
-                border: '1px dashed #38bdf8',
-                borderRadius: '8px',
-                color: '#38bdf8'
-              }}
-            >
-              <div className="sidebar-icon-wrap" style={{ color: '#38bdf8', fontSize: '18px' }}>
-                🧪
-              </div>
-              {isExpanded && (
-                <div className="sidebar-item-text">
-                  <span className="sidebar-item-title" style={{ color: '#ffffff', fontWeight: 700 }}>DB Test Screen</span>
-                  <span className="sidebar-item-sub" style={{ color: '#7dd3fc', fontSize: '11px' }}>at_dummy_table</span>
-                </div>
-              )}
-            </button>
-          </div>
-        )}
         
         {/* Main Item: Patient Management */}
         <div className="sidebar-menu-group">

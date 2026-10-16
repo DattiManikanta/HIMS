@@ -744,7 +744,6 @@ function LeftSidebar({
   activeSubTab,
   onSelectSubTab,
   onGoHome,
-  onOpenDummyTest,
   onLogout
 }) {
   // Accordion state: Patient Management expanded by default
@@ -848,43 +847,7 @@ function LeftSidebar({
     style: {
       color: '#7dd3fc'
     }
-  }, "Metro Tiles Screen")))), onOpenDummyTest && /*#__PURE__*/React.createElement("div", {
-    className: "sidebar-menu-group",
-    style: {
-      marginBottom: '8px'
-    }
-  }, /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "sidebar-nav-item",
-    onClick: onOpenDummyTest,
-    title: "Test Screen (1 Field: Client Name) for at_dummy_table",
-    style: {
-      background: 'rgba(56, 189, 248, 0.12)',
-      border: '1px dashed #38bdf8',
-      borderRadius: '8px',
-      color: '#38bdf8'
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "sidebar-icon-wrap",
-    style: {
-      color: '#38bdf8',
-      fontSize: '18px'
-    }
-  }, "\uD83E\uDDEA"), isExpanded && /*#__PURE__*/React.createElement("div", {
-    className: "sidebar-item-text"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "sidebar-item-title",
-    style: {
-      color: '#ffffff',
-      fontWeight: 700
-    }
-  }, "DB Test Screen"), /*#__PURE__*/React.createElement("span", {
-    className: "sidebar-item-sub",
-    style: {
-      color: '#7dd3fc',
-      fontSize: '11px'
-    }
-  }, "at_dummy_table")))), /*#__PURE__*/React.createElement("div", {
+  }, "Metro Tiles Screen")))), /*#__PURE__*/React.createElement("div", {
     className: "sidebar-menu-group"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -1059,17 +1022,6 @@ function HIMSHomeDashboard({
   }, loginTime || '2026-10-07 11:40:27')), /*#__PURE__*/React.createElement("div", {
     className: "hims-top-actions"
   }, /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "hims-quick-opd-btn",
-    style: {
-      background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-      borderColor: '#38bdf8',
-      color: '#ffffff',
-      boxShadow: '0 4px 12px rgba(2, 132, 199, 0.3)'
-    },
-    onClick: () => onSelectModule('dummy_test'),
-    title: "Open Database Test Screen (1 Field: Client Name) for at_dummy_table"
-  }, /*#__PURE__*/React.createElement("span", null, "\uD83E\uDDEA"), " Test Client Name"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "hims-quick-opd-btn",
     onClick: () => onSelectModule('patient_management'),
@@ -8907,184 +8859,6 @@ CREATE TABLE IF NOT EXISTS pharmacy_invoices (
   }, "Close Record")))));
 }
 
-// --- src/components/DummyTableTestScreen.jsx ---
-
-function DummyTableTestScreen({
-  onBack,
-  onGoHome
-}) {
-  const [clientName, setClientName] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [saveStatus, setSaveStatus] = useState(null);
-  const handleSave = e => {
-    e.preventDefault();
-    if (!clientName.trim()) {
-      alert('Please enter Client Name');
-      return;
-    }
-    setLoading(true);
-    setSaveStatus(null);
-    fetch('/api/dummy-test', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        name: clientName.trim()
-      })
-    }).then(async r => {
-      const data = await r.json().catch(() => ({}));
-      setLoading(false);
-      if (r.ok && data.success) {
-        setSaveStatus({
-          success: true,
-          message: data.message || '✓ Saved successfully into at_dummy_table!'
-        });
-        setClientName('');
-      } else {
-        setSaveStatus({
-          success: false,
-          error: data.error || `HTTP ${r.status}: Failed to save into table`
-        });
-      }
-    }).catch(err => {
-      setLoading(false);
-      setSaveStatus({
-        success: false,
-        error: err.message || 'Error saving to database'
-      });
-    });
-  };
-  return /*#__PURE__*/React.createElement("div", {
-    style: {
-      maxWidth: '480px',
-      margin: '40px auto',
-      padding: '0 16px',
-      fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: 'flex',
-      gap: '10px',
-      marginBottom: '24px'
-    }
-  }, onBack && /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: onBack,
-    className: "btn btn-secondary",
-    style: {
-      padding: '8px 16px',
-      fontSize: '13px',
-      fontWeight: '700',
-      borderRadius: '8px',
-      cursor: 'pointer'
-    }
-  }, "\u2190 Back"), onGoHome && /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    onClick: onGoHome,
-    className: "btn btn-secondary",
-    style: {
-      padding: '8px 16px',
-      fontSize: '13px',
-      fontWeight: '700',
-      borderRadius: '8px',
-      cursor: 'pointer'
-    }
-  }, "\uD83C\uDFE0 Home")), /*#__PURE__*/React.createElement("div", {
-    style: {
-      background: '#ffffff',
-      borderRadius: '16px',
-      padding: '36px 30px',
-      boxShadow: '0 12px 36px rgba(0, 0, 0, 0.08)',
-      border: '1px solid #e2e8f0'
-    }
-  }, /*#__PURE__*/React.createElement("form", {
-    onSubmit: handleSave
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginBottom: '22px'
-    }
-  }, /*#__PURE__*/React.createElement("label", {
-    style: {
-      display: 'block',
-      fontSize: '0.9rem',
-      fontWeight: 800,
-      color: '#0f172a',
-      marginBottom: '8px'
-    }
-  }, "Client Name ", /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: '#ef4444'
-    }
-  }, "*")), /*#__PURE__*/React.createElement("input", {
-    type: "text",
-    value: clientName,
-    onChange: e => setClientName(e.target.value),
-    placeholder: "Enter Client Name",
-    required: true,
-    autoFocus: true,
-    style: {
-      width: '100%',
-      padding: '14px 16px',
-      fontSize: '16px',
-      fontWeight: '600',
-      borderRadius: '10px',
-      border: '2px solid #cbd5e1',
-      outline: 'none',
-      boxSizing: 'border-box',
-      color: '#0f172a',
-      transition: 'border-color 0.2s'
-    },
-    onFocus: e => e.target.style.borderColor = '#0284c7',
-    onBlur: e => e.target.style.borderColor = '#cbd5e1'
-  })), /*#__PURE__*/React.createElement("button", {
-    type: "submit",
-    disabled: loading,
-    style: {
-      width: '100%',
-      padding: '14px',
-      fontSize: '15px',
-      fontWeight: 800,
-      color: '#ffffff',
-      background: loading ? '#94a3b8' : 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-      border: 'none',
-      borderRadius: '10px',
-      cursor: loading ? 'not-allowed' : 'pointer',
-      boxShadow: '0 4px 14px rgba(2, 132, 199, 0.35)',
-      transition: 'all 0.2s ease',
-      letterSpacing: '0.5px'
-    }
-  }, loading ? 'Saving...' : 'SAVE')), saveStatus && /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginTop: '20px',
-      padding: '14px 16px',
-      borderRadius: '10px',
-      fontSize: '0.85rem',
-      fontWeight: 600,
-      lineHeight: 1.5,
-      wordBreak: 'break-word',
-      textAlign: saveStatus.success ? 'center' : 'left',
-      background: saveStatus.success ? '#dcfce7' : '#fee2e2',
-      border: `1.5px solid ${saveStatus.success ? '#86efac' : '#fca5a5'}`,
-      color: saveStatus.success ? '#15803d' : '#b91c1c'
-    }
-  }, saveStatus.success ? /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontWeight: 800
-    }
-  }, saveStatus.message || '✓ Saved successfully into at_dummy_table!') : /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontWeight: 800,
-      marginBottom: '4px'
-    }
-  }, "\u2715 Save Failed:"), /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: '0.8rem',
-      opacity: 0.95
-    }
-  }, saveStatus.error)))));
-}
-
 // --- src/components/Footer.jsx ---
 
 function Footer({
@@ -9352,7 +9126,6 @@ function App() {
   });
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
   const [showDatabaseView, setShowDatabaseView] = useState(false);
-  const [showDummyTestView, setShowDummyTestView] = useState(false);
   const [loginTime, setLoginTime] = useState(() => {
     try {
       const savedTime = localStorage.getItem('atri_hims_logintime');
@@ -9509,14 +9282,7 @@ function App() {
   if (currentView === 'home') {
     return /*#__PURE__*/React.createElement(ErrorBoundary, null, /*#__PURE__*/React.createElement(HIMSHomeDashboard, {
       onSelectModule: mod => {
-        if (mod === 'dummy_test') {
-          setShowDummyTestView(true);
-          setShowDatabaseView(false);
-          setCurrentView('patient_management');
-        } else {
-          setShowDummyTestView(false);
-          setCurrentView('patient_management');
-        }
+        setCurrentView('patient_management');
         try {
           localStorage.setItem('atri_hims_current_view', 'patient_management');
         } catch (e) {}
@@ -9693,15 +9459,10 @@ function App() {
       }
     },
     onGoHome: () => {
-      setShowDummyTestView(false);
       setCurrentView('home');
       try {
         localStorage.setItem('atri_hims_current_view', 'home');
       } catch (e) {}
-    },
-    onOpenDummyTest: () => {
-      setShowDummyTestView(true);
-      setShowDatabaseView(false);
     },
     onOpenDatabase: () => setShowPostgresModal(true),
     onLogout: handleLogout
@@ -9776,33 +9537,7 @@ function App() {
     style: {
       fontSize: '14px'
     }
-  }, "\uD83C\uDFE0"), " Home Dashboard"), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "top-home-nav-btn",
-    onClick: () => {
-      setShowDummyTestView(true);
-      setShowDatabaseView(false);
-    },
-    title: "Test Screen (1 Field: Client Name) for at_dummy_table",
-    style: {
-      display: 'flex',
-      alignItems: 'center',
-      gap: '6px',
-      background: '#0284c7',
-      border: '1.5px solid #0369a1',
-      borderRadius: '6px',
-      padding: '5px 12px',
-      fontSize: '12px',
-      fontWeight: '700',
-      color: '#ffffff',
-      cursor: 'pointer',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      fontSize: '13px'
-    }
-  }, "\uD83E\uDDEA"), " Client Test"), /*#__PURE__*/React.createElement("div", {
+  }, "\uD83C\uDFE0"), " Home Dashboard"), /*#__PURE__*/React.createElement("div", {
     className: "top-login-time"
   }, "LogInTime: ", /*#__PURE__*/React.createElement("span", {
     className: "time-val"
@@ -9831,13 +9566,7 @@ function App() {
     title: "Sign Out"
   }, "Logout")))), /*#__PURE__*/React.createElement("main", {
     className: "hims-content-area"
-  }, showDummyTestView ? /*#__PURE__*/React.createElement(DummyTableTestScreen, {
-    onBack: () => setShowDummyTestView(false),
-    onGoHome: () => {
-      setShowDummyTestView(false);
-      setCurrentView('home');
-    }
-  }) : showDatabaseView ? /*#__PURE__*/React.createElement("div", {
+  }, showDatabaseView ? /*#__PURE__*/React.createElement("div", {
     style: {
       padding: '20px'
     }

@@ -5,7 +5,6 @@ import { HIMSHomeDashboard } from './components/HIMSHomeDashboard.jsx';
 import { LeftSidebar } from './components/LeftSidebar.jsx';
 import { RegistrationForm } from './components/RegistrationForm.jsx';
 import { DatabaseViewer } from './components/DatabaseViewer.jsx';
-import { DummyTableTestScreen } from './components/DummyTableTestScreen.jsx';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -73,7 +72,6 @@ export function App() {
   });
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
   const [showDatabaseView, setShowDatabaseView] = useState(false);
-  const [showDummyTestView, setShowDummyTestView] = useState(false);
   
   const [loginTime, setLoginTime] = useState(() => {
     try {
@@ -251,14 +249,7 @@ export function App() {
       <ErrorBoundary>
         <HIMSHomeDashboard 
           onSelectModule={(mod) => {
-            if (mod === 'dummy_test') {
-              setShowDummyTestView(true);
-              setShowDatabaseView(false);
-              setCurrentView('patient_management');
-            } else {
-              setShowDummyTestView(false);
-              setCurrentView('patient_management');
-            }
+            setCurrentView('patient_management');
             try {
               localStorage.setItem('atri_hims_current_view', 'patient_management');
             } catch (e) {}
@@ -385,15 +376,10 @@ export function App() {
           }
         }}
         onGoHome={() => {
-          setShowDummyTestView(false);
           setCurrentView('home');
           try {
             localStorage.setItem('atri_hims_current_view', 'home');
           } catch (e) {}
-        }}
-        onOpenDummyTest={() => {
-          setShowDummyTestView(true);
-          setShowDatabaseView(false);
         }}
         onOpenDatabase={() => setShowPostgresModal(true)}
         onLogout={handleLogout}
@@ -453,32 +439,6 @@ export function App() {
               <span style={{ fontSize: '14px' }}>🏠</span> Home Dashboard
             </button>
 
-            {/* Direct DB Test Screen Button (at_dummy_table) */}
-            <button
-              type="button"
-              className="top-home-nav-btn"
-              onClick={() => {
-                setShowDummyTestView(true);
-                setShowDatabaseView(false);
-              }}
-              title="Test Screen (1 Field: Client Name) for at_dummy_table"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                background: '#0284c7',
-                border: '1.5px solid #0369a1',
-                borderRadius: '6px',
-                padding: '5px 12px',
-                fontSize: '12px',
-                fontWeight: '700',
-                color: '#ffffff',
-                cursor: 'pointer',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-              }}
-            >
-              <span style={{ fontSize: '13px' }}>🧪</span> Client Test
-            </button>
 
             <div className="top-login-time">
               LogInTime: <span className="time-val">{loginTime || '2026-10-08 11:26:13'}</span>
@@ -521,17 +481,9 @@ export function App() {
           </div>
         </header>
 
-        {/* Main View: Patient Registration or Dummy Test Screen or Database Viewer */}
+        {/* Main View: Patient Registration or Database Viewer */}
         <main className="hims-content-area">
-          {showDummyTestView ? (
-            <DummyTableTestScreen 
-              onBack={() => setShowDummyTestView(false)}
-              onGoHome={() => {
-                setShowDummyTestView(false);
-                setCurrentView('home');
-              }}
-            />
-          ) : showDatabaseView ? (
+          {showDatabaseView ? (
             <div style={{ padding: '20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                 <h2 style={{ color: '#0f172a', margin: 0 }}>🐘 PostgreSQL Database Viewer</h2>

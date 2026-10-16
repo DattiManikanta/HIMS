@@ -57,21 +57,6 @@ export function HIMSHomeDashboard({ onSelectModule, onLogout }) {
           <button
             type="button"
             className="hims-quick-opd-btn"
-            style={{
-              background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-              borderColor: '#38bdf8',
-              color: '#ffffff',
-              boxShadow: '0 4px 12px rgba(2, 132, 199, 0.3)'
-            }}
-            onClick={() => onSelectModule('dummy_test')}
-            title="Open Database Test Screen (1 Field: Client Name) for at_dummy_table"
-          >
-            <span>🧪</span> Test Client Name
-          </button>
-
-          <button
-            type="button"
-            className="hims-quick-opd-btn"
             onClick={() => onSelectModule('patient_management')}
             title="Open Patient Registration & OPD Desk"
           >

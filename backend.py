@@ -1610,17 +1610,75 @@ def get_patient_queue():
 
 @app.route('/api/patient/search', methods=['GET', 'POST'])
 @app.route('/patient/searchPatients', methods=['GET', 'POST'])
+@app.route('/patient/getPatDetOldDataaa', methods=['GET', 'POST'])
+@app.route('/getPatDetOldDataaa', methods=['GET', 'POST'])
 def search_patients():
-    """Search patients by term, UMR number, mobile number, or name."""
-    term = request.args.get('term') or request.args.get('umrNo') or request.args.get('mobNum') or request.args.get('pname') or ''
-    term = term.lower().strip()
+    """Search patients by term, UMR number, mobile number, or name from database or fallback cache."""
+    term = request.args.get('term') or request.args.get('umrNo') or request.args.get('mobNum') or request.args.get('pname') or request.args.get('patientName') or ''
+    term = term.strip()
+
+    # 1. Search MySQL database if connected
+    if term and db_connected:
+        try:
+            conn = get_db_connection()
+            if conn:
+                with conn.cursor() as cur:
+                    clean_term = re.sub(r'(?i)^UMR', '', term)
+                    p1 = f"%{term}%"
+                    p2 = f"%{clean_term}%" if clean_term else p1
+                    sql = """
+                        SELECT 
+                            p.patient_id AS patientId,
+                            p.umr_num AS umrNo,
+                            p.umr_num AS patientCode,
+                            p.patient_name AS pname,
+                            COALESCE(p.last_name, '') AS lastName,
+                            COALESCE(p.title, 'Mr.') AS title,
+                            TRIM(CONCAT(COALESCE(p.title, ''), ' ', COALESCE(p.patient_name, ''), ' ', COALESCE(p.last_name, ''))) AS patientName,
+                            COALESCE(p.gender, 'Male') AS gender,
+                            COALESCE(p.age, '40') AS age,
+                            COALESCE(p.mob_num, '') AS mobNum,
+                            COALESCE(p.mob_num, '') AS phone,
+                            COALESCE(p.addr, '') AS addr,
+                            COALESCE(p.addr, '') AS address,
+                            COALESCE(p.village, '') AS village,
+                            COALESCE(p.city, 'Visakhapatnam') AS city,
+                            COALESCE(p.state, 'Andhra Pradesh') AS state,
+                            COALESCE(p.country, 'India') AS country,
+                            COALESCE(p.blood_grp, 'B+') AS bloodGrp,
+                            COALESCE(p.blood_grp, 'B+') AS bloodGroup,
+                            COALESCE(p.patient_category_name, 'GENERAL - TRI') AS category,
+                            COALESCE(p.patient_category_name, 'GENERAL - TRI') AS patientCategory,
+                            COALESCE(p.id_proof_type, 'Aadhaar') AS idProofType,
+                            COALESCE(p.id_proof_num, '') AS idProofNum,
+                            COALESCE(p.parent_name, '') AS parentName,
+                            COALESCE(p.dob, '') AS dob
+                        FROM at_pr_patient p
+                        WHERE p.umr_num LIKE %s
+                           OR p.umr_num LIKE %s
+                           OR p.patient_name LIKE %s
+                           OR p.last_name LIKE %s
+                           OR p.mob_num LIKE %s
+                        ORDER BY p.patient_id DESC LIMIT 50
+                    """
+                    cur.execute(sql, (p1, p2, p1, p1, p1))
+                    cols = [desc[0] for desc in cur.description]
+                    rows = cur.fetchall()
+                    matches = [dict(zip(cols, row)) for row in rows]
+                    if matches:
+                        return jsonify(matches)
+        except Exception as e:
+            logger.warn(f"Database search failed: {e}")
+
+    # 2. Fallback in-memory search
     fallback = load_fallback_data()
     queue = fallback.get('patientQueue', [])
+    t_lower = term.lower()
     matches = [
         item for item in queue
-        if not term or term in item.get('umrNo', '').lower() or \
-           term in item.get('patientName', '').lower() or \
-           term in item.get('phone', '').lower()
+        if not t_lower or t_lower in item.get('umrNo', '').lower() or \
+           t_lower in item.get('patientName', '').lower() or \
+           t_lower in item.get('phone', '').lower()
     ]
     return jsonify(matches)
 
@@ -1629,8 +1687,55 @@ def search_patients():
 @app.route('/patient/getPatientDetails', methods=['GET'])
 def get_patient_details():
     """Fetch complete patient record by patientId or umrNo."""
-    umr_no = request.args.get('umrNo') or request.args.get('patientCode')
-    patient_id = request.args.get('patientId')
+    umr_no = request.args.get('umrNo') or request.args.get('patientCode') or ''
+    patient_id = request.args.get('patientId') or ''
+    
+    if (umr_no or patient_id) and db_connected:
+        try:
+            conn = get_db_connection()
+            if conn:
+                with conn.cursor() as cur:
+                    clean_umr = re.sub(r'(?i)^UMR', '', umr_no.strip())
+                    pref_umr = f"UMR{clean_umr}" if clean_umr else umr_no.strip()
+                    sql = """
+                        SELECT 
+                            p.patient_id AS patientId,
+                            p.umr_num AS umrNo,
+                            p.umr_num AS patientCode,
+                            p.patient_name AS pname,
+                            COALESCE(p.last_name, '') AS lastName,
+                            COALESCE(p.title, 'Mr.') AS title,
+                            TRIM(CONCAT(COALESCE(p.title, ''), ' ', COALESCE(p.patient_name, ''), ' ', COALESCE(p.last_name, ''))) AS patientName,
+                            COALESCE(p.gender, 'Male') AS gender,
+                            COALESCE(p.age, '40') AS age,
+                            COALESCE(p.mob_num, '') AS mobNum,
+                            COALESCE(p.mob_num, '') AS phone,
+                            COALESCE(p.addr, '') AS addr,
+                            COALESCE(p.addr, '') AS address,
+                            COALESCE(p.village, '') AS village,
+                            COALESCE(p.city, 'Visakhapatnam') AS city,
+                            COALESCE(p.state, 'Andhra Pradesh') AS state,
+                            COALESCE(p.country, 'India') AS country,
+                            COALESCE(p.blood_grp, 'B+') AS bloodGrp,
+                            COALESCE(p.blood_grp, 'B+') AS bloodGroup,
+                            COALESCE(p.patient_category_name, 'GENERAL - TRI') AS category,
+                            COALESCE(p.patient_category_name, 'GENERAL - TRI') AS patientCategory,
+                            COALESCE(p.id_proof_type, 'Aadhaar') AS idProofType,
+                            COALESCE(p.id_proof_num, '') AS idProofNum,
+                            COALESCE(p.parent_name, '') AS parentName,
+                            COALESCE(p.dob, '') AS dob
+                        FROM at_pr_patient p
+                        WHERE p.umr_num = %s OR p.umr_num = %s OR p.umr_num = %s OR p.patient_id = %s
+                        LIMIT 1
+                    """
+                    pid = int(patient_id) if patient_id.isdigit() else 0
+                    cur.execute(sql, (umr_no.strip(), clean_umr, pref_umr, pid))
+                    row = cur.fetchone()
+                    if row:
+                        return jsonify(row)
+        except Exception as e:
+            logger.warning(f"MySQL get_patient_details error: {e}")
+
     fallback = load_fallback_data()
     queue = fallback.get('patientQueue', [])
     for item in queue:

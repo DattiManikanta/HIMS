@@ -258,9 +258,26 @@ public class PatientController {
 
         // 1. Try to save in MySQL via JPA
         try {
-            // Save at_pr_patient
-            AtPrPatient pat = new AtPrPatient();
-            pat.setUmrNum(umrNo);
+            // Check if patient with this UMR already exists in MySQL
+            AtPrPatient pat = null;
+            if (!umrNo.isEmpty()) {
+                try {
+                    String clean = umrNo.replaceAll("(?i)^UMR", "");
+                    String pref = umrNo.toUpperCase().startsWith("UMR") ? umrNo : ("UMR" + umrNo);
+                    Optional<AtPrPatient> existingOpt = atPrPatientRepository.findByUmrNum(umrNo);
+                    if (!existingOpt.isPresent()) existingOpt = atPrPatientRepository.findByUmrNum(clean);
+                    if (!existingOpt.isPresent()) existingOpt = atPrPatientRepository.findByUmrNum(pref);
+                    if (existingOpt.isPresent()) {
+                        pat = existingOpt.get();
+                        logger.info("Reusing existing patient record ID {} for UMR {}", pat.getPatientId(), umrNo);
+                    }
+                } catch (Exception ignored) {}
+            }
+            if (pat == null) {
+                pat = new AtPrPatient();
+                pat.setUmrNum(umrNo);
+                pat.setRegDt(new Date());
+            }
             pat.setPatientName(pname);
             pat.setLastName(lastName);
             pat.setTitle(ptitle);
@@ -285,7 +302,6 @@ public class PatientController {
             pat.setEmpId(empId);
             pat.setAddedBy(userName);
             pat.setAddedIp(userIp);
-            pat.setRegDt(new Date());
             pat.setAddedOn(new Date());
 
             AtPrPatient savedPat = atPrPatientRepository.save(pat);
@@ -692,9 +708,9 @@ public class PatientController {
     }
 
     // =========================================================================
-    // 4. SEARCH PATIENTS (By UMR, Phone, or Name)
+    // 4. SEARCH PATIENTS (By UMR, Phone, or Name - Supports Legacy getPatDetOldDataaa)
     // =========================================================================
-    @GetMapping(value = {"/api/patient/search", "/patient/searchPatients"})
+    @GetMapping(value = {"/api/patient/search", "/patient/searchPatients", "/patient/getPatDetOldDataaa", "/getPatDetOldDataaa"})
     public ResponseEntity<List<Map<String, Object>>> searchPatients(
             @RequestParam(required = false) String term,
             @RequestParam(required = false) String umrNo,
@@ -708,6 +724,56 @@ public class PatientController {
 
         List<Map<String, Object>> matches = new ArrayList<>();
 
+        // 1. Native direct SQL search via JdbcTemplate (fast, searches all records regardless of status)
+        if (jdbcTemplate != null && !searchTerm.trim().isEmpty()) {
+            try {
+                String cleanTerm = searchTerm.trim().replaceAll("(?i)^UMR", "");
+                String sql = "SELECT " +
+                        "    p.patient_id AS patientId, " +
+                        "    p.umr_num AS umrNo, " +
+                        "    p.umr_num AS patientCode, " +
+                        "    p.patient_name AS pname, " +
+                        "    COALESCE(p.last_name, '') AS lastName, " +
+                        "    COALESCE(p.title, 'Mr.') AS title, " +
+                        "    TRIM(CONCAT(COALESCE(p.title, ''), ' ', COALESCE(p.patient_name, ''), ' ', COALESCE(p.last_name, ''))) AS patientName, " +
+                        "    COALESCE(p.gender, 'Male') AS gender, " +
+                        "    COALESCE(p.age, '40') AS age, " +
+                        "    COALESCE(p.mob_num, '') AS mobNum, " +
+                        "    COALESCE(p.mob_num, '') AS phone, " +
+                        "    COALESCE(p.addr, '') AS addr, " +
+                        "    COALESCE(p.addr, '') AS address, " +
+                        "    COALESCE(p.village, '') AS village, " +
+                        "    COALESCE(p.city, 'Visakhapatnam') AS city, " +
+                        "    COALESCE(p.state, 'Andhra Pradesh') AS state, " +
+                        "    COALESCE(p.country, 'India') AS country, " +
+                        "    COALESCE(p.blood_grp, 'B+') AS bloodGrp, " +
+                        "    COALESCE(p.blood_grp, 'B+') AS bloodGroup, " +
+                        "    COALESCE(p.patient_category_name, 'GENERAL - TRI') AS category, " +
+                        "    COALESCE(p.patient_category_name, 'GENERAL - TRI') AS patientCategory, " +
+                        "    COALESCE(p.id_proof_type, 'Aadhaar') AS idProofType, " +
+                        "    COALESCE(p.id_proof_num, '') AS idProofNum, " +
+                        "    COALESCE(p.parent_name, '') AS parentName, " +
+                        "    COALESCE(p.dob, '') AS dob " +
+                        "FROM at_pr_patient p " +
+                        "WHERE p.umr_num LIKE ? " +
+                        "   OR p.umr_num LIKE ? " +
+                        "   OR p.patient_name LIKE ? " +
+                        "   OR p.last_name LIKE ? " +
+                        "   OR p.mob_num LIKE ? " +
+                        "ORDER BY p.patient_id DESC LIMIT 50";
+
+                String p1 = "%" + searchTerm.trim() + "%";
+                String p2 = "%" + (cleanTerm.isEmpty() ? searchTerm.trim() : cleanTerm) + "%";
+                List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, p1, p2, p1, p1, p1);
+                if (rows != null && !rows.isEmpty()) {
+                    return ResponseEntity.ok(rows);
+                }
+            } catch (Exception e) {
+                logger.warn("Native SQL patient search failed, trying JPA: {}", e.getMessage());
+            }
+        }
+
+        // 2. JPA Repository Search
         try {
             List<AtPrPatient> dbList = atPrPatientRepository.searchPatients(searchTerm);
             for (AtPrPatient p : dbList) {
@@ -723,13 +789,25 @@ public class PatientController {
                 m.put("age", p.getAge());
                 m.put("mobNum", p.getMobNum());
                 m.put("phone", p.getMobNum());
+                m.put("addr", p.getAddr());
+                m.put("village", p.getVillage());
+                m.put("city", p.getCity());
+                m.put("state", p.getState());
+                m.put("country", p.getCountry());
+                m.put("bloodGrp", p.getBloodGrp());
+                m.put("bloodGroup", p.getBloodGrp());
                 m.put("category", p.getPatientCategory());
+                m.put("patientCategory", p.getPatientCategoryName());
+                m.put("idProofType", p.getIdProofType());
+                m.put("idProofNum", p.getIdProofNum());
+                m.put("parentName", p.getParentName());
+                m.put("dob", p.getDob());
                 matches.add(m);
             }
             if (!matches.isEmpty()) return ResponseEntity.ok(matches);
         } catch (Exception ignored) {}
 
-        // Fallback search
+        // 3. Fallback search
         Map<String, Object> fallback = fallbackStorageService.loadFallbackData();
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> queue = (List<Map<String, Object>>) fallback.getOrDefault("patientQueue", Collections.emptyList());
@@ -756,10 +834,60 @@ public class PatientController {
             @RequestParam(required = false) Integer patientId,
             @RequestParam(required = false) String umrNo) {
 
+        // 1. Native SQL query via JdbcTemplate
+        if (jdbcTemplate != null && (umrNo != null || patientId != null)) {
+            try {
+                String rawUmr = str(umrNo);
+                String cleanUmr = rawUmr.replaceAll("(?i)^UMR", "");
+                String prefUmr = rawUmr.toUpperCase().startsWith("UMR") ? rawUmr : ("UMR" + rawUmr);
+                String sql = "SELECT " +
+                        "    p.patient_id AS patientId, " +
+                        "    p.umr_num AS umrNo, " +
+                        "    p.umr_num AS patientCode, " +
+                        "    p.patient_name AS pname, " +
+                        "    COALESCE(p.last_name, '') AS lastName, " +
+                        "    COALESCE(p.title, 'Mr.') AS title, " +
+                        "    TRIM(CONCAT(COALESCE(p.title, ''), ' ', COALESCE(p.patient_name, ''), ' ', COALESCE(p.last_name, ''))) AS patientName, " +
+                        "    COALESCE(p.gender, 'Male') AS gender, " +
+                        "    COALESCE(p.age, '40') AS age, " +
+                        "    COALESCE(p.mob_num, '') AS mobNum, " +
+                        "    COALESCE(p.mob_num, '') AS phone, " +
+                        "    COALESCE(p.addr, '') AS addr, " +
+                        "    COALESCE(p.addr, '') AS address, " +
+                        "    COALESCE(p.village, '') AS village, " +
+                        "    COALESCE(p.city, 'Visakhapatnam') AS city, " +
+                        "    COALESCE(p.state, 'Andhra Pradesh') AS state, " +
+                        "    COALESCE(p.country, 'India') AS country, " +
+                        "    COALESCE(p.blood_grp, 'B+') AS bloodGrp, " +
+                        "    COALESCE(p.blood_grp, 'B+') AS bloodGroup, " +
+                        "    COALESCE(p.patient_category_name, 'GENERAL - TRI') AS category, " +
+                        "    COALESCE(p.patient_category_name, 'GENERAL - TRI') AS patientCategory, " +
+                        "    COALESCE(p.id_proof_type, 'Aadhaar') AS idProofType, " +
+                        "    COALESCE(p.id_proof_num, '') AS idProofNum, " +
+                        "    COALESCE(p.parent_name, '') AS parentName, " +
+                        "    COALESCE(p.dob, '') AS dob " +
+                        "FROM at_pr_patient p " +
+                        "WHERE p.umr_num = ? OR p.umr_num = ? OR p.umr_num = ? OR p.patient_id = ? " +
+                        "LIMIT 1";
+
+                List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, rawUmr, cleanUmr, prefUmr, patientId != null ? patientId : 0);
+                if (rows != null && !rows.isEmpty()) {
+                    return ResponseEntity.ok(rows.get(0));
+                }
+            } catch (Exception e) {
+                logger.warn("Native SQL patient details failed: {}", e.getMessage());
+            }
+        }
+
+        // 2. JPA Repository lookup
         try {
             Optional<AtPrPatient> opt = Optional.empty();
             if (patientId != null) opt = atPrPatientRepository.findById(patientId);
-            if (!opt.isPresent() && umrNo != null) opt = atPrPatientRepository.findByUmrNum(umrNo);
+            if (!opt.isPresent() && umrNo != null) {
+                opt = atPrPatientRepository.findByUmrNum(umrNo);
+                if (!opt.isPresent()) opt = atPrPatientRepository.findByUmrNum(umrNo.replaceAll("(?i)^UMR", ""));
+                if (!opt.isPresent()) opt = atPrPatientRepository.findByUmrNum("UMR" + umrNo.replaceAll("(?i)^UMR", ""));
+            }
 
             if (opt.isPresent()) {
                 AtPrPatient p = opt.get();
@@ -789,7 +917,7 @@ public class PatientController {
             }
         } catch (Exception ignored) {}
 
-        // Fallback
+        // 3. Fallback
         Map<String, Object> fallback = fallbackStorageService.loadFallbackData();
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> queue = (List<Map<String, Object>>) fallback.getOrDefault("patientQueue", Collections.emptyList());

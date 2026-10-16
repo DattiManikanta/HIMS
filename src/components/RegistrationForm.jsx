@@ -1189,21 +1189,22 @@ export function RegistrationForm({
   // Search Existing Patient query-wise from database
   const handleSearchExisting = async (e) => {
     if (e) e.preventDefault();
-    if (!existingSearchTerm.trim()) {
+    const term = existingSearchTerm.trim();
+    if (!term) {
       showNotification('Please enter UMR Number, Mobile, or Patient Name to search.');
       return;
     }
     setIsSearchingExisting(true);
     try {
-      const res = await fetch(`/patient/searchPatients?term=${encodeURIComponent(existingSearchTerm.trim())}`);
+      const res = await fetch(`/patient/searchPatients?term=${encodeURIComponent(term)}`);
       if (res.ok) {
         const list = await res.json();
         if (Array.isArray(list) && list.length > 0) {
           setExistingSearchResults(list);
-          showNotification(`✓ Found ${list.length} existing patient record(s) in database.`);
+          showNotification(`✓ Found ${list.length} existing patient record(s) matching "${term}". Click record to auto-fill.`);
         } else {
           setExistingSearchResults([]);
-          showNotification(`No existing records found for "${existingSearchTerm}". Enter details below to register as New Patient.`);
+          showNotification(`No existing patient records found for "${term}". Fill details below to register as New Patient.`);
         }
       } else {
         setExistingSearchResults([]);
@@ -1216,6 +1217,34 @@ export function RegistrationForm({
     }
   };
 
+  // Real-time debounced search as user types in search box
+  useEffect(() => {
+    const term = existingSearchTerm.trim();
+    if (term.length < 2) {
+      setExistingSearchResults([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setIsSearchingExisting(true);
+      try {
+        const res = await fetch(`/patient/searchPatients?term=${encodeURIComponent(term)}`);
+        if (res.ok) {
+          const list = await res.json();
+          if (Array.isArray(list) && list.length > 0) {
+            setExistingSearchResults(list);
+          } else {
+            setExistingSearchResults([]);
+          }
+        }
+      } catch (err) {
+        console.warn('Live search error:', err);
+      } finally {
+        setIsSearchingExisting(false);
+      }
+    }, 280);
+    return () => clearTimeout(timer);
+  }, [existingSearchTerm]);
+
   // Select an existing patient & auto-populate DetailedView fields query-wise
   const handleSelectExistingPatient = async (item) => {
     const umr = item.umrNo || item.patientCode;
@@ -1227,31 +1256,68 @@ export function RegistrationForm({
         if (full && !full.error) details = { ...item, ...full };
       }
 
+      // Normalize name parts
+      let pTitle = details.title || 'Mr.';
+      if (!pTitle.endsWith('.')) pTitle = `${pTitle}.`;
+      if (!['Mr.', 'Mrs.', 'Master', 'Baby', 'Miss', 'Dr.'].includes(pTitle)) pTitle = 'Mr.';
+
+      let firstName = (details.pname || '').trim();
+      let lName = (details.lastName || '').trim();
+      if (!firstName && details.patientName) {
+        const parts = details.patientName.replace(/^(Mr|Mrs|Ms|Master|Baby|Dr)\.?\s+/i, '').trim().split(' ');
+        firstName = parts[0] || '';
+        lName = parts.slice(1).join(' ') || lName;
+      }
+
+      // Normalize state
+      const rawState = (details.state || '').trim();
+      const normState = (rawState.toUpperCase() === 'AP' || rawState.toUpperCase() === 'A.P.' || rawState.toUpperCase().includes('ANDHRA'))
+        ? 'Andhra Pradesh' 
+        : (rawState || 'Andhra Pradesh');
+
+      // Normalize blood group
+      const validBlood = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+      const normBlood = validBlood.includes(details.bloodGrp) ? details.bloodGrp : (validBlood.includes(details.bloodGroup) ? details.bloodGroup : 'B+');
+
+      // Normalize Category
+      let normCat = details.patientCategory || details.category || 'GENERAL - TRI';
+      if (typeof normCat === 'number' || normCat === '0' || normCat === '4' || normCat === '47' || normCat === 'GENERAL') {
+        normCat = 'GENERAL - TRI';
+      }
+
+      // Normalize ID Proof
+      const validIdTypes = ['Aadhaar', 'Voter ID', 'Driving License', 'Passport', 'PAN Card', 'Student ID'];
+      const normIdType = validIdTypes.includes(details.idProofType) ? details.idProofType : 'Aadhaar';
+
+      // Normalize Parent
+      const normParent = (details.parentName && details.parentName !== '0' && details.parentName !== 'null') ? details.parentName : '';
+
       setFormData(prev => ({
         ...prev,
-        title: details.title || prev.title,
-        patientName: details.pname || details.patientName || '',
-        lastName: details.lastName || '',
+        title: pTitle,
+        patientName: firstName,
+        lastName: lName,
         gender: details.gender || 'Male',
         dob: details.dob || '',
-        years: details.age || '',
+        years: details.age || 40,
         mobile: details.mobNum || details.phone || '',
         address: details.addr || details.address || '',
         village: details.village || '',
         city: details.city || 'Visakhapatnam',
-        state: details.state || 'Andhra Pradesh',
+        state: normState,
         country: details.country || 'India',
-        bloodGroup: details.bloodGrp || details.bloodGroup || 'B+',
-        category: details.category || details.patientCategory || 'GENERAL - TRI',
-        idType: details.idProofType || 'Aadhaar',
-        idNumber: details.idProofNum || '',
-        parentOrHusband: details.parentName || ''
+        bloodGroup: normBlood,
+        category: normCat,
+        idType: normIdType,
+        idNumber: (details.idProofNum && details.idProofNum !== '0') ? details.idProofNum : '',
+        parentOrHusband: normParent
       }));
 
       setIsExistingPatientSelected(true);
       setSelectedPatientUmr(umr);
       setExistingSearchResults([]);
-      showNotification(`✓ Loaded existing patient ${details.patientName || details.pname} (${umr}) query-wise!`);
+      setFormErrors({});
+      showNotification(`✓ Loaded Old Patient: ${firstName} ${lName} (UMR: ${umr}) — Form auto-filled!`);
     } catch (err) {
       console.warn('Error fetching patient details:', err);
     }
@@ -1276,6 +1342,7 @@ export function RegistrationForm({
       healthIssue: '',
       token: ''
     }));
+    setFormErrors({});
     showNotification('Switched to New Patient Registration mode.');
   };
 
@@ -1702,9 +1769,13 @@ export function RegistrationForm({
     }
 
     const savedTokenStr = String(formData.token || '1');
-    const localUmrNo = `UMR${335273 + appointments.length + 1}`;
+    const localUmrNo = (isExistingPatientSelected && selectedPatientUmr)
+      ? selectedPatientUmr
+      : `UMR${335273 + appointments.length + 1}`;
 
     const regPayload = {
+      umrNo: (isExistingPatientSelected && selectedPatientUmr) ? selectedPatientUmr : '',
+      isExisting: !!isExistingPatientSelected,
       patientName: formData.patientName.trim(),
       pname: formData.patientName.trim(),
       lastName: formData.lastName.trim(),
@@ -1837,9 +1908,15 @@ export function RegistrationForm({
 
     // 4. Immediately switch to Tab 1 (Patients List)
     setActiveTab('appointments');
-    showNotification(`✓ Patient ${fullName} (Token #${savedTokenStr}) successfully registered (${localUmrNo})! Record displayed in list.`);
+    showNotification(isExistingPatientSelected
+      ? `✓ Appointment for Existing Patient ${fullName} (${localUmrNo}, Token #${savedTokenStr}) successfully saved!`
+      : `✓ Patient ${fullName} (Token #${savedTokenStr}) successfully registered (${localUmrNo})! Record displayed in list.`);
 
     // 5. Reset form fields for next patient while advancing token
+    setIsExistingPatientSelected(false);
+    setSelectedPatientUmr('');
+    setExistingSearchTerm('');
+    setExistingSearchResults([]);
     setFormData(prev => ({
       ...prev,
       patientName: '',
@@ -1970,7 +2047,7 @@ export function RegistrationForm({
               onClick={handleSave} 
               disabled={isSaving}
               style={{ opacity: isSaving ? 0.6 : 1, cursor: isSaving ? 'not-allowed' : 'pointer' }}
-              title={isSaving ? "Saving..." : "Save Record"}
+              title={isSaving ? "Saving..." : (isExistingPatientSelected ? `Save Appointment for Existing Patient (${selectedPatientUmr})` : "Save Record")}
             >
               💾
             </button>
@@ -2516,11 +2593,24 @@ export function RegistrationForm({
           {/* 1. TOP: PATIENT DETAILS (FULL WIDTH ACROSS SCREEN, EQUAL 6-COL GRID)  */}
           {/* ===================================================================== */}
           <div className="form-section-card patient-details-top-card">
-            <div className="card-header-bar">
-              <h3 className="section-green-heading">
+            <div className="card-header-bar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 className="section-green-heading" style={{ margin: 0 }}>
                 <span className="sec-icon">👤</span> Patient Details:
               </h3>
-              <span className="sec-badge-hint">Fields marked * are required</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{
+                  padding: '3px 12px',
+                  borderRadius: '12px',
+                  fontSize: '12px',
+                  fontWeight: 'bold',
+                  background: isExistingPatientSelected ? '#dbeafe' : '#f1f5f9',
+                  color: isExistingPatientSelected ? '#1e40af' : '#475569',
+                  border: isExistingPatientSelected ? '1.5px solid #3b82f6' : '1px solid #cbd5e1'
+                }}>
+                  {isExistingPatientSelected ? `Existing Patient UMR: ${selectedPatientUmr}` : 'New Patient (Auto UMR)'}
+                </span>
+                <span className="sec-badge-hint">Fields marked * are required</span>
+              </div>
             </div>
 
             <div className="patient-fields-grid-6col">
@@ -3490,7 +3580,11 @@ export function RegistrationForm({
                     cursor: isSaving ? 'not-allowed' : 'pointer'
                   }}
                 >
-                  {isSaving ? '⏳ Saving Patient...' : '💾 Save Appointment'}
+                  {isSaving 
+                    ? '⏳ Saving...' 
+                    : (isExistingPatientSelected 
+                        ? `💾 Save Appointment for Existing Patient (${selectedPatientUmr})` 
+                        : '💾 Save Appointment')}
                 </button>
                 <button 
                   type="button" 

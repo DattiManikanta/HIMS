@@ -790,6 +790,7 @@ export function RegistrationForm({
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingPatient, setEditingPatient] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
 
   // Existing Patient Search in Tab 2 State (query-wise based on PatientMapper DetailedView)
   const [existingSearchTerm, setExistingSearchTerm] = useState('');
@@ -947,6 +948,15 @@ export function RegistrationForm({
     setTimeout(() => setToast(null), 4000);
   };
 
+  const clearFieldError = (field) => {
+    setFormErrors(prev => {
+      if (!prev || !prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
+
   // Search Existing Patient query-wise from database
   const handleSearchExisting = async (e) => {
     if (e) e.preventDefault();
@@ -1050,6 +1060,7 @@ export function RegistrationForm({
       specialization: '',
       token: ''
     }));
+    clearFieldError('location');
     setIsSlotsOpen(false); // Close tokens until doctor is chosen
     setSelectedSlotToken(null);
     if (hospitalName) {
@@ -1099,6 +1110,9 @@ export function RegistrationForm({
       paymentAmt: total,
       token: String(chosenToken)
     }));
+    clearFieldError('consultant');
+    clearFieldError('token');
+    clearFieldError('location');
 
     showNotification(`✓ Doctor ${doc.name} (${doc.code}) selected — Token slots OPENED!`);
   };
@@ -1111,6 +1125,7 @@ export function RegistrationForm({
       ...prev,
       token: String(tokenNum)
     }));
+    clearFieldError('token');
     showNotification(`✓ Wish Token #${tokenNum} Selected! Marked as OCCUPIED (RED) for Dr. ${formData.consultant}`);
   };
 
@@ -1124,6 +1139,7 @@ export function RegistrationForm({
       ...prev,
       token: String(nextTokenNum)
     }));
+    clearFieldError('token');
     showNotification(`✓ Added Extra Emergency Token #${nextTokenNum} for Dr. ${formData.consultant}`);
   };
 
@@ -1141,9 +1157,11 @@ export function RegistrationForm({
       months: ageParts.months,
       days: ageParts.days
     }));
+    clearFieldError('years');
   };
 
   const handleAgeChange = (field, val) => {
+    clearFieldError('years');
     setFormData(prev => {
       const numVal = val === '' ? '' : parseInt(val, 10);
       const updated = { ...prev, [field]: numVal };
@@ -1220,10 +1238,110 @@ export function RegistrationForm({
   const handleSave = (e) => {
     if (e) e.preventDefault();
 
-    if (!formData.patientName.trim()) {
-      alert('Please enter Patient Name.');
+    // =========================================================================
+    // MANDATORY FIELD VALIDATION (Exact 1:1 match with backend-spring/New/patientQueue.jsp)
+    // Legacy Rules: lines 7936-7975 and lines 10914-11089
+    // =========================================================================
+    const errors = {};
+    const charRegex = /^[^-\s][a-zA-Z .]*$/; // Matches line 8229 in patientQueue.jsp
+    const numberRegex = /^[0-9]+$/;          // Matches line 8230 in patientQueue.jsp
+    const mobNoRegx = /^[6-9]\d{9}$/;        // Matches line 8233 in patientQueue.jsp
+
+    // 1. Patient Title: Mandatory (Line 10928: "Select Patient Title")
+    if (!formData.title || formData.title === '0' || formData.title.trim() === '') {
+      errors.title = "Select Patient Title";
+    }
+
+    // 2. Patient Name: Mandatory (Line 7936 & 10940: "Enter Patient Name" / "Enter valid Patient Name")
+    const pName = (formData.patientName || '').trim();
+    if (!pName) {
+      errors.patientName = "Enter Patient Name";
+    } else if (!charRegex.test(pName)) {
+      errors.patientName = "Enter valid Patient Name";
+    }
+
+    // 3. Gender: Mandatory (Line 7944 & 10950: "Select Patient Gender")
+    if (!formData.gender || formData.gender === '0' || formData.gender.trim() === '') {
+      errors.gender = "Select Patient Gender";
+    }
+
+    // 4. Age: Mandatory (Line 7948 & 10960: "Enter Patient Age" / "Enter valid Patient Age")
+    const ageVal = (formData.years !== '' && formData.years !== null && formData.years !== undefined) ? String(formData.years).trim() : '';
+    if (ageVal === '') {
+      errors.years = "Enter Patient Age";
+    } else if (!numberRegex.test(ageVal) || parseInt(ageVal, 10) < 0 || parseInt(ageVal, 10) > 130) {
+      errors.years = "Enter valid Patient Age";
+    }
+
+    // 5. Mobile Number: Mandatory (Line 7956, 8463, 10977: "Enter Mobile No." / "Enter valid Mobile Number")
+    const mobVal = (formData.mobile || '').trim();
+    if (!mobVal) {
+      errors.mobile = "Enter Mobile No.";
+    } else if (!mobNoRegx.test(mobVal)) {
+      errors.mobile = "Enter valid Mobile Number";
+    }
+
+    // 6. State: Mandatory (Line 7964: "Select State")
+    if (!formData.state || formData.state === '0' || formData.state.trim() === '') {
+      errors.state = "Select State";
+    }
+
+    // 7. City: Mandatory (Line 7968 & 11003: "Select City")
+    if (!formData.city || formData.city === '0' || formData.city.trim() === '') {
+      errors.city = "Select City";
+    }
+
+    // 8. Patient Category: Mandatory (Line 7960 & 11024: "Select Patient Category")
+    if (!formData.category || formData.category === '0' || formData.category.trim() === '') {
+      errors.category = "Select Patient Category";
+    }
+
+    // 9. Hospital Location: Mandatory (Line 11033: "Select Location")
+    if (!formData.location || formData.location === '0' || formData.location.trim() === '') {
+      errors.location = "Select Location";
+    }
+
+    // 10. Consultant Doctor: Mandatory (Line 11037: "Select Consultant")
+    if (!formData.consultant || formData.consultant === '0' || formData.consultant.trim() === '') {
+      errors.consultant = "Select Consultant";
+    }
+
+    // 11. Token: Mandatory (Line 11049: "Select Token")
+    const tokenVal = (formData.token !== '' && formData.token !== null && formData.token !== undefined) ? String(formData.token).trim() : '';
+    if (!tokenVal || tokenVal === '0') {
+      errors.token = "Select Token";
+    }
+
+    // If any validation error exists, halt save, highlight errors & focus first invalid field
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      const firstKey = Object.keys(errors)[0];
+      const firstMsg = errors[firstKey];
+      showNotification(`⚠️ ${firstMsg}`);
+
+      const elementIdMap = {
+        title: 'patientTitle',
+        patientName: 'newPatientName',
+        gender: 'genderVal',
+        years: 'age',
+        mobile: 'pntMobNum',
+        state: 'state',
+        city: 'city',
+        category: 'patientCat',
+        location: 'idLocation',
+        consultant: 'idDoctor',
+        token: 'tokenValue'
+      };
+
+      const targetEl = document.getElementById(elementIdMap[firstKey]);
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        try { targetEl.focus(); } catch (err) {}
+      }
       return;
     }
+
+    setFormErrors({});
 
     const fullName = `${formData.title} ${formData.patientName} ${formData.lastName}`.trim().toUpperCase();
 
@@ -2074,11 +2192,15 @@ export function RegistrationForm({
             <div className="patient-fields-grid-6col">
               {/* Row 1: Title (1), Name (2), Last Name (1), Gender (1), DOB (1) = 6 cols */}
               <div className="input-group col-span-1">
-                <label className="field-lbl">Title</label>
+                <label className="field-lbl">Title <span className="req-star">*</span></label>
                 <select 
+                  id="patientTitle"
                   value={formData.title} 
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="dense-select equal-input"
+                  onChange={(e) => {
+                    setFormData({ ...formData, title: e.target.value });
+                    clearFieldError('title');
+                  }}
+                  className={`dense-select equal-input ${formErrors.title ? 'input-has-error' : ''}`}
                 >
                   <option value="Mr.">Mr.</option>
                   <option value="Mrs.">Mrs.</option>
@@ -2087,42 +2209,64 @@ export function RegistrationForm({
                   <option value="Miss">Miss</option>
                   <option value="Dr.">Dr.</option>
                 </select>
+                <small id="patientTitleText" className="field-error-text" style={{ color: '#A94442', display: formErrors.title ? 'block' : 'none' }}>
+                  {formErrors.title}
+                </small>
               </div>
 
               <div className="input-group col-span-2">
-                <label className="field-lbl">New Patient Name *</label>
+                <label className="field-lbl">New Patient Name <span className="req-star">*</span></label>
                 <input 
                   type="text" 
+                  id="newPatientName"
                   value={formData.patientName} 
-                  onChange={(e) => setFormData({ ...formData, patientName: e.target.value })}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^A-Za-z\s.]/g, '');
+                    setFormData({ ...formData, patientName: val });
+                    clearFieldError('patientName');
+                  }}
                   placeholder="Enter First Name *"
-                  className="dense-input equal-input required-input"
+                  className={`dense-input equal-input required-input ${formErrors.patientName ? 'input-has-error' : ''}`}
                   required
                 />
+                <small id="newPatientNameText" className="field-error-text" style={{ color: '#A94442', display: formErrors.patientName ? 'block' : 'none' }}>
+                  {formErrors.patientName}
+                </small>
               </div>
 
               <div className="input-group col-span-1">
                 <label className="field-lbl">Last Name</label>
                 <input 
                   type="text" 
+                  id="lastName"
                   value={formData.lastName} 
-                  onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^A-Za-z\s.]/g, '');
+                    setFormData({ ...formData, lastName: val });
+                  }}
                   placeholder="Last Name"
                   className="dense-input equal-input"
                 />
               </div>
 
               <div className="input-group col-span-1">
-                <label className="field-lbl">Gender</label>
+                <label className="field-lbl">Gender <span className="req-star">*</span></label>
                 <select 
+                  id="genderVal"
                   value={formData.gender} 
-                  onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
-                  className="dense-select equal-input"
+                  onChange={(e) => {
+                    setFormData({ ...formData, gender: e.target.value });
+                    clearFieldError('gender');
+                  }}
+                  className={`dense-select equal-input ${formErrors.gender ? 'input-has-error' : ''}`}
                 >
                   <option value="Male">Male</option>
                   <option value="Female">Female</option>
                   <option value="Other">Other</option>
                 </select>
+                <small id="patientGenderText" className="field-error-text" style={{ color: '#A94442', display: formErrors.gender ? 'block' : 'none' }}>
+                  {formErrors.gender}
+                </small>
               </div>
 
               <div className="input-group col-span-1">
@@ -2142,7 +2286,7 @@ export function RegistrationForm({
 
               {/* Row 2: Age (1), Mobile (2), State (1), City (1), Village (1) = 6 cols */}
               <div className="input-group col-span-1">
-                <label className="field-lbl">Age (Y / M / D)</label>
+                <label className="field-lbl">Age (Y / M / D) <span className="req-star">*</span></label>
                 <div className="age-multi-input-box">
                   <div className="mini-age-wrap">
                     <input 
@@ -2151,7 +2295,7 @@ export function RegistrationForm({
                       value={formData.years} 
                       onChange={(e) => handleAgeChange('years', e.target.value)}
                       placeholder="Y" 
-                      className="dense-input age-val"
+                      className={`dense-input age-val ${formErrors.years ? 'input-has-error' : ''}`}
                       min="0"
                       max="130"
                     />
@@ -2184,28 +2328,44 @@ export function RegistrationForm({
                     <span className="age-unit">D</span>
                   </div>
                 </div>
+                <small id="ageText" className="field-error-text" style={{ color: '#A94442', display: formErrors.years ? 'block' : 'none' }}>
+                  {formErrors.years}
+                </small>
               </div>
 
               <div className="input-group col-span-2">
-                <label className="field-lbl">Mobile Number</label>
+                <label className="field-lbl">Mobile Number <span className="req-star">*</span></label>
                 <div className="phone-prefix-wrap">
                   <span className="flag-prefix">🇮🇳 +91</span>
                   <input 
                     type="tel" 
+                    id="pntMobNum"
                     value={formData.mobile} 
-                    onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                      setFormData({ ...formData, mobile: val });
+                      clearFieldError('mobile');
+                    }}
                     placeholder="10-digit mobile" 
-                    className="dense-input equal-input with-prefix"
+                    className={`dense-input equal-input with-prefix ${formErrors.mobile ? 'input-has-error' : ''}`}
+                    maxLength={10}
                   />
                 </div>
+                <small id="pntMobNumText" className="field-error-text" style={{ color: '#A94442', display: formErrors.mobile ? 'block' : 'none' }}>
+                  {formErrors.mobile}
+                </small>
               </div>
 
               <div className="input-group col-span-1">
-                <label className="field-lbl">State</label>
+                <label className="field-lbl">State <span className="req-star">*</span></label>
                 <select 
+                  id="state"
                   value={formData.state} 
-                  onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                  className="dense-select equal-input"
+                  onChange={(e) => {
+                    setFormData({ ...formData, state: e.target.value });
+                    clearFieldError('state');
+                  }}
+                  className={`dense-select equal-input ${formErrors.state ? 'input-has-error' : ''}`}
                 >
                   <option value="Andhra Pradesh">Andhra Pradesh</option>
                   <option value="Telangana">Telangana</option>
@@ -2214,14 +2374,21 @@ export function RegistrationForm({
                   <option value="Karnataka">Karnataka</option>
                   <option value="Maharashtra">Maharashtra</option>
                 </select>
+                <small id="stateText" className="field-error-text" style={{ color: '#A94442', display: formErrors.state ? 'block' : 'none' }}>
+                  {formErrors.state}
+                </small>
               </div>
 
               <div className="input-group col-span-1">
-                <label className="field-lbl">City</label>
+                <label className="field-lbl">City <span className="req-star">*</span></label>
                 <select 
+                  id="city"
                   value={formData.city} 
-                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  className="dense-select equal-input"
+                  onChange={(e) => {
+                    setFormData({ ...formData, city: e.target.value });
+                    clearFieldError('city');
+                  }}
+                  className={`dense-select equal-input ${formErrors.city ? 'input-has-error' : ''}`}
                 >
                   <option value="Visakhapatnam">Visakhapatnam</option>
                   <option value="Hyderabad">Hyderabad</option>
@@ -2229,6 +2396,9 @@ export function RegistrationForm({
                   <option value="Vijayawada">Vijayawada</option>
                   <option value="Guntur">Guntur</option>
                 </select>
+                <small id="cityText" className="field-error-text" style={{ color: '#A94442', display: formErrors.city ? 'block' : 'none' }}>
+                  {formErrors.city}
+                </small>
               </div>
 
               <div className="input-group col-span-1">
@@ -2284,17 +2454,24 @@ export function RegistrationForm({
               </div>
 
               <div className="input-group col-span-1">
-                <label className="field-lbl">Billing Category</label>
+                <label className="field-lbl">Billing Category <span className="req-star">*</span></label>
                 <select 
+                  id="patientCat"
                   value={formData.category} 
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="dense-select equal-input"
+                  onChange={(e) => {
+                    setFormData({ ...formData, category: e.target.value });
+                    clearFieldError('category');
+                  }}
+                  className={`dense-select equal-input ${formErrors.category ? 'input-has-error' : ''}`}
                 >
                   <option value="GENERAL - TRI">GENERAL - TRI</option>
                   <option value="VIP">VIP</option>
                   <option value="STAFF">STAFF</option>
                   <option value="BPL">BPL</option>
                 </select>
+                <small id="patientCatText" className="field-error-text" style={{ color: '#A94442', display: formErrors.category ? 'block' : 'none' }}>
+                  {formErrors.category}
+                </small>
               </div>
 
               <div className="input-group col-span-1">
@@ -2478,16 +2655,20 @@ export function RegistrationForm({
                   <div className="doctor-token-box-row">
                     <div className="dt-col dt-col-hospital">
                       <select 
+                        id="idLocation"
                         value={formData.location} 
                         onChange={(e) => handleHospitalChange(e.target.value)}
-                        className="dt-select"
-                        title="Step 1: Select Hospital"
+                        className={`dt-select ${formErrors.location ? 'input-has-error' : ''}`}
+                        title="Step 1: Select Hospital *"
                       >
-                        <option value="">-- Step 1: Select Hospital --</option>
+                        <option value="">-- Step 1: Select Hospital * --</option>
                         <option value="INDUS HEALTH CITY">INDUS HEALTH CITY</option>
                         <option value="INDUS SUPER SPECIALITY">INDUS SUPER SPECIALITY</option>
                         <option value="INDUS CLINIC & DIAGNOSTICS">INDUS CLINIC & DIAGNOSTICS</option>
                       </select>
+                      <small id="idLocationText" className="field-error-text" style={{ color: '#A94442', display: formErrors.location ? 'block' : 'none' }}>
+                        {formErrors.location}
+                      </small>
                     </div>
 
                     <div className="dt-col dt-col-date">
@@ -2515,10 +2696,11 @@ export function RegistrationForm({
                           const num = val ? parseInt(val, 10) : null;
                           setSelectedSlotToken(num);
                           setFormData(prev => ({ ...prev, token: val }));
+                          clearFieldError('token');
                         }}
-                        className="dt-input dt-token-val"
-                        title="Assigned Token Number - Click any slot pill below to select your wish token"
-                        placeholder="Token"
+                        className={`dt-input dt-token-val ${formErrors.token ? 'input-has-error' : ''}`}
+                        title="Assigned Token Number - Click any slot pill below to select your wish token *"
+                        placeholder="Token *"
                         style={formData.token ? {
                           backgroundColor: '#fef2f2',
                           borderColor: '#dc2626',
@@ -2526,6 +2708,9 @@ export function RegistrationForm({
                           fontWeight: '800'
                         } : {}}
                       />
+                      <small id="tokenValueText" className="field-error-text" style={{ color: '#A94442', display: formErrors.token ? 'block' : 'none' }}>
+                        {formErrors.token}
+                      </small>
                     </div>
                   </div>
 
@@ -2533,21 +2718,25 @@ export function RegistrationForm({
                   <div className="doctor-token-box-row">
                     <div className="dt-col dt-col-doctor">
                       <select 
+                        id="idDoctor"
                         value={formData.consultant} 
                         onChange={(e) => handleConsultantChange(e.target.value)}
-                        className={`dt-select dt-doctor-select ${formData.location && !formData.consultant ? 'ready-for-doc' : ''}`}
-                        title="Step 2: Select Consultant Doctor (Opens Tokens)"
+                        className={`dt-select dt-doctor-select ${formErrors.consultant ? 'input-has-error' : ''} ${formData.location && !formData.consultant ? 'ready-for-doc' : ''}`}
+                        title="Step 2: Select Consultant Doctor (Opens Tokens) *"
                         disabled={!formData.location}
                       >
                         <option value="">
                           {!formData.location 
-                            ? '-- 1st Select Hospital Above --' 
-                            : '-- Step 2: Select Consultant Doctor (Opens Tokens) --'}
+                            ? '-- 1st Select Hospital Above * --' 
+                            : '-- Step 2: Select Consultant Doctor (Opens Tokens) * --'}
                         </option>
                         {CONSULTANTS_ROSTER.map(doc => (
                           <option key={doc.code} value={doc.name}>{doc.name}</option>
                         ))}
                       </select>
+                      <small id="idDoctorText" className="field-error-text" style={{ color: '#A94442', display: formErrors.consultant ? 'block' : 'none' }}>
+                        {formErrors.consultant}
+                      </small>
                     </div>
 
                     <div className="dt-col dt-col-code">

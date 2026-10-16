@@ -2853,6 +2853,7 @@ function RegistrationForm({
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingPatient, setEditingPatient] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [formErrors, setFormErrors] = useState({});
 
   // Existing Patient Search in Tab 2 State (query-wise based on PatientMapper DetailedView)
   const [existingSearchTerm, setExistingSearchTerm] = useState('');
@@ -2999,6 +3000,16 @@ function RegistrationForm({
     setToast(msg);
     setTimeout(() => setToast(null), 4000);
   };
+  const clearFieldError = field => {
+    setFormErrors(prev => {
+      if (!prev || !prev[field]) return prev;
+      const next = {
+        ...prev
+      };
+      delete next[field];
+      return next;
+    });
+  };
 
   // Search Existing Patient query-wise from database
   const handleSearchExisting = async e => {
@@ -3103,6 +3114,7 @@ function RegistrationForm({
       specialization: '',
       token: ''
     }));
+    clearFieldError('location');
     setIsSlotsOpen(false); // Close tokens until doctor is chosen
     setSelectedSlotToken(null);
     if (hospitalName) {
@@ -3150,6 +3162,9 @@ function RegistrationForm({
       paymentAmt: total,
       token: String(chosenToken)
     }));
+    clearFieldError('consultant');
+    clearFieldError('token');
+    clearFieldError('location');
     showNotification(`✓ Doctor ${doc.name} (${doc.code}) selected — Token slots OPENED!`);
   };
 
@@ -3161,6 +3176,7 @@ function RegistrationForm({
       ...prev,
       token: String(tokenNum)
     }));
+    clearFieldError('token');
     showNotification(`✓ Wish Token #${tokenNum} Selected! Marked as OCCUPIED (RED) for Dr. ${formData.consultant}`);
   };
 
@@ -3174,6 +3190,7 @@ function RegistrationForm({
       ...prev,
       token: String(nextTokenNum)
     }));
+    clearFieldError('token');
     showNotification(`✓ Added Extra Emergency Token #${nextTokenNum} for Dr. ${formData.consultant}`);
   };
 
@@ -3197,8 +3214,10 @@ function RegistrationForm({
       months: ageParts.months,
       days: ageParts.days
     }));
+    clearFieldError('years');
   };
   const handleAgeChange = (field, val) => {
+    clearFieldError('years');
     setFormData(prev => {
       const numVal = val === '' ? '' : parseInt(val, 10);
       const updated = {
@@ -3275,10 +3294,113 @@ function RegistrationForm({
   // Handle Form Submission (Save New or Update Existing Patient - 100% Instant, Zero Freeze!)
   const handleSave = e => {
     if (e) e.preventDefault();
-    if (!formData.patientName.trim()) {
-      alert('Please enter Patient Name.');
+
+    // =========================================================================
+    // MANDATORY FIELD VALIDATION (Exact 1:1 match with backend-spring/New/patientQueue.jsp)
+    // Legacy Rules: lines 7936-7975 and lines 10914-11089
+    // =========================================================================
+    const errors = {};
+    const charRegex = /^[^-\s][a-zA-Z .]*$/; // Matches line 8229 in patientQueue.jsp
+    const numberRegex = /^[0-9]+$/; // Matches line 8230 in patientQueue.jsp
+    const mobNoRegx = /^[6-9]\d{9}$/; // Matches line 8233 in patientQueue.jsp
+
+    // 1. Patient Title: Mandatory (Line 10928: "Select Patient Title")
+    if (!formData.title || formData.title === '0' || formData.title.trim() === '') {
+      errors.title = "Select Patient Title";
+    }
+
+    // 2. Patient Name: Mandatory (Line 7936 & 10940: "Enter Patient Name" / "Enter valid Patient Name")
+    const pName = (formData.patientName || '').trim();
+    if (!pName) {
+      errors.patientName = "Enter Patient Name";
+    } else if (!charRegex.test(pName)) {
+      errors.patientName = "Enter valid Patient Name";
+    }
+
+    // 3. Gender: Mandatory (Line 7944 & 10950: "Select Patient Gender")
+    if (!formData.gender || formData.gender === '0' || formData.gender.trim() === '') {
+      errors.gender = "Select Patient Gender";
+    }
+
+    // 4. Age: Mandatory (Line 7948 & 10960: "Enter Patient Age" / "Enter valid Patient Age")
+    const ageVal = formData.years !== '' && formData.years !== null && formData.years !== undefined ? String(formData.years).trim() : '';
+    if (ageVal === '') {
+      errors.years = "Enter Patient Age";
+    } else if (!numberRegex.test(ageVal) || parseInt(ageVal, 10) < 0 || parseInt(ageVal, 10) > 130) {
+      errors.years = "Enter valid Patient Age";
+    }
+
+    // 5. Mobile Number: Mandatory (Line 7956, 8463, 10977: "Enter Mobile No." / "Enter valid Mobile Number")
+    const mobVal = (formData.mobile || '').trim();
+    if (!mobVal) {
+      errors.mobile = "Enter Mobile No.";
+    } else if (!mobNoRegx.test(mobVal)) {
+      errors.mobile = "Enter valid Mobile Number";
+    }
+
+    // 6. State: Mandatory (Line 7964: "Select State")
+    if (!formData.state || formData.state === '0' || formData.state.trim() === '') {
+      errors.state = "Select State";
+    }
+
+    // 7. City: Mandatory (Line 7968 & 11003: "Select City")
+    if (!formData.city || formData.city === '0' || formData.city.trim() === '') {
+      errors.city = "Select City";
+    }
+
+    // 8. Patient Category: Mandatory (Line 7960 & 11024: "Select Patient Category")
+    if (!formData.category || formData.category === '0' || formData.category.trim() === '') {
+      errors.category = "Select Patient Category";
+    }
+
+    // 9. Hospital Location: Mandatory (Line 11033: "Select Location")
+    if (!formData.location || formData.location === '0' || formData.location.trim() === '') {
+      errors.location = "Select Location";
+    }
+
+    // 10. Consultant Doctor: Mandatory (Line 11037: "Select Consultant")
+    if (!formData.consultant || formData.consultant === '0' || formData.consultant.trim() === '') {
+      errors.consultant = "Select Consultant";
+    }
+
+    // 11. Token: Mandatory (Line 11049: "Select Token")
+    const tokenVal = formData.token !== '' && formData.token !== null && formData.token !== undefined ? String(formData.token).trim() : '';
+    if (!tokenVal || tokenVal === '0') {
+      errors.token = "Select Token";
+    }
+
+    // If any validation error exists, halt save, highlight errors & focus first invalid field
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      const firstKey = Object.keys(errors)[0];
+      const firstMsg = errors[firstKey];
+      showNotification(`⚠️ ${firstMsg}`);
+      const elementIdMap = {
+        title: 'patientTitle',
+        patientName: 'newPatientName',
+        gender: 'genderVal',
+        years: 'age',
+        mobile: 'pntMobNum',
+        state: 'state',
+        city: 'city',
+        category: 'patientCat',
+        location: 'idLocation',
+        consultant: 'idDoctor',
+        token: 'tokenValue'
+      };
+      const targetEl = document.getElementById(elementIdMap[firstKey]);
+      if (targetEl) {
+        targetEl.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+        try {
+          targetEl.focus();
+        } catch (err) {}
+      }
       return;
     }
+    setFormErrors({});
     const fullName = `${formData.title} ${formData.patientName} ${formData.lastName}`.trim().toUpperCase();
 
     // -------------------------------------------------------------
@@ -4133,13 +4255,19 @@ function RegistrationForm({
     className: "input-group col-span-1"
   }, /*#__PURE__*/React.createElement("label", {
     className: "field-lbl"
-  }, "Title"), /*#__PURE__*/React.createElement("select", {
+  }, "Title ", /*#__PURE__*/React.createElement("span", {
+    className: "req-star"
+  }, "*")), /*#__PURE__*/React.createElement("select", {
+    id: "patientTitle",
     value: formData.title,
-    onChange: e => setFormData({
-      ...formData,
-      title: e.target.value
-    }),
-    className: "dense-select equal-input"
+    onChange: e => {
+      setFormData({
+        ...formData,
+        title: e.target.value
+      });
+      clearFieldError('title');
+    },
+    className: `dense-select equal-input ${formErrors.title ? 'input-has-error' : ''}`
   }, /*#__PURE__*/React.createElement("option", {
     value: "Mr."
   }, "Mr."), /*#__PURE__*/React.createElement("option", {
@@ -4152,51 +4280,89 @@ function RegistrationForm({
     value: "Miss"
   }, "Miss"), /*#__PURE__*/React.createElement("option", {
     value: "Dr."
-  }, "Dr."))), /*#__PURE__*/React.createElement("div", {
+  }, "Dr.")), /*#__PURE__*/React.createElement("small", {
+    id: "patientTitleText",
+    className: "field-error-text",
+    style: {
+      color: '#A94442',
+      display: formErrors.title ? 'block' : 'none'
+    }
+  }, formErrors.title)), /*#__PURE__*/React.createElement("div", {
     className: "input-group col-span-2"
   }, /*#__PURE__*/React.createElement("label", {
     className: "field-lbl"
-  }, "New Patient Name *"), /*#__PURE__*/React.createElement("input", {
+  }, "New Patient Name ", /*#__PURE__*/React.createElement("span", {
+    className: "req-star"
+  }, "*")), /*#__PURE__*/React.createElement("input", {
     type: "text",
+    id: "newPatientName",
     value: formData.patientName,
-    onChange: e => setFormData({
-      ...formData,
-      patientName: e.target.value
-    }),
+    onChange: e => {
+      const val = e.target.value.replace(/[^A-Za-z\s.]/g, '');
+      setFormData({
+        ...formData,
+        patientName: val
+      });
+      clearFieldError('patientName');
+    },
     placeholder: "Enter First Name *",
-    className: "dense-input equal-input required-input",
+    className: `dense-input equal-input required-input ${formErrors.patientName ? 'input-has-error' : ''}`,
     required: true
-  })), /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement("small", {
+    id: "newPatientNameText",
+    className: "field-error-text",
+    style: {
+      color: '#A94442',
+      display: formErrors.patientName ? 'block' : 'none'
+    }
+  }, formErrors.patientName)), /*#__PURE__*/React.createElement("div", {
     className: "input-group col-span-1"
   }, /*#__PURE__*/React.createElement("label", {
     className: "field-lbl"
   }, "Last Name"), /*#__PURE__*/React.createElement("input", {
     type: "text",
+    id: "lastName",
     value: formData.lastName,
-    onChange: e => setFormData({
-      ...formData,
-      lastName: e.target.value
-    }),
+    onChange: e => {
+      const val = e.target.value.replace(/[^A-Za-z\s.]/g, '');
+      setFormData({
+        ...formData,
+        lastName: val
+      });
+    },
     placeholder: "Last Name",
     className: "dense-input equal-input"
   })), /*#__PURE__*/React.createElement("div", {
     className: "input-group col-span-1"
   }, /*#__PURE__*/React.createElement("label", {
     className: "field-lbl"
-  }, "Gender"), /*#__PURE__*/React.createElement("select", {
+  }, "Gender ", /*#__PURE__*/React.createElement("span", {
+    className: "req-star"
+  }, "*")), /*#__PURE__*/React.createElement("select", {
+    id: "genderVal",
     value: formData.gender,
-    onChange: e => setFormData({
-      ...formData,
-      gender: e.target.value
-    }),
-    className: "dense-select equal-input"
+    onChange: e => {
+      setFormData({
+        ...formData,
+        gender: e.target.value
+      });
+      clearFieldError('gender');
+    },
+    className: `dense-select equal-input ${formErrors.gender ? 'input-has-error' : ''}`
   }, /*#__PURE__*/React.createElement("option", {
     value: "Male"
   }, "Male"), /*#__PURE__*/React.createElement("option", {
     value: "Female"
   }, "Female"), /*#__PURE__*/React.createElement("option", {
     value: "Other"
-  }, "Other"))), /*#__PURE__*/React.createElement("div", {
+  }, "Other")), /*#__PURE__*/React.createElement("small", {
+    id: "patientGenderText",
+    className: "field-error-text",
+    style: {
+      color: '#A94442',
+      display: formErrors.gender ? 'block' : 'none'
+    }
+  }, formErrors.gender)), /*#__PURE__*/React.createElement("div", {
     className: "input-group col-span-1"
   }, /*#__PURE__*/React.createElement("label", {
     className: "field-lbl"
@@ -4214,7 +4380,9 @@ function RegistrationForm({
     className: "input-group col-span-1"
   }, /*#__PURE__*/React.createElement("label", {
     className: "field-lbl"
-  }, "Age (Y / M / D)"), /*#__PURE__*/React.createElement("div", {
+  }, "Age (Y / M / D) ", /*#__PURE__*/React.createElement("span", {
+    className: "req-star"
+  }, "*")), /*#__PURE__*/React.createElement("div", {
     className: "age-multi-input-box"
   }, /*#__PURE__*/React.createElement("div", {
     className: "mini-age-wrap"
@@ -4224,7 +4392,7 @@ function RegistrationForm({
     value: formData.years,
     onChange: e => handleAgeChange('years', e.target.value),
     placeholder: "Y",
-    className: "dense-input age-val",
+    className: `dense-input age-val ${formErrors.years ? 'input-has-error' : ''}`,
     min: "0",
     max: "130"
   }), /*#__PURE__*/React.createElement("span", {
@@ -4255,34 +4423,62 @@ function RegistrationForm({
     max: "31"
   }), /*#__PURE__*/React.createElement("span", {
     className: "age-unit"
-  }, "D")))), /*#__PURE__*/React.createElement("div", {
+  }, "D"))), /*#__PURE__*/React.createElement("small", {
+    id: "ageText",
+    className: "field-error-text",
+    style: {
+      color: '#A94442',
+      display: formErrors.years ? 'block' : 'none'
+    }
+  }, formErrors.years)), /*#__PURE__*/React.createElement("div", {
     className: "input-group col-span-2"
   }, /*#__PURE__*/React.createElement("label", {
     className: "field-lbl"
-  }, "Mobile Number"), /*#__PURE__*/React.createElement("div", {
+  }, "Mobile Number ", /*#__PURE__*/React.createElement("span", {
+    className: "req-star"
+  }, "*")), /*#__PURE__*/React.createElement("div", {
     className: "phone-prefix-wrap"
   }, /*#__PURE__*/React.createElement("span", {
     className: "flag-prefix"
   }, "\uD83C\uDDEE\uD83C\uDDF3 +91"), /*#__PURE__*/React.createElement("input", {
     type: "tel",
+    id: "pntMobNum",
     value: formData.mobile,
-    onChange: e => setFormData({
-      ...formData,
-      mobile: e.target.value
-    }),
+    onChange: e => {
+      const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+      setFormData({
+        ...formData,
+        mobile: val
+      });
+      clearFieldError('mobile');
+    },
     placeholder: "10-digit mobile",
-    className: "dense-input equal-input with-prefix"
-  }))), /*#__PURE__*/React.createElement("div", {
+    className: `dense-input equal-input with-prefix ${formErrors.mobile ? 'input-has-error' : ''}`,
+    maxLength: 10
+  })), /*#__PURE__*/React.createElement("small", {
+    id: "pntMobNumText",
+    className: "field-error-text",
+    style: {
+      color: '#A94442',
+      display: formErrors.mobile ? 'block' : 'none'
+    }
+  }, formErrors.mobile)), /*#__PURE__*/React.createElement("div", {
     className: "input-group col-span-1"
   }, /*#__PURE__*/React.createElement("label", {
     className: "field-lbl"
-  }, "State"), /*#__PURE__*/React.createElement("select", {
+  }, "State ", /*#__PURE__*/React.createElement("span", {
+    className: "req-star"
+  }, "*")), /*#__PURE__*/React.createElement("select", {
+    id: "state",
     value: formData.state,
-    onChange: e => setFormData({
-      ...formData,
-      state: e.target.value
-    }),
-    className: "dense-select equal-input"
+    onChange: e => {
+      setFormData({
+        ...formData,
+        state: e.target.value
+      });
+      clearFieldError('state');
+    },
+    className: `dense-select equal-input ${formErrors.state ? 'input-has-error' : ''}`
   }, /*#__PURE__*/React.createElement("option", {
     value: "Andhra Pradesh"
   }, "Andhra Pradesh"), /*#__PURE__*/React.createElement("option", {
@@ -4295,17 +4491,30 @@ function RegistrationForm({
     value: "Karnataka"
   }, "Karnataka"), /*#__PURE__*/React.createElement("option", {
     value: "Maharashtra"
-  }, "Maharashtra"))), /*#__PURE__*/React.createElement("div", {
+  }, "Maharashtra")), /*#__PURE__*/React.createElement("small", {
+    id: "stateText",
+    className: "field-error-text",
+    style: {
+      color: '#A94442',
+      display: formErrors.state ? 'block' : 'none'
+    }
+  }, formErrors.state)), /*#__PURE__*/React.createElement("div", {
     className: "input-group col-span-1"
   }, /*#__PURE__*/React.createElement("label", {
     className: "field-lbl"
-  }, "City"), /*#__PURE__*/React.createElement("select", {
+  }, "City ", /*#__PURE__*/React.createElement("span", {
+    className: "req-star"
+  }, "*")), /*#__PURE__*/React.createElement("select", {
+    id: "city",
     value: formData.city,
-    onChange: e => setFormData({
-      ...formData,
-      city: e.target.value
-    }),
-    className: "dense-select equal-input"
+    onChange: e => {
+      setFormData({
+        ...formData,
+        city: e.target.value
+      });
+      clearFieldError('city');
+    },
+    className: `dense-select equal-input ${formErrors.city ? 'input-has-error' : ''}`
   }, /*#__PURE__*/React.createElement("option", {
     value: "Visakhapatnam"
   }, "Visakhapatnam"), /*#__PURE__*/React.createElement("option", {
@@ -4316,7 +4525,14 @@ function RegistrationForm({
     value: "Vijayawada"
   }, "Vijayawada"), /*#__PURE__*/React.createElement("option", {
     value: "Guntur"
-  }, "Guntur"))), /*#__PURE__*/React.createElement("div", {
+  }, "Guntur")), /*#__PURE__*/React.createElement("small", {
+    id: "cityText",
+    className: "field-error-text",
+    style: {
+      color: '#A94442',
+      display: formErrors.city ? 'block' : 'none'
+    }
+  }, formErrors.city)), /*#__PURE__*/React.createElement("div", {
     className: "input-group col-span-1"
   }, /*#__PURE__*/React.createElement("label", {
     className: "field-lbl"
@@ -4386,13 +4602,19 @@ function RegistrationForm({
     className: "input-group col-span-1"
   }, /*#__PURE__*/React.createElement("label", {
     className: "field-lbl"
-  }, "Billing Category"), /*#__PURE__*/React.createElement("select", {
+  }, "Billing Category ", /*#__PURE__*/React.createElement("span", {
+    className: "req-star"
+  }, "*")), /*#__PURE__*/React.createElement("select", {
+    id: "patientCat",
     value: formData.category,
-    onChange: e => setFormData({
-      ...formData,
-      category: e.target.value
-    }),
-    className: "dense-select equal-input"
+    onChange: e => {
+      setFormData({
+        ...formData,
+        category: e.target.value
+      });
+      clearFieldError('category');
+    },
+    className: `dense-select equal-input ${formErrors.category ? 'input-has-error' : ''}`
   }, /*#__PURE__*/React.createElement("option", {
     value: "GENERAL - TRI"
   }, "GENERAL - TRI"), /*#__PURE__*/React.createElement("option", {
@@ -4401,7 +4623,14 @@ function RegistrationForm({
     value: "STAFF"
   }, "STAFF"), /*#__PURE__*/React.createElement("option", {
     value: "BPL"
-  }, "BPL"))), /*#__PURE__*/React.createElement("div", {
+  }, "BPL")), /*#__PURE__*/React.createElement("small", {
+    id: "patientCatText",
+    className: "field-error-text",
+    style: {
+      color: '#A94442',
+      display: formErrors.category ? 'block' : 'none'
+    }
+  }, formErrors.category)), /*#__PURE__*/React.createElement("div", {
     className: "input-group col-span-1"
   }, /*#__PURE__*/React.createElement("label", {
     className: "field-lbl"
@@ -4619,19 +4848,27 @@ function RegistrationForm({
   }, /*#__PURE__*/React.createElement("div", {
     className: "dt-col dt-col-hospital"
   }, /*#__PURE__*/React.createElement("select", {
+    id: "idLocation",
     value: formData.location,
     onChange: e => handleHospitalChange(e.target.value),
-    className: "dt-select",
-    title: "Step 1: Select Hospital"
+    className: `dt-select ${formErrors.location ? 'input-has-error' : ''}`,
+    title: "Step 1: Select Hospital *"
   }, /*#__PURE__*/React.createElement("option", {
     value: ""
-  }, "-- Step 1: Select Hospital --"), /*#__PURE__*/React.createElement("option", {
+  }, "-- Step 1: Select Hospital * --"), /*#__PURE__*/React.createElement("option", {
     value: "INDUS HEALTH CITY"
   }, "INDUS HEALTH CITY"), /*#__PURE__*/React.createElement("option", {
     value: "INDUS SUPER SPECIALITY"
   }, "INDUS SUPER SPECIALITY"), /*#__PURE__*/React.createElement("option", {
     value: "INDUS CLINIC & DIAGNOSTICS"
-  }, "INDUS CLINIC & DIAGNOSTICS"))), /*#__PURE__*/React.createElement("div", {
+  }, "INDUS CLINIC & DIAGNOSTICS")), /*#__PURE__*/React.createElement("small", {
+    id: "idLocationText",
+    className: "field-error-text",
+    style: {
+      color: '#A94442',
+      display: formErrors.location ? 'block' : 'none'
+    }
+  }, formErrors.location)), /*#__PURE__*/React.createElement("div", {
     className: "dt-col dt-col-date"
   }, /*#__PURE__*/React.createElement(CustomDatePicker, {
     id: "scheduleDt",
@@ -4661,32 +4898,48 @@ function RegistrationForm({
         ...prev,
         token: val
       }));
+      clearFieldError('token');
     },
-    className: "dt-input dt-token-val",
-    title: "Assigned Token Number - Click any slot pill below to select your wish token",
-    placeholder: "Token",
+    className: `dt-input dt-token-val ${formErrors.token ? 'input-has-error' : ''}`,
+    title: "Assigned Token Number - Click any slot pill below to select your wish token *",
+    placeholder: "Token *",
     style: formData.token ? {
       backgroundColor: '#fef2f2',
       borderColor: '#dc2626',
       color: '#b91c1c',
       fontWeight: '800'
     } : {}
-  }))), /*#__PURE__*/React.createElement("div", {
+  }), /*#__PURE__*/React.createElement("small", {
+    id: "tokenValueText",
+    className: "field-error-text",
+    style: {
+      color: '#A94442',
+      display: formErrors.token ? 'block' : 'none'
+    }
+  }, formErrors.token))), /*#__PURE__*/React.createElement("div", {
     className: "doctor-token-box-row"
   }, /*#__PURE__*/React.createElement("div", {
     className: "dt-col dt-col-doctor"
   }, /*#__PURE__*/React.createElement("select", {
+    id: "idDoctor",
     value: formData.consultant,
     onChange: e => handleConsultantChange(e.target.value),
-    className: `dt-select dt-doctor-select ${formData.location && !formData.consultant ? 'ready-for-doc' : ''}`,
-    title: "Step 2: Select Consultant Doctor (Opens Tokens)",
+    className: `dt-select dt-doctor-select ${formErrors.consultant ? 'input-has-error' : ''} ${formData.location && !formData.consultant ? 'ready-for-doc' : ''}`,
+    title: "Step 2: Select Consultant Doctor (Opens Tokens) *",
     disabled: !formData.location
   }, /*#__PURE__*/React.createElement("option", {
     value: ""
-  }, !formData.location ? '-- 1st Select Hospital Above --' : '-- Step 2: Select Consultant Doctor (Opens Tokens) --'), CONSULTANTS_ROSTER.map(doc => /*#__PURE__*/React.createElement("option", {
+  }, !formData.location ? '-- 1st Select Hospital Above * --' : '-- Step 2: Select Consultant Doctor (Opens Tokens) * --'), CONSULTANTS_ROSTER.map(doc => /*#__PURE__*/React.createElement("option", {
     key: doc.code,
     value: doc.name
-  }, doc.name)))), /*#__PURE__*/React.createElement("div", {
+  }, doc.name))), /*#__PURE__*/React.createElement("small", {
+    id: "idDoctorText",
+    className: "field-error-text",
+    style: {
+      color: '#A94442',
+      display: formErrors.consultant ? 'block' : 'none'
+    }
+  }, formErrors.consultant)), /*#__PURE__*/React.createElement("div", {
     className: "dt-col dt-col-code"
   }, /*#__PURE__*/React.createElement("input", {
     type: "text",

@@ -63,6 +63,10 @@ ensureBackendRunning();
 
 // Auto-Sync from GitHub (checks every 60 seconds if code was pushed from another system)
 function syncFromGitHub(callback) {
+  if (process.env.RENDER || process.env.RENDER_SERVICE_ID) {
+    if (callback) callback({ success: true, message: 'Running on Render: automatic deployment managed via GitHub webhook.' });
+    return;
+  }
   const gitCmd = fs.existsSync(path.join(ROOT, 'tools', 'git', 'cmd', 'git.exe'))
     ? path.join(ROOT, 'tools', 'git', 'cmd', 'git.exe')
     : 'git';

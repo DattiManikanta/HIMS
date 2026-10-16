@@ -1,9 +1,27 @@
 const fs = require('fs');
 const path = require('path');
 
-// Load Babel
+// Load Babel safely
 const babelPath = path.join(__dirname, 'babel.cjs');
-const Babel = require(babelPath);
+let Babel = null;
+if (fs.existsSync(babelPath)) {
+  try {
+    Babel = require(babelPath);
+  } catch (err) {
+    console.warn("Notice: Could not require babel.cjs:", err.message);
+  }
+}
+
+const distBundle = path.join(__dirname, '..', 'dist', 'bundle.js');
+if (!Babel) {
+  if (fs.existsSync(distBundle)) {
+    console.log("✓ Pre-compiled dist/bundle.js is present. Skipping transpilation on remote build.");
+    process.exit(0);
+  } else {
+    console.error("Error: tools/babel.cjs not found and dist/bundle.js does not exist!");
+    process.exit(1);
+  }
+}
 
 console.log("Compiling INDUS HEALTH CITY Hospital HIMS components into a standalone bundle...");
 

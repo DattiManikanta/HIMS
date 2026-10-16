@@ -18,6 +18,9 @@ WORKDIR /app
 COPY backend-spring/pom.xml ./backend-spring/
 COPY package.json ./
 
+# Set memory limit for Maven on low-RAM cloud instances
+ENV MAVEN_OPTS="-Xmx384m -XX:+UseSerialGC"
+
 # Cache Maven dependencies
 RUN cd backend-spring && mvn dependency:go-offline -B || true
 

@@ -102,7 +102,19 @@ public class PatientController {
             "    50.0 AS regFee, " +
             "    850.0 AS consFee, " +
             "    900.0 AS totAmt, " +
-            "    900.0 AS amtRecd " +
+            "    900.0 AS amtRecd, " +
+            "    50.0 AS regCash, " +
+            "    50.0 AS regAmoCash, " +
+            "    0.0 AS regCredit, " +
+            "    0.0 AS regAmoCard, " +
+            "    0.0 AS regUpi, " +
+            "    0.0 AS regAmoUpi, " +
+            "    850.0 AS conCash, " +
+            "    850.0 AS conAmoCash, " +
+            "    0.0 AS conCredit, " +
+            "    0.0 AS conAmoCard, " +
+            "    0.0 AS conUpi, " +
+            "    0.0 AS conAmoUpi " +
             "FROM at_pr_patient p " +
             "JOIN at_pr_appt a ON p.patient_id = a.patient_id " +
             "LEFT JOIN at_hr_emp e ON a.emp_id = e.emp_id " +
@@ -624,6 +636,47 @@ public class PatientController {
             try {
                 List<Map<String, Object>> rows = jdbcTemplate.queryForList(PATIENT_QUEUE_QUERY);
                 if (rows != null && !rows.isEmpty()) {
+                    // Normalize cash and fee columns for all rows
+                    for (Map<String, Object> r : rows) {
+                        double regF = parseDouble(r.get("regFee"), 50.0);
+                        double consF = parseDouble(r.get("consFee"), 850.0);
+                        if (r.get("regCash") == null && r.get("regAmoCash") == null) {
+                            r.put("regCash", regF);
+                            r.put("regAmoCash", regF);
+                        }
+                        if (r.get("conCash") == null && r.get("conAmoCash") == null) {
+                            r.put("conCash", consF);
+                            r.put("conAmoCash", consF);
+                        }
+                        if (r.get("regCredit") == null) r.put("regCredit", 0.0);
+                        if (r.get("regUpi") == null) r.put("regUpi", 0.0);
+                        if (r.get("conCredit") == null) r.put("conCredit", 0.0);
+                        if (r.get("conUpi") == null) r.put("conUpi", 0.0);
+                    }
+
+                    // Prepend any newly registered patients in local fallbackStorage that haven't synced to MySQL
+                    Map<String, Object> fallback = fallbackStorageService.loadFallbackData();
+                    @SuppressWarnings("unchecked")
+                    List<Map<String, Object>> fallbackQueue = (List<Map<String, Object>>) fallback.get("patientQueue");
+                    if (fallbackQueue != null && !fallbackQueue.isEmpty()) {
+                        Set<String> dbUmrs = new HashSet<>();
+                        for (Map<String, Object> r : rows) {
+                            String u = str(r.get("umrNo"));
+                            if (!u.isEmpty()) dbUmrs.add(u.toUpperCase());
+                        }
+                        List<Map<String, Object>> unpersisted = new ArrayList<>();
+                        for (Map<String, Object> f : fallbackQueue) {
+                            String fu = str(f.get("umrNo"));
+                            if (!fu.isEmpty() && !dbUmrs.contains(fu.toUpperCase())) {
+                                unpersisted.add(f);
+                            }
+                        }
+                        if (!unpersisted.isEmpty()) {
+                            unpersisted.addAll(rows);
+                            return ResponseEntity.ok(unpersisted);
+                        }
+                    }
+
                     return ResponseEntity.ok(rows);
                 }
             } catch (Exception e) {
@@ -654,22 +707,26 @@ public class PatientController {
                     row.put("apptDt", a.getScheduleDt());
                     row.put("billStatus", "17".equals(a.getBillStatus()) ? "Paid" : "Pending");
                     row.put("statusInfo", "159".equals(a.getApptStatusId()) ? "Waiting" : "Visited");
-                    row.put("regFee", a.getRegFee());
-                    row.put("consFee", a.getConsFee());
-                    row.put("totAmt", a.getTotAmt());
-                    row.put("amtRecd", a.getAmtRecd());
-                    row.put("regAmoCash", a.getRegCash());
-                    row.put("regCash", a.getRegCash());
-                    row.put("regAmoCard", a.getRegCard());
-                    row.put("regCredit", a.getRegCard());
-                    row.put("regAmoUpi", a.getRegUpi());
-                    row.put("regUpi", a.getRegUpi());
-                    row.put("conAmoCash", a.getConCash());
-                    row.put("conCash", a.getConCash());
-                    row.put("conAmoCard", a.getConCard());
-                    row.put("conCredit", a.getConCard());
-                    row.put("conAmoUpi", a.getConUpi());
-                    row.put("conUpi", a.getConUpi());
+                    double rf = a.getRegFee() != null ? a.getRegFee() : 50.0;
+                    double cf = a.getConsFee() != null ? a.getConsFee() : 850.0;
+                    row.put("regFee", rf);
+                    row.put("consFee", cf);
+                    row.put("totAmt", a.getTotAmt() != null ? a.getTotAmt() : (rf + cf));
+                    row.put("amtRecd", a.getAmtRecd() != null ? a.getAmtRecd() : (rf + cf));
+                    double rc = a.getRegCash() != null && a.getRegCash() > 0 ? a.getRegCash() : rf;
+                    row.put("regAmoCash", rc);
+                    row.put("regCash", rc);
+                    row.put("regAmoCard", a.getRegCard() != null ? a.getRegCard() : 0.0);
+                    row.put("regCredit", a.getRegCard() != null ? a.getRegCard() : 0.0);
+                    row.put("regAmoUpi", a.getRegUpi() != null ? a.getRegUpi() : 0.0);
+                    row.put("regUpi", a.getRegUpi() != null ? a.getRegUpi() : 0.0);
+                    double cc = a.getConCash() != null && a.getConCash() > 0 ? a.getConCash() : cf;
+                    row.put("conAmoCash", cc);
+                    row.put("conCash", cc);
+                    row.put("conAmoCard", a.getConCard() != null ? a.getConCard() : 0.0);
+                    row.put("conCredit", a.getConCard() != null ? a.getConCard() : 0.0);
+                    row.put("conAmoUpi", a.getConUpi() != null ? a.getConUpi() : 0.0);
+                    row.put("conUpi", a.getConUpi() != null ? a.getConUpi() : 0.0);
 
                     // Get patient details
                     if (a.getPatientId() != null) {

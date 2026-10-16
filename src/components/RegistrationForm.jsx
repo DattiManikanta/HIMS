@@ -1009,9 +1009,40 @@ export function RegistrationForm({
       if (serverData && serverData.length > 0) {
         setAppointments(prev => {
           const cleanedServer = sanitizeAppointments(serverData);
-          const serverUmrs = new Set(cleanedServer.map(p => p.umrNo || p.patientCode).filter(Boolean));
-          const localOnly = sanitizeAppointments(prev).filter(p => p.umrNo && !serverUmrs.has(p.umrNo));
-          const merged = [...localOnly, ...cleanedServer];
+          const localMap = new Map();
+          sanitizeAppointments(prev).forEach(p => {
+            if (p && p.umrNo) localMap.set(String(p.umrNo).toUpperCase(), p);
+          });
+
+          const normalizedServer = cleanedServer.map(srv => {
+            const u = String(srv.umrNo || srv.patientCode || '').toUpperCase();
+            const local = localMap.get(u);
+            const regFeeVal = Number(srv.regFee) || 50;
+            const consFeeVal = Number(srv.consFee) || 850;
+
+            const finalRegCash = local?.regCash != null ? local.regCash : (srv.regCash != null ? srv.regCash : (srv.regAmoCash != null ? srv.regAmoCash : regFeeVal));
+            const finalRegCredit = local?.regCredit != null ? local.regCredit : (srv.regCredit != null ? srv.regCredit : (srv.regAmoCard != null ? srv.regAmoCard : 0));
+            const finalRegUpi = local?.regUpi != null ? local.regUpi : (srv.regUpi != null ? srv.regUpi : (srv.regAmoUpi != null ? srv.regAmoUpi : 0));
+
+            const finalConCash = local?.conCash != null ? local.conCash : (srv.conCash != null ? srv.conCash : (srv.conAmoCash != null ? srv.conAmoCash : consFeeVal));
+            const finalConCredit = local?.conCredit != null ? local.conCredit : (srv.conCredit != null ? srv.conCredit : (srv.conAmoCard != null ? srv.conAmoCard : 0));
+            const finalConUpi = local?.conUpi != null ? local.conUpi : (srv.conUpi != null ? srv.conUpi : (srv.conAmoUpi != null ? srv.conAmoUpi : 0));
+
+            return {
+              ...srv,
+              umrNo: srv.umrNo || srv.patientCode,
+              regCash: finalRegCash,
+              regCredit: finalRegCredit,
+              regUpi: finalRegUpi,
+              conCash: finalConCash,
+              conCredit: finalConCredit,
+              conUpi: finalConUpi,
+            };
+          });
+
+          const serverUmrs = new Set(normalizedServer.map(p => (p.umrNo || p.patientCode || '').toUpperCase()).filter(Boolean));
+          const localOnly = sanitizeAppointments(prev).filter(p => p.umrNo && !serverUmrs.has(p.umrNo.toUpperCase()));
+          const merged = [...localOnly, ...normalizedServer];
           try {
             localStorage.setItem('atri_hims_saved_appointments', JSON.stringify(merged));
           } catch (e) {}
@@ -1843,11 +1874,14 @@ export function RegistrationForm({
     let finalRegCash = 0, finalRegCard = 0, finalRegUpi = 0;
     let finalConCash = 0, finalConCard = 0, finalConUpi = 0;
 
+    const regFeeVal = Number(formData.regFinalAmt) || Number(formData.regFee) || 50;
+    const consFeeVal = Number(formData.consFinalAmt) || Number(formData.consFee) || (Number(formData.totalBillAmt || 1050) - regFeeVal);
+
     let paymentModeStr = 'Cash';
     if (paymentRows.length > 0) {
       paymentModeStr = paymentRows.map(r => r.modeLabel).join(', ');
       const totalPaid = paymentRows.reduce((s, r) => s + r.amount, 0);
-      const regRatio = totalPaid > 0 ? Math.min(1, (formData.regFinalAmt || 50) / totalPaid) : 0;
+      const regRatio = totalPaid > 0 ? Math.min(1, regFeeVal / totalPaid) : 0;
       paymentRows.forEach(r => {
         const regPart = r.amount * regRatio;
         const conPart = r.amount - regPart;
@@ -1863,19 +1897,18 @@ export function RegistrationForm({
         }
       });
     } else {
-      const singleAmt = parseFloat(payAmount) || formData.totalBillAmt || 1050;
       if (payMode === '276') {
         paymentModeStr = 'CARD';
-        finalRegCard = formData.regFinalAmt || 50;
-        finalConCard = formData.consFinalAmt || (singleAmt - finalRegCard);
+        finalRegCard = regFeeVal;
+        finalConCard = consFeeVal;
       } else if (payMode === '277') {
         paymentModeStr = 'UPI';
-        finalRegUpi = formData.regFinalAmt || 50;
-        finalConUpi = formData.consFinalAmt || (singleAmt - finalRegUpi);
+        finalRegUpi = regFeeVal;
+        finalConUpi = consFeeVal;
       } else {
         paymentModeStr = 'Cash';
-        finalRegCash = formData.regFinalAmt || 50;
-        finalConCash = formData.consFinalAmt || (singleAmt - finalRegCash);
+        finalRegCash = regFeeVal;
+        finalConCash = consFeeVal;
       }
     }
 
@@ -2488,12 +2521,12 @@ export function RegistrationForm({
                         👍
                       </button>
                     </td>
-                    <td>{row.regCash}</td>
-                    <td>{row.regCredit}</td>
-                    <td>{row.regUpi}</td>
-                    <td><strong>{row.conCash}</strong></td>
-                    <td>{row.conCredit}</td>
-                    <td>{row.conUpi}</td>
+                    <td>{row.regCash != null ? row.regCash : (row.regAmoCash != null ? row.regAmoCash : 50)}</td>
+                    <td>{row.regCredit != null ? row.regCredit : (row.regAmoCard != null ? row.regAmoCard : 0)}</td>
+                    <td>{row.regUpi != null ? row.regUpi : (row.regAmoUpi != null ? row.regAmoUpi : 0)}</td>
+                    <td><strong>{row.conCash != null ? row.conCash : (row.conAmoCash != null ? row.conAmoCash : (row.consFee != null ? row.consFee : 850))}</strong></td>
+                    <td>{row.conCredit != null ? row.conCredit : (row.conAmoCard != null ? row.conAmoCard : 0)}</td>
+                    <td>{row.conUpi != null ? row.conUpi : (row.conAmoUpi != null ? row.conAmoUpi : 0)}</td>
                     <td className="cell-action-icon" style={{ position: 'sticky', right: 0, background: '#ffffff', zIndex: 2, display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center', minWidth: '70px', boxShadow: '-3px 0 6px rgba(0,0,0,0.06)' }}>
                       <button 
                         className="btn-icon orange-edit" 
@@ -3775,42 +3808,49 @@ export function RegistrationForm({
               </div>
             </div>
 
-            <div className="print-body">
-              <div className="print-grid">
-                <div><span>UMR No:</span> <strong>{printModal.record.umrNo}</strong></div>
-                <div><span>Token:</span> <strong>{printModal.record.token}</strong></div>
-                <div><span>Patient Name:</span> <strong>{printModal.record.patientName}</strong></div>
-                <div><span>Age / Gender:</span> <strong>{printModal.record.genderAge}</strong></div>
-                <div><span>Consultant:</span> <strong>{printModal.record.consultant}</strong></div>
-                <div><span>Date:</span> <strong>{printModal.record.appointmentDate}</strong></div>
-              </div>
+            {(() => {
+              const rec = printModal.record || printModal.patient || {};
+              const regCashVal = rec.regCash != null ? rec.regCash : (rec.regAmoCash != null ? rec.regAmoCash : 50);
+              const conCashVal = rec.conCash != null ? rec.conCash : (rec.conAmoCash != null ? rec.conAmoCash : (rec.consFee != null ? rec.consFee : 850));
+              return (
+                <div className="print-body">
+                  <div className="print-grid">
+                    <div><span>UMR No:</span> <strong>{rec.umrNo}</strong></div>
+                    <div><span>Token:</span> <strong>{rec.token}</strong></div>
+                    <div><span>Patient Name:</span> <strong>{rec.patientName}</strong></div>
+                    <div><span>Age / Gender:</span> <strong>{rec.genderAge}</strong></div>
+                    <div><span>Consultant:</span> <strong>{rec.consultant}</strong></div>
+                    <div><span>Date:</span> <strong>{rec.appointmentDate}</strong></div>
+                  </div>
 
-              <hr style={{ margin: '12px 0', borderColor: '#e2e8f0' }} />
+                  <hr style={{ margin: '12px 0', borderColor: '#e2e8f0' }} />
 
-              {printModal.type === 'reg' && (
-                <div className="print-bill-items">
-                  <div className="bill-item"><span>OPD Registration Fee (One-Time)</span> <strong>₹{printModal.record.regCash || 50}.00</strong></div>
-                  <div className="bill-item total"><span>Total Paid:</span> <strong>₹{printModal.record.regCash || 50}.00</strong></div>
+                  {printModal.type === 'reg' && (
+                    <div className="print-bill-items">
+                      <div className="bill-item"><span>OPD Registration Fee (One-Time)</span> <strong>₹{regCashVal}.00</strong></div>
+                      <div className="bill-item total"><span>Total Paid:</span> <strong>₹{regCashVal}.00</strong></div>
+                    </div>
+                  )}
+
+                  {printModal.type === 'cons' && (
+                    <div className="print-bill-items">
+                      <div className="bill-item"><span>Consultant Clinical Fee</span> <strong>₹{conCashVal}.00</strong></div>
+                      <div className="bill-item total"><span>Total Paid:</span> <strong>₹{conCashVal}.00</strong></div>
+                    </div>
+                  )}
+
+                  {printModal.type === 'vitals' && (
+                    <div className="print-bill-items">
+                      <div className="bill-item"><span>Blood Pressure (BP):</span> <strong>{rec.vitals?.bp || '120/80 mmHg'}</strong></div>
+                      <div className="bill-item"><span>Pulse Rate:</span> <strong>{rec.vitals?.pulse || '74 bpm'}</strong></div>
+                      <div className="bill-item"><span>Oxygen Saturation (SpO2):</span> <strong>{rec.vitals?.spo2 || '99%'}</strong></div>
+                      <div className="bill-item"><span>Body Temperature:</span> <strong>{rec.vitals?.temp || '98.6 °F'}</strong></div>
+                      <div className="bill-item"><span>Body Weight:</span> <strong>{rec.vitals?.weight || '65 kg'}</strong></div>
+                    </div>
+                  )}
                 </div>
-              )}
-
-              {printModal.type === 'cons' && (
-                <div className="print-bill-items">
-                  <div className="bill-item"><span>Consultant Clinical Fee</span> <strong>₹{printModal.record.conCash || 800}.00</strong></div>
-                  <div className="bill-item total"><span>Total Paid:</span> <strong>₹{printModal.record.conCash || 800}.00</strong></div>
-                </div>
-              )}
-
-              {printModal.type === 'vitals' && (
-                <div className="print-bill-items">
-                  <div className="bill-item"><span>Blood Pressure (BP):</span> <strong>{printModal.record.vitals?.bp || '120/80 mmHg'}</strong></div>
-                  <div className="bill-item"><span>Pulse Rate:</span> <strong>{printModal.record.vitals?.pulse || '74 bpm'}</strong></div>
-                  <div className="bill-item"><span>Oxygen Saturation (SpO2):</span> <strong>{printModal.record.vitals?.spo2 || '99%'}</strong></div>
-                  <div className="bill-item"><span>Body Temperature:</span> <strong>{printModal.record.vitals?.temp || '98.6 °F'}</strong></div>
-                  <div className="bill-item"><span>Body Weight:</span> <strong>{printModal.record.vitals?.weight || '65 kg'}</strong></div>
-                </div>
-              )}
-            </div>
+              );
+            })()}
 
             <div className="print-actions">
               <button className="btn btn-secondary" onClick={() => setPrintModal(null)}>Close</button>

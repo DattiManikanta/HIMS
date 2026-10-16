@@ -1598,6 +1598,29 @@ def get_patient_queue():
             conn.close()
 
             if rows:
+                # Normalize cash and fee columns for all rows
+                for r in rows:
+                    reg_f = float(r.get('regFee') or 50.0)
+                    cons_f = float(r.get('consFee') or 850.0)
+                    if r.get('regCash') is None and r.get('regAmoCash') is None:
+                        r['regCash'] = reg_f
+                        r['regAmoCash'] = reg_f
+                    if r.get('conCash') is None and r.get('conAmoCash') is None:
+                        r['conCash'] = cons_f
+                        r['conAmoCash'] = cons_f
+                    r['regCredit'] = r.get('regCredit') or 0.0
+                    r['regUpi'] = r.get('regUpi') or 0.0
+                    r['conCredit'] = r.get('conCredit') or 0.0
+                    r['conUpi'] = r.get('conUpi') or 0.0
+
+                # Prepend any newly registered patients in local fallbackStorage that haven't synced to MySQL
+                fallback = load_fallback_data()
+                fallback_queue = fallback.get('patientQueue', [])
+                if fallback_queue:
+                    db_umrs = {str(r.get('umrNo') or '').upper() for r in rows if r.get('umrNo')}
+                    unpersisted = [f for f in fallback_queue if str(f.get('umrNo') or '').upper() not in db_umrs]
+                    if unpersisted:
+                        return jsonify(unpersisted + rows)
                 return jsonify(rows)
         except Exception as e:
             logger.warning("Database queue lookup failed: %s", e)

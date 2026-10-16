@@ -2984,9 +2984,35 @@ function RegistrationForm({
       if (serverData && serverData.length > 0) {
         setAppointments(prev => {
           const cleanedServer = sanitizeAppointments(serverData);
-          const serverUmrs = new Set(cleanedServer.map(p => p.umrNo || p.patientCode).filter(Boolean));
-          const localOnly = sanitizeAppointments(prev).filter(p => p.umrNo && !serverUmrs.has(p.umrNo));
-          const merged = [...localOnly, ...cleanedServer];
+          const localMap = new Map();
+          sanitizeAppointments(prev).forEach(p => {
+            if (p && p.umrNo) localMap.set(String(p.umrNo).toUpperCase(), p);
+          });
+          const normalizedServer = cleanedServer.map(srv => {
+            const u = String(srv.umrNo || srv.patientCode || '').toUpperCase();
+            const local = localMap.get(u);
+            const regFeeVal = Number(srv.regFee) || 50;
+            const consFeeVal = Number(srv.consFee) || 850;
+            const finalRegCash = local?.regCash != null ? local.regCash : srv.regCash != null ? srv.regCash : srv.regAmoCash != null ? srv.regAmoCash : regFeeVal;
+            const finalRegCredit = local?.regCredit != null ? local.regCredit : srv.regCredit != null ? srv.regCredit : srv.regAmoCard != null ? srv.regAmoCard : 0;
+            const finalRegUpi = local?.regUpi != null ? local.regUpi : srv.regUpi != null ? srv.regUpi : srv.regAmoUpi != null ? srv.regAmoUpi : 0;
+            const finalConCash = local?.conCash != null ? local.conCash : srv.conCash != null ? srv.conCash : srv.conAmoCash != null ? srv.conAmoCash : consFeeVal;
+            const finalConCredit = local?.conCredit != null ? local.conCredit : srv.conCredit != null ? srv.conCredit : srv.conAmoCard != null ? srv.conAmoCard : 0;
+            const finalConUpi = local?.conUpi != null ? local.conUpi : srv.conUpi != null ? srv.conUpi : srv.conAmoUpi != null ? srv.conAmoUpi : 0;
+            return {
+              ...srv,
+              umrNo: srv.umrNo || srv.patientCode,
+              regCash: finalRegCash,
+              regCredit: finalRegCredit,
+              regUpi: finalRegUpi,
+              conCash: finalConCash,
+              conCredit: finalConCredit,
+              conUpi: finalConUpi
+            };
+          });
+          const serverUmrs = new Set(normalizedServer.map(p => (p.umrNo || p.patientCode || '').toUpperCase()).filter(Boolean));
+          const localOnly = sanitizeAppointments(prev).filter(p => p.umrNo && !serverUmrs.has(p.umrNo.toUpperCase()));
+          const merged = [...localOnly, ...normalizedServer];
           try {
             localStorage.setItem('atri_hims_saved_appointments', JSON.stringify(merged));
           } catch (e) {}
@@ -3798,11 +3824,13 @@ function RegistrationForm({
     let finalConCash = 0,
       finalConCard = 0,
       finalConUpi = 0;
+    const regFeeVal = Number(formData.regFinalAmt) || Number(formData.regFee) || 50;
+    const consFeeVal = Number(formData.consFinalAmt) || Number(formData.consFee) || Number(formData.totalBillAmt || 1050) - regFeeVal;
     let paymentModeStr = 'Cash';
     if (paymentRows.length > 0) {
       paymentModeStr = paymentRows.map(r => r.modeLabel).join(', ');
       const totalPaid = paymentRows.reduce((s, r) => s + r.amount, 0);
-      const regRatio = totalPaid > 0 ? Math.min(1, (formData.regFinalAmt || 50) / totalPaid) : 0;
+      const regRatio = totalPaid > 0 ? Math.min(1, regFeeVal / totalPaid) : 0;
       paymentRows.forEach(r => {
         const regPart = r.amount * regRatio;
         const conPart = r.amount - regPart;
@@ -3818,19 +3846,18 @@ function RegistrationForm({
         }
       });
     } else {
-      const singleAmt = parseFloat(payAmount) || formData.totalBillAmt || 1050;
       if (payMode === '276') {
         paymentModeStr = 'CARD';
-        finalRegCard = formData.regFinalAmt || 50;
-        finalConCard = formData.consFinalAmt || singleAmt - finalRegCard;
+        finalRegCard = regFeeVal;
+        finalConCard = consFeeVal;
       } else if (payMode === '277') {
         paymentModeStr = 'UPI';
-        finalRegUpi = formData.regFinalAmt || 50;
-        finalConUpi = formData.consFinalAmt || singleAmt - finalRegUpi;
+        finalRegUpi = regFeeVal;
+        finalConUpi = consFeeVal;
       } else {
         paymentModeStr = 'Cash';
-        finalRegCash = formData.regFinalAmt || 50;
-        finalConCash = formData.consFinalAmt || singleAmt - finalRegCash;
+        finalRegCash = regFeeVal;
+        finalConCash = consFeeVal;
       }
     }
     const savedTokenStr = String(formData.token || '1');
@@ -4427,7 +4454,7 @@ function RegistrationForm({
     className: "btn-icon ip",
     onClick: () => showNotification(`IP Registration initiated for ${row.patientName} (${row.umrNo})`),
     title: "IP Admission / Registration"
-  }, "\uD83D\uDC4D")), /*#__PURE__*/React.createElement("td", null, row.regCash), /*#__PURE__*/React.createElement("td", null, row.regCredit), /*#__PURE__*/React.createElement("td", null, row.regUpi), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("strong", null, row.conCash)), /*#__PURE__*/React.createElement("td", null, row.conCredit), /*#__PURE__*/React.createElement("td", null, row.conUpi), /*#__PURE__*/React.createElement("td", {
+  }, "\uD83D\uDC4D")), /*#__PURE__*/React.createElement("td", null, row.regCash != null ? row.regCash : row.regAmoCash != null ? row.regAmoCash : 50), /*#__PURE__*/React.createElement("td", null, row.regCredit != null ? row.regCredit : row.regAmoCard != null ? row.regAmoCard : 0), /*#__PURE__*/React.createElement("td", null, row.regUpi != null ? row.regUpi : row.regAmoUpi != null ? row.regAmoUpi : 0), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("strong", null, row.conCash != null ? row.conCash : row.conAmoCash != null ? row.conAmoCash : row.consFee != null ? row.consFee : 850)), /*#__PURE__*/React.createElement("td", null, row.conCredit != null ? row.conCredit : row.conAmoCard != null ? row.conAmoCard : 0), /*#__PURE__*/React.createElement("td", null, row.conUpi != null ? row.conUpi : row.conAmoUpi != null ? row.conAmoUpi : 0), /*#__PURE__*/React.createElement("td", {
     className: "cell-action-icon",
     style: {
       position: 'sticky',
@@ -5873,40 +5900,45 @@ function RegistrationForm({
     className: "print-header"
   }, /*#__PURE__*/React.createElement("h3", null, "INDUS HEALTH CITY"), /*#__PURE__*/React.createElement("p", null, "Vasugan Medical Specialities Pvt Ltd"), /*#__PURE__*/React.createElement("div", {
     className: "print-type-badge"
-  }, printModal.type === 'reg' ? 'OUTPATIENT REGISTRATION RECEIPT' : printModal.type === 'cons' ? 'DOCTOR CONSULTATION INVOICE' : 'NURSING VITALS REPORT')), /*#__PURE__*/React.createElement("div", {
-    className: "print-body"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "print-grid"
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", null, "UMR No:"), " ", /*#__PURE__*/React.createElement("strong", null, printModal.record.umrNo)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", null, "Token:"), " ", /*#__PURE__*/React.createElement("strong", null, printModal.record.token)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", null, "Patient Name:"), " ", /*#__PURE__*/React.createElement("strong", null, printModal.record.patientName)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", null, "Age / Gender:"), " ", /*#__PURE__*/React.createElement("strong", null, printModal.record.genderAge)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", null, "Consultant:"), " ", /*#__PURE__*/React.createElement("strong", null, printModal.record.consultant)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", null, "Date:"), " ", /*#__PURE__*/React.createElement("strong", null, printModal.record.appointmentDate))), /*#__PURE__*/React.createElement("hr", {
-    style: {
-      margin: '12px 0',
-      borderColor: '#e2e8f0'
-    }
-  }), printModal.type === 'reg' && /*#__PURE__*/React.createElement("div", {
-    className: "print-bill-items"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "bill-item"
-  }, /*#__PURE__*/React.createElement("span", null, "OPD Registration Fee (One-Time)"), " ", /*#__PURE__*/React.createElement("strong", null, "\u20B9", printModal.record.regCash || 50, ".00")), /*#__PURE__*/React.createElement("div", {
-    className: "bill-item total"
-  }, /*#__PURE__*/React.createElement("span", null, "Total Paid:"), " ", /*#__PURE__*/React.createElement("strong", null, "\u20B9", printModal.record.regCash || 50, ".00"))), printModal.type === 'cons' && /*#__PURE__*/React.createElement("div", {
-    className: "print-bill-items"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "bill-item"
-  }, /*#__PURE__*/React.createElement("span", null, "Consultant Clinical Fee"), " ", /*#__PURE__*/React.createElement("strong", null, "\u20B9", printModal.record.conCash || 800, ".00")), /*#__PURE__*/React.createElement("div", {
-    className: "bill-item total"
-  }, /*#__PURE__*/React.createElement("span", null, "Total Paid:"), " ", /*#__PURE__*/React.createElement("strong", null, "\u20B9", printModal.record.conCash || 800, ".00"))), printModal.type === 'vitals' && /*#__PURE__*/React.createElement("div", {
-    className: "print-bill-items"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "bill-item"
-  }, /*#__PURE__*/React.createElement("span", null, "Blood Pressure (BP):"), " ", /*#__PURE__*/React.createElement("strong", null, printModal.record.vitals?.bp || '120/80 mmHg')), /*#__PURE__*/React.createElement("div", {
-    className: "bill-item"
-  }, /*#__PURE__*/React.createElement("span", null, "Pulse Rate:"), " ", /*#__PURE__*/React.createElement("strong", null, printModal.record.vitals?.pulse || '74 bpm')), /*#__PURE__*/React.createElement("div", {
-    className: "bill-item"
-  }, /*#__PURE__*/React.createElement("span", null, "Oxygen Saturation (SpO2):"), " ", /*#__PURE__*/React.createElement("strong", null, printModal.record.vitals?.spo2 || '99%')), /*#__PURE__*/React.createElement("div", {
-    className: "bill-item"
-  }, /*#__PURE__*/React.createElement("span", null, "Body Temperature:"), " ", /*#__PURE__*/React.createElement("strong", null, printModal.record.vitals?.temp || '98.6 °F')), /*#__PURE__*/React.createElement("div", {
-    className: "bill-item"
-  }, /*#__PURE__*/React.createElement("span", null, "Body Weight:"), " ", /*#__PURE__*/React.createElement("strong", null, printModal.record.vitals?.weight || '65 kg')))), /*#__PURE__*/React.createElement("div", {
+  }, printModal.type === 'reg' ? 'OUTPATIENT REGISTRATION RECEIPT' : printModal.type === 'cons' ? 'DOCTOR CONSULTATION INVOICE' : 'NURSING VITALS REPORT')), (() => {
+    const rec = printModal.record || printModal.patient || {};
+    const regCashVal = rec.regCash != null ? rec.regCash : rec.regAmoCash != null ? rec.regAmoCash : 50;
+    const conCashVal = rec.conCash != null ? rec.conCash : rec.conAmoCash != null ? rec.conAmoCash : rec.consFee != null ? rec.consFee : 850;
+    return /*#__PURE__*/React.createElement("div", {
+      className: "print-body"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "print-grid"
+    }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", null, "UMR No:"), " ", /*#__PURE__*/React.createElement("strong", null, rec.umrNo)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", null, "Token:"), " ", /*#__PURE__*/React.createElement("strong", null, rec.token)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", null, "Patient Name:"), " ", /*#__PURE__*/React.createElement("strong", null, rec.patientName)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", null, "Age / Gender:"), " ", /*#__PURE__*/React.createElement("strong", null, rec.genderAge)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", null, "Consultant:"), " ", /*#__PURE__*/React.createElement("strong", null, rec.consultant)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", null, "Date:"), " ", /*#__PURE__*/React.createElement("strong", null, rec.appointmentDate))), /*#__PURE__*/React.createElement("hr", {
+      style: {
+        margin: '12px 0',
+        borderColor: '#e2e8f0'
+      }
+    }), printModal.type === 'reg' && /*#__PURE__*/React.createElement("div", {
+      className: "print-bill-items"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bill-item"
+    }, /*#__PURE__*/React.createElement("span", null, "OPD Registration Fee (One-Time)"), " ", /*#__PURE__*/React.createElement("strong", null, "\u20B9", regCashVal, ".00")), /*#__PURE__*/React.createElement("div", {
+      className: "bill-item total"
+    }, /*#__PURE__*/React.createElement("span", null, "Total Paid:"), " ", /*#__PURE__*/React.createElement("strong", null, "\u20B9", regCashVal, ".00"))), printModal.type === 'cons' && /*#__PURE__*/React.createElement("div", {
+      className: "print-bill-items"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bill-item"
+    }, /*#__PURE__*/React.createElement("span", null, "Consultant Clinical Fee"), " ", /*#__PURE__*/React.createElement("strong", null, "\u20B9", conCashVal, ".00")), /*#__PURE__*/React.createElement("div", {
+      className: "bill-item total"
+    }, /*#__PURE__*/React.createElement("span", null, "Total Paid:"), " ", /*#__PURE__*/React.createElement("strong", null, "\u20B9", conCashVal, ".00"))), printModal.type === 'vitals' && /*#__PURE__*/React.createElement("div", {
+      className: "print-bill-items"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "bill-item"
+    }, /*#__PURE__*/React.createElement("span", null, "Blood Pressure (BP):"), " ", /*#__PURE__*/React.createElement("strong", null, rec.vitals?.bp || '120/80 mmHg')), /*#__PURE__*/React.createElement("div", {
+      className: "bill-item"
+    }, /*#__PURE__*/React.createElement("span", null, "Pulse Rate:"), " ", /*#__PURE__*/React.createElement("strong", null, rec.vitals?.pulse || '74 bpm')), /*#__PURE__*/React.createElement("div", {
+      className: "bill-item"
+    }, /*#__PURE__*/React.createElement("span", null, "Oxygen Saturation (SpO2):"), " ", /*#__PURE__*/React.createElement("strong", null, rec.vitals?.spo2 || '99%')), /*#__PURE__*/React.createElement("div", {
+      className: "bill-item"
+    }, /*#__PURE__*/React.createElement("span", null, "Body Temperature:"), " ", /*#__PURE__*/React.createElement("strong", null, rec.vitals?.temp || '98.6 °F')), /*#__PURE__*/React.createElement("div", {
+      className: "bill-item"
+    }, /*#__PURE__*/React.createElement("span", null, "Body Weight:"), " ", /*#__PURE__*/React.createElement("strong", null, rec.vitals?.weight || '65 kg'))));
+  })(), /*#__PURE__*/React.createElement("div", {
     className: "print-actions"
   }, /*#__PURE__*/React.createElement("button", {
     className: "btn btn-secondary",

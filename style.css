@@ -13,9 +13,9 @@
   --dark-surface: #1e293b;
   --dark-border: #334155;
   
-  --bg-main: #eaeff5;
-  --bg-card: #f8fafc;
-  --bg-alt: #edf3f8;
+  --bg-main: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-alt: #f1f5f9;
   
   --text-main: #0f172a;
   --text-muted: #64748b;
@@ -3660,7 +3660,7 @@ body {
    ========================================================================== */
 
 .patient-reg-page {
-  background-color: #eaeff5; /* Soft pleasing light hospital background (eliminates harsh white) */
+  background-color: #f8fafc;
   min-height: calc(100vh - 120px);
   padding: 14px 24px 60px;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -3718,12 +3718,6 @@ body {
   font-weight: 800;
   margin: 0;
   letter-spacing: -0.01em;
-  display: inline-block;
-  background: #f0fdf4;
-  border: 1.5px solid #86efac;
-  padding: 4px 24px;
-  border-radius: 20px;
-  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.12);
 }
 
 .reg-top-right {
@@ -3738,11 +3732,7 @@ body {
 .reg-breadcrumb {
   font-size: 0.78rem;
   color: #64748b;
-  font-weight: 600;
-  background: #f1f5f9;
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid #cbd5e1;
+  font-weight: 500;
 }
 
 .reg-top-icons {
@@ -3774,11 +3764,9 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  border-bottom: 2px solid #cbd5e1;
-  margin-top: 12px;
-  padding: 4px 10px 0 10px;
-  background: #dbe4ed;
-  border-radius: 8px 8px 0 0;
+  border-bottom: 2px solid #e2e8f0;
+  margin-top: 10px;
+  padding-bottom: 0;
 }
 
 .reg-tab-buttons {
@@ -3787,29 +3775,25 @@ body {
 }
 
 .reg-tab-btn {
-  background: transparent;
+  background: none;
   border: none;
   font-size: 0.95rem;
   font-weight: 700;
-  color: #475569;
-  padding: 8px 20px 10px 20px;
+  color: #0284c7;
+  padding: 8px 18px 10px 18px;
   cursor: pointer;
   border-bottom: 3px solid transparent;
-  border-radius: 6px 6px 0 0;
   transition: all 0.15s ease;
 }
 
 .reg-tab-btn:hover {
-  color: #0284c7;
-  background: rgba(255, 255, 255, 0.6);
+  color: #0369a1;
 }
 
 .reg-tab-btn.active {
   color: #0284c7;
   border-bottom: 3px solid #0284c7;
-  background: #eaeff5;
-  font-weight: 800;
-  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.04);
+  background: rgba(2, 132, 199, 0.04);
 }
 
 .reg-tab-right-help {
@@ -3836,34 +3820,29 @@ body {
   margin-right: 4px;
 }
 
-/* Tab 1: Appointments List Filter Row */
+/* Tab 1: Appointments List */
 .reg-org-filter-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   margin-top: 14px;
   flex-wrap: wrap;
-  background: #f1f6fa;
-  border: 1px solid #cbdde9;
-  border-radius: 8px;
-  padding: 12px 16px;
-  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
 }
 
 .reg-company-input {
-  background: #e2eaf2;
-  border: 1px solid #b8ccd9;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
   border-radius: 5px;
   padding: 6px 12px;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #1e293b;
+  color: #334155;
   width: 290px;
 }
 
 .reg-hospital-select {
   background: #ffffff;
-  border: 1px solid #b8ccd9;
+  border: 1px solid #cbd5e1;
   border-radius: 5px;
   padding: 6px 12px;
   font-size: 0.85rem;
@@ -3877,7 +3856,7 @@ body {
   align-items: center;
   gap: 6px;
   background: #ffffff;
-  border: 1px solid #b8ccd9;
+  border: 1px solid #cbd5e1;
   border-radius: 5px;
   padding: 0 10px;
 }
@@ -3893,8 +3872,8 @@ body {
 
 /* Light Blue Summary Metrics Pill Bar */
 .reg-summary-pill-bar {
-  background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 50%, #e0e7ff 100%);
-  border: 1.5px solid #93c5fd;
+  background: #dbeafe;
+  border: 1px solid #bfdbfe;
   border-radius: 30px;
   padding: 10px 22px;
   display: flex;
@@ -3903,7 +3882,7 @@ body {
   flex-wrap: wrap;
   gap: 12px;
   margin-top: 14px;
-  box-shadow: 0 3px 10px rgba(2, 132, 199, 0.12);
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.08);
 }
 
 .metric-chip {
@@ -3989,9 +3968,9 @@ body {
 .reg-table-container {
   overflow-x: auto;
   background: #ffffff;
-  border: 1.5px solid #b8cde0;
-  border-radius: 8px;
-  box-shadow: 0 3px 12px rgba(15, 23, 42, 0.06);
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
 }
 
 .reg-appointments-table {
@@ -4002,19 +3981,18 @@ body {
 }
 
 .reg-appointments-table th {
-  background: linear-gradient(180deg, #3b719f 0%, #2b5b88 100%);
+  background: #4a7bb0;
   color: #ffffff;
-  padding: 9px 12px;
+  padding: 8px 10px;
   font-weight: 700;
   white-space: nowrap;
   border-right: 1px solid rgba(255, 255, 255, 0.2);
-  letter-spacing: 0.02em;
 }
 
 .reg-appointments-table td {
-  padding: 8px 12px;
-  border-bottom: 1px solid #dce6f0;
-  border-right: 1px solid #eef3f8;
+  padding: 7px 10px;
+  border-bottom: 1px solid #e2e8f0;
+  border-right: 1px solid #f1f5f9;
   white-space: nowrap;
   color: #0f172a;
 }
@@ -4024,11 +4002,11 @@ body {
 }
 
 .reg-appointments-table .row-odd {
-  background: #f1f6fa; /* Soft light hospital pastel */
+  background: #f8fafc;
 }
 
 .reg-appointments-table tr:hover {
-  background: #e0f2fe !important;
+  background: #f0fdf4 !important;
 }
 
 .cell-umr strong {
@@ -5523,14 +5501,14 @@ body {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  background-color: #eaeff5; /* Soft pleasing light hospital background (replaces dominating white) */
+  background-color: #f8fafc;
 }
 
 /* Top Navbar Matching Screenshot 1 & 2 */
 .hims-top-navbar {
   height: 48px;
-  background: linear-gradient(180deg, #f8fafc 0%, #edf2f7 100%);
-  border-bottom: 1.5px solid #cbd5e1;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -5538,7 +5516,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 90;
-  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 .top-nav-left {

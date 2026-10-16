@@ -58,18 +58,17 @@ export function App() {
     }
   });
 
-  // Current Screen / View: 'home' (Home JSP) or 'patient_management' (Registration & Outpatient Desk)
-  // Always defaults to 'home' (Home JSP) so users land on the Metro Tile dashboard immediately after login!
-  const [currentView, setCurrentView] = useState('home');
-
-  // Active Tab inside Patient Registration: 'appointments' (Tab 1) or 'add_appointment' (Tab 2)
-  const [activeRegTab, setActiveRegTab] = useState(() => {
+  // Current Screen / View: Persisted in localStorage so refreshing the page stays on current screen
+  const [currentView, setCurrentView] = useState(() => {
     try {
-      return localStorage.getItem('atri_hims_active_tab') || 'appointments';
+      return localStorage.getItem('atri_hims_current_view') || 'home';
     } catch (e) {
-      return 'appointments';
+      return 'home';
     }
   });
+
+  // Active Tab inside Patient Registration: Always defaults to 'appointments' (Tab 1: List) on refresh!
+  const [activeRegTab, setActiveRegTab] = useState('appointments');
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
   const [showDatabaseView, setShowDatabaseView] = useState(false);
   
@@ -113,9 +112,7 @@ export function App() {
 
   const handleTabChange = (tab) => {
     setActiveRegTab(tab);
-    try {
-      localStorage.setItem('atri_hims_active_tab', tab);
-    } catch (e) {}
+    // Note: Do not save add_appointment to localStorage so refresh always shows the appointments list first!
   };
 
   // Sync with PostgreSQL Backend on Load & Periodic Health Check
@@ -250,6 +247,7 @@ export function App() {
         <HIMSHomeDashboard 
           onSelectModule={(mod) => {
             setCurrentView('patient_management');
+            setActiveRegTab('appointments');
             try {
               localStorage.setItem('atri_hims_current_view', 'patient_management');
             } catch (e) {}

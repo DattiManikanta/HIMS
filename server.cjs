@@ -116,6 +116,24 @@ setTimeout(() => {
   setInterval(() => syncFromGitHub(), 60 * 1000);
 }, 3000);
 
+// Keep-Alive Self-Pinger (Wakes Render / Free Cloud Tier every 10 minutes so it never sleeps)
+const keepAliveUrl = process.env.PING_URL || process.env.RENDER_EXTERNAL_URL || process.env.APP_URL;
+if (keepAliveUrl) {
+  const pingInterval = 10 * 60 * 1000; // 10 minutes
+  console.log(`[Keep-Alive] Auto-pinger active for: ${keepAliveUrl} (Every 10 min)`);
+  setInterval(() => {
+    try {
+      const target = keepAliveUrl.endsWith('/ping') ? keepAliveUrl : `${keepAliveUrl.replace(/\/$/, '')}/ping`;
+      const client = target.startsWith('https') ? require('https') : require('http');
+      client.get(target, (res) => {
+        console.log(`[Keep-Alive] Ping sent to ${target} -> HTTP ${res.statusCode}`);
+      }).on('error', (err) => {
+        console.warn(`[Keep-Alive] Ping warning: ${err.message}`);
+      });
+    } catch (e) {}
+  }, pingInterval);
+}
+
 // Reverse proxy /api/* requests to Flask backend
 function proxyApiRequest(req, res) {
   const options = {
@@ -181,6 +199,23 @@ const server = http.createServer((req, res) => {
 
   const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   let pathname = decodeURIComponent(parsedUrl.pathname);
+
+  // Handle UptimeRobot / Keep-Alive Ping Endpoints
+  if (pathname === '/ping' || pathname === '/health' || pathname === '/keepalive') {
+    res.writeHead(200, {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Access-Control-Allow-Origin': '*',
+      'Cache-Control': 'no-cache, no-store, must-revalidate'
+    });
+    res.end(JSON.stringify({
+      status: 'ok',
+      service: 'INDUS HEALTH CITY HIMS',
+      message: 'Server is awake and active',
+      uptimeSeconds: Math.floor(process.uptime()),
+      timestamp: new Date().toISOString()
+    }));
+    return;
+  }
 
   // Handle GitHub Sync Routes directly
   if (pathname === '/api/sync/pull' || pathname === '/api/sync/status') {

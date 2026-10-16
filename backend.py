@@ -804,6 +804,19 @@ init_database()
 # REST API ROUTES
 # ------------------------------------------------------------------------------
 
+@app.route('/ping', methods=['GET', 'HEAD'])
+@app.route('/health', methods=['GET', 'HEAD'])
+@app.route('/api/ping', methods=['GET', 'HEAD'])
+def keep_alive_ping():
+    """Ultra-lightweight keep-alive endpoint for UptimeRobot monitoring."""
+    return jsonify({
+        "status": "ok",
+        "service": "INDUS HEALTH CITY HIMS",
+        "message": "Backend API is awake and active",
+        "timestamp": datetime.now().isoformat()
+    }), 200
+
+
 @app.route('/api/health', methods=['GET'])
 def health_check():
     """Health check endpoint reporting live database connection status."""

@@ -13,7 +13,7 @@
   --dark-surface: #1e293b;
   --dark-border: #334155;
   
-  --bg-main: #f8fafc;
+  --bg-main: #A9A9A9;
   --bg-card: #ffffff;
   --bg-alt: #f1f5f9;
   
@@ -3660,7 +3660,7 @@ body {
    ========================================================================== */
 
 .patient-reg-page {
-  background-color: #f8fafc;
+  background-color: #A9A9A9 !important;
   min-height: calc(100vh - 120px);
   padding: 14px 24px 60px;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -5184,7 +5184,7 @@ body {
   display: flex;
   min-height: 100vh;
   width: 100%;
-  background-color: #f8fafc;
+  background-color: #A9A9A9 !important;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow-x: hidden;
 }
@@ -5501,7 +5501,12 @@ body {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  background-color: #f8fafc;
+  background-color: #A9A9A9 !important;
+}
+
+.hims-content-area {
+  background-color: #A9A9A9 !important;
+  flex: 1;
 }
 
 /* Top Navbar Matching Screenshot 1 & 2 */

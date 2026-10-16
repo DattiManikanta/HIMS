@@ -10165,9 +10165,9 @@ function App() {
     className: "top-facility-name"
   }, "INDUS HEALTH CITY")), /*#__PURE__*/React.createElement("div", {
     className: "top-nav-center"
-  }, /*#__PURE__*/React.createElement("span", {
+  }, showDatabaseView && /*#__PURE__*/React.createElement("span", {
     className: "top-nav-title"
-  }, "Patient Registration")), /*#__PURE__*/React.createElement("div", {
+  }, "Database Viewer")), /*#__PURE__*/React.createElement("div", {
     className: "top-nav-right"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",

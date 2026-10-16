@@ -404,7 +404,7 @@ export function App() {
           </div>
 
           <div className="top-nav-center">
-            <span className="top-nav-title">Patient Registration</span>
+            {showDatabaseView && <span className="top-nav-title">Database Viewer</span>}
           </div>
 
           <div className="top-nav-right">

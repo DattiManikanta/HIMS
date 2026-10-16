@@ -2775,6 +2775,25 @@ function CustomDateRangePicker({
   }, "Apply Range")))));
 }
 
+// Master Dropdowns Query-Wise Datasets (Matching legacy patientQueue.jsp & PatientMapper.xml)
+const MASTER_CITIES = ['Visakhapatnam', 'Hyderabad', 'Bhubaneswar', 'Vijayawada', 'Guntur', 'Rajahmundry', 'Kakinada', 'Srikakulam', 'Vizianagaram', 'Tirupati', 'Kurnool', 'Nellore', 'Warangal', 'Cuttack', 'Berhampur', 'Bangalore', 'Chennai', 'Mumbai', 'Kolkata', 'New Delhi', 'Other City'];
+const MASTER_STATES = ['Andhra Pradesh', 'Telangana', 'Odisha', 'Karnataka', 'Tamil Nadu', 'Maharashtra', 'Kerala', 'West Bengal', 'Madhya Pradesh', 'Chhattisgarh', 'Delhi', 'Bihar', 'Gujarat', 'Uttar Pradesh', 'Rajasthan'];
+const MASTER_ORGANIZATIONS = ['--Select Organization--', 'Self Pay / Individual', 'APTRANSCO', 'NTPC', 'HPCL', 'INDIAN NAVY', 'SOUTH CENTRAL RAILWAY', 'SBI (State Bank of India)', 'BSNL', 'RINL / VIZAG STEEL PLANT', 'VISAKHAPATNAM PORT TRUST', 'WALTAIR DIVISION RAILWAYS', 'EHS (Govt Employee Health Scheme)', 'AROGYASRI HEALTH CARE TRUST', 'CORPORATE INSURANCE TPA'];
+const MASTER_CATEGORIES = ['GENERAL - TRI', 'VIP', 'STAFF', 'CORPORATE', 'HEALTH INSURANCE', 'AROGYASRI', 'EHS', 'TRUST', 'CAMP', 'BPL'];
+const MASTER_REF_TYPES = ['Walk In', 'Doctor', 'Hospital', 'Organization', 'Staff', 'Online', 'Emergency'];
+const MASTER_OCCUPATIONS = ['--Select Occupation--', 'Farmer', 'Business', 'Employee', 'House Wife', 'Labour', 'Retired', 'Self Employee', 'Student', 'Not Specified'];
+const MASTER_ID_TYPES = ['Aadhaar', 'PAN Card', 'Voter ID', 'Medical Card No.', 'Driving License', 'Passport'];
+const MASTER_RELIGIONS = ['Hindu', 'Muslim', 'Christian', 'Sikh', 'Jain', 'Buddhist', 'Other'];
+const MASTER_MARITAL_STATUS = ['Married', 'Single', 'Widow', 'Divorced'];
+const MASTER_BLOOD_GROUPS = ['B+', 'A+', 'O+', 'AB+', 'B-', 'A-', 'O-', 'AB-'];
+const MASTER_CARE_BY = ['Self', 'Father', 'Mother', 'Husband', 'Spouse', 'Guardian', 'Other'];
+const MASTER_BANKS = ['State Bank of India', 'HDFC Bank', 'ICICI Bank', 'Axis Bank', 'Punjab National Bank', 'Bank of Baroda', 'Canara Bank', 'Union Bank of India', 'Kotak Mahindra Bank', 'Andhra Bank', 'IndusInd Bank', 'Indian Bank'];
+const MASTER_AUTHORIZED = ['Admin', 'Medical Superintendent', 'Managing Director', 'Duty Medical Officer', 'Billing Supervisor'];
+function normalizeDocName(name) {
+  if (!name) return '';
+  return String(name).replace(/^Dr\.?\s+/i, '').replace(/[\/\s]+$/g, '').trim().toUpperCase();
+}
+
 // Generate slots for a doctor & date matching Indus schedule (strictly query-wise)
 function generateDoctorSlots(doctorName, dateStr, appointmentsList, extraTokens = 0) {
   const startHour = 8;
@@ -2784,13 +2803,26 @@ function generateDoctorSlots(doctorName, dateStr, appointmentsList, extraTokens 
 
   // Determine booked tokens strictly from existing appointments query-wise (no fake dummy bookings)
   const bookedSet = new Set();
+  const targetDoc = normalizeDocName(doctorName);
   if (appointmentsList && appointmentsList.length > 0) {
     appointmentsList.forEach(apt => {
-      if (apt.consultant === doctorName) {
-        const numMatch = String(apt.token).match(/\d+/);
+      const aptDoc = normalizeDocName(apt.consultant || apt.doctor || apt.docName || apt.doctorName);
+      if (aptDoc && targetDoc && (aptDoc === targetDoc || targetDoc.includes(aptDoc) || aptDoc.includes(targetDoc))) {
+        // Date matching: if dateStr is provided and apt has a date, ensure same day
+        if (dateStr && (apt.appointmentDate || apt.apptDt || apt.visitDate)) {
+          const d1 = parseAnyDate(dateStr);
+          const d2 = parseAnyDate(apt.appointmentDate || apt.apptDt || apt.visitDate);
+          if (d1 && d2) {
+            if (d1.getFullYear() !== d2.getFullYear() || d1.getMonth() !== d2.getMonth() || d1.getDate() !== d2.getDate()) {
+              return;
+            }
+          }
+        }
+        const rawToken = String(apt.tokenNum !== undefined && apt.tokenNum !== null && apt.tokenNum !== '' ? apt.tokenNum : apt.token || '');
+        const numMatch = rawToken.match(/\d+/);
         if (numMatch) {
           const num = parseInt(numMatch[0], 10);
-          bookedSet.add(num);
+          if (num > 0) bookedSet.add(num);
         }
       }
     });
@@ -2991,6 +3023,94 @@ function RegistrationForm({
   const [selectedSlotToken, setSelectedSlotToken] = useState(null);
   const [isSlotsOpen, setIsSlotsOpen] = useState(false);
 
+  // Exact Payment Table (#payModeTable) State matching patientQueue.jsp (lines 3521-3625)
+  const [paymentRows, setPaymentRows] = useState([]);
+  const [payMode, setPayMode] = useState('275'); // 275 = Cash, 276 = CARD, 277 = UPI
+  const [payAmount, setPayAmount] = useState('1050.00');
+  const [cardType, setCardType] = useState('0'); // 'Credit', 'Debit'
+  const [cardTransNo, setCardTransNo] = useState('');
+  const [cardBankName, setCardBankName] = useState('0');
+  const [cardExpDate, setCardExpDate] = useState('');
+  const [payModeError, setPayModeError] = useState('');
+  const handleAddPayment = () => {
+    setPayModeError('');
+    const amt = parseFloat(payAmount) || 0;
+    if (payMode === '0') {
+      setPayModeError('Select Cash Mode');
+      return;
+    }
+    if (amt <= 0) {
+      setPayModeError('Enter Credit Amount');
+      return;
+    }
+    if (payMode === '276') {
+      // CARD
+      if (cardType === '0') {
+        setPayModeError('Enter Card Type');
+        return;
+      }
+      if (!cardTransNo.trim()) {
+        setPayModeError('Enter Credit No / Trans Id');
+        return;
+      }
+      if (cardBankName === '0') {
+        setPayModeError('Enter Bank Name');
+        return;
+      }
+      if (!cardExpDate.trim()) {
+        setPayModeError('Enter Credit Date (MM/YYYY)');
+        return;
+      }
+    } else if (payMode === '277') {
+      // UPI
+      if (!cardTransNo.trim()) {
+        setPayModeError('Enter Trans Id / UPI Ref');
+        return;
+      }
+    }
+    const modeLabel = payMode === '275' ? 'Cash' : payMode === '276' ? 'CARD' : 'UPI';
+    const newRow = {
+      id: Date.now() + Math.random(),
+      modeId: payMode,
+      modeLabel: modeLabel,
+      amount: amt,
+      cardType: payMode === '276' ? cardType : '',
+      transNo: cardTransNo.trim(),
+      bankName: payMode === '276' ? cardBankName : '',
+      expDate: payMode === '276' ? cardExpDate.trim() : ''
+    };
+    const updated = [...paymentRows, newRow];
+    setPaymentRows(updated);
+    const totalRecd = updated.reduce((sum, r) => sum + r.amount, 0);
+    const bal = Math.max(0, (formData.totalBillAmt || 1050) - totalRecd);
+    setFormData(prev => ({
+      ...prev,
+      amtReceived: totalRecd,
+      balance: bal,
+      status: bal <= 0 ? 'PAID' : 'PENDING'
+    }));
+    setPayAmount(bal.toFixed(2));
+    setCardTransNo('');
+    setCardType('0');
+    setCardBankName('0');
+    setCardExpDate('');
+    showNotification(`✓ Added ${modeLabel} payment: ₹${amt.toFixed(2)}`);
+  };
+  const handleDeletePayment = rowId => {
+    const updated = paymentRows.filter(r => r.id !== rowId);
+    setPaymentRows(updated);
+    const totalRecd = updated.reduce((sum, r) => sum + r.amount, 0);
+    const bal = Math.max(0, (formData.totalBillAmt || 1050) - totalRecd);
+    setFormData(prev => ({
+      ...prev,
+      amtReceived: totalRecd,
+      balance: bal,
+      status: bal <= 0 ? 'PAID' : 'PENDING'
+    }));
+    setPayAmount(bal.toFixed(2));
+    showNotification('Removed payment entry.');
+  };
+
   // Dynamic slot generation for currently selected doctor, date, and extra tokens
   const currentDoctorSlots = (React.useMemo || useMemo || (fn => fn()))(() => {
     if (!formData.consultant) return [];
@@ -3162,6 +3282,8 @@ function RegistrationForm({
       paymentAmt: total,
       token: String(chosenToken)
     }));
+    setPayAmount(total.toFixed(2));
+    setPaymentRows([]);
     clearFieldError('consultant');
     clearFieldError('token');
     clearFieldError('location');
@@ -3473,6 +3595,50 @@ function RegistrationForm({
     // -------------------------------------------------------------
     // REGISTER NEW PATIENT (INSTANT 0ms SAVE - IMMEDIATE LIST DISPLAY!)
     // -------------------------------------------------------------
+    // Calculate breakdown from paymentRows (#payModeTable) or active row
+    let finalRegCash = 0,
+      finalRegCard = 0,
+      finalRegUpi = 0;
+    let finalConCash = 0,
+      finalConCard = 0,
+      finalConUpi = 0;
+    let paymentModeStr = 'Cash';
+    if (paymentRows.length > 0) {
+      paymentModeStr = paymentRows.map(r => r.modeLabel).join(', ');
+      const totalPaid = paymentRows.reduce((s, r) => s + r.amount, 0);
+      const regRatio = totalPaid > 0 ? Math.min(1, (formData.regFinalAmt || 50) / totalPaid) : 0;
+      paymentRows.forEach(r => {
+        const regPart = r.amount * regRatio;
+        const conPart = r.amount - regPart;
+        if (r.modeId === '275') {
+          finalRegCash += regPart;
+          finalConCash += conPart;
+        } else if (r.modeId === '276') {
+          finalRegCard += regPart;
+          finalConCard += conPart;
+        } else if (r.modeId === '277') {
+          finalRegUpi += regPart;
+          finalConUpi += conPart;
+        }
+      });
+    } else {
+      const singleAmt = parseFloat(payAmount) || formData.totalBillAmt || 1050;
+      if (payMode === '276') {
+        paymentModeStr = 'CARD';
+        finalRegCard = formData.regFinalAmt || 50;
+        finalConCard = formData.consFinalAmt || singleAmt - finalRegCard;
+      } else if (payMode === '277') {
+        paymentModeStr = 'UPI';
+        finalRegUpi = formData.regFinalAmt || 50;
+        finalConUpi = formData.consFinalAmt || singleAmt - finalRegUpi;
+      } else {
+        paymentModeStr = 'Cash';
+        finalRegCash = formData.regFinalAmt || 50;
+        finalConCash = formData.consFinalAmt || singleAmt - finalRegCash;
+      }
+    }
+    const savedTokenStr = String(formData.token || '1');
+    const localUmrNo = `UMR${335273 + appointments.length + 1}`;
     const regPayload = {
       patientName: formData.patientName.trim(),
       pname: formData.patientName.trim(),
@@ -3485,39 +3651,77 @@ function RegistrationForm({
       mobile: formData.mobile,
       consultant: formData.consultant,
       doctor: formData.consultant,
-      category: formData.category,
-      paymentMode: formData.paymentMode,
-      regFee: formData.regFinalAmt,
-      consFee: formData.consFinalAmt,
-      totalAmount: formData.totalBillAmt,
-      address: formData.address,
-      village: formData.village,
-      city: formData.city,
-      bloodGroup: formData.bloodGroup,
-      healthIssue: formData.healthIssue,
-      idProofType: formData.idType,
-      idProofNum: formData.idNumber,
-      parentOrHusband: formData.parentOrHusband
+      docName: formData.consultant,
+      token: savedTokenStr,
+      tokenNum: savedTokenStr,
+      appointmentDate: formData.appointmentDate || getTodayDateFormatted(),
+      visitDate: formData.appointmentDate || getTodayDateFormatted(),
+      location: formData.location || 'INDUS HEALTH CITY',
+      state: formData.state || 'Andhra Pradesh',
+      city: formData.city || 'Visakhapatnam',
+      village: formData.village || '',
+      address: formData.address || '',
+      country: formData.country || 'India',
+      category: formData.category || 'GENERAL - TRI',
+      pntCat: formData.category || 'GENERAL - TRI',
+      patientCategory: formData.category || 'GENERAL - TRI',
+      organization: formData.organization || '--Select Organization--',
+      organizationsId: formData.organization || '--Select Organization--',
+      walkIn: formData.walkIn || 'Walk In',
+      refType: formData.walkIn || 'Walk In',
+      occupation: formData.occupation || '--Select Occupation--',
+      idProofType: formData.idType || 'Aadhaar',
+      idProofNum: formData.idNumber || '',
+      careBy: formData.careBy || 'Self',
+      parentOrHusband: formData.parentOrHusband || '',
+      religion: formData.religion || 'Hindu',
+      maritalStatus: formData.maritalStatus || 'Married',
+      bloodGroup: formData.bloodGroup || 'B+',
+      healthIssue: formData.healthIssue || '',
+      paymentMode: paymentModeStr,
+      regFee: formData.regFinalAmt || 50,
+      consFee: formData.consFinalAmt || 1000,
+      totalAmount: formData.totalBillAmt || 1050,
+      totAmt: formData.totalBillAmt || 1050,
+      amtReceived: formData.amtReceived || finalRegCash + finalRegCard + finalRegUpi + finalConCash + finalConCard + finalConUpi,
+      amtRecd: formData.amtReceived || finalRegCash + finalRegCard + finalRegUpi + finalConCash + finalConCard + finalConUpi,
+      regCash: finalRegCash,
+      regCard: finalRegCard,
+      regAmoCard: finalRegCard,
+      regUpi: finalRegUpi,
+      regAmoUpi: finalRegUpi,
+      conCash: finalConCash,
+      conCard: finalConCard,
+      conAmoCard: finalConCard,
+      conUpi: finalConUpi,
+      conAmoUpi: finalConUpi
     };
-    const localUmrNo = `UMR${335273 + appointments.length + 1}`;
-    const localTokenStr = formData.token || `OPD-${120 + appointments.length + 1}`;
     const newAppointmentRecord = {
       umrNo: localUmrNo,
-      token: localTokenStr,
+      token: savedTokenStr,
+      tokenNum: savedTokenStr,
       patientName: fullName,
+      pname: formData.patientName.trim(),
+      lastName: formData.lastName.trim(),
       genderAge: `${formData.gender.toUpperCase()}/${formData.years || 40}yrs`,
       gender: formData.gender,
       age: formData.years || 40,
       appointmentDate: formData.appointmentDate || getTodayDateFormatted(),
+      apptDt: formData.appointmentDate || getTodayDateFormatted(),
       consultant: formData.consultant,
-      category: formData.category,
-      billStatus: 'PAID',
-      regCash: formData.paymentMode === 'Cash' ? formData.regFinalAmt : 0,
-      regCredit: formData.paymentMode === 'Credit' ? formData.regFinalAmt : 0,
-      regUpi: formData.paymentMode === 'UPI' ? formData.regFinalAmt : 0,
-      conCash: formData.paymentMode === 'Cash' ? formData.consFinalAmt : 0,
-      conCredit: formData.paymentMode === 'Credit' ? formData.consFinalAmt : 0,
-      conUpi: formData.paymentMode === 'UPI' ? formData.consFinalAmt : 0,
+      doctor: formData.consultant,
+      docName: formData.consultant,
+      location: formData.location || 'INDUS HEALTH CITY',
+      state: formData.state || 'Andhra Pradesh',
+      city: formData.city || 'Visakhapatnam',
+      category: formData.category || 'GENERAL - TRI',
+      billStatus: formData.balance <= 0 ? 'PAID' : 'PENDING',
+      regCash: finalRegCash,
+      regCredit: finalRegCard,
+      regUpi: finalRegUpi,
+      conCash: finalConCash,
+      conCredit: finalConCard,
+      conUpi: finalConUpi,
       phone: formData.mobile,
       vitals: {
         bp: '120/80',
@@ -3530,15 +3734,20 @@ function RegistrationForm({
     };
 
     // 1. Add record to list and local cache IMMEDIATELY (0ms delay!)
-    setAppointments(prev => {
-      const updated = [newAppointmentRecord, ...prev];
-      try {
-        localStorage.setItem('atri_hims_saved_appointments', JSON.stringify(updated));
-      } catch (err) {}
-      return updated;
-    });
+    // The booked token will now show RED for this doctor!
+    const updatedList = [newAppointmentRecord, ...appointments];
+    setAppointments(updatedList);
+    try {
+      localStorage.setItem('atri_hims_saved_appointments', JSON.stringify(updatedList));
+    } catch (err) {}
 
-    // 2. Notify parent component
+    // 2. Compute next available GREEN slot for this doctor so saved slot stays RED
+    const nextSlots = generateDoctorSlots(formData.consultant, formData.appointmentDate, updatedList, extraTokensCount);
+    const nextAvail = nextSlots.find(s => !s.isBooked);
+    const nextTokenNum = nextAvail ? nextAvail.tokenNumber : parseInt(savedTokenStr, 10) + 1;
+    setSelectedSlotToken(nextTokenNum);
+
+    // 3. Notify parent component
     if (onRegisterSuccess) {
       const matchingDoc = CONSULTANTS_ROSTER.find(c => c.name === formData.consultant);
       onRegisterSuccess({
@@ -3553,23 +3762,23 @@ function RegistrationForm({
         room: 'OPD Cabin 101',
         priority: 'Regular',
         opId: localUmrNo,
-        token: localTokenStr,
+        token: savedTokenStr,
         payment: {
           regFee: formData.regFinalAmt,
           consultationFee: formData.consFinalAmt,
           totalAmount: formData.totalBillAmt,
-          paymentMethod: formData.paymentMode,
-          paymentStatus: 'Paid',
+          paymentMethod: paymentModeStr,
+          paymentStatus: formData.balance <= 0 ? 'Paid' : 'Pending',
           transactionId: `TXN-${Math.floor(100000 + Math.random() * 900000)}`
         }
       });
     }
 
-    // 3. Immediately switch to Tab 1 (Patients List)
+    // 4. Immediately switch to Tab 1 (Patients List)
     setActiveTab('appointments');
-    showNotification(`✓ Patient ${fullName} successfully registered (${localUmrNo})! Record displayed in list.`);
+    showNotification(`✓ Patient ${fullName} (Token #${savedTokenStr}) successfully registered (${localUmrNo})! Record displayed in list.`);
 
-    // 4. Reset form fields
+    // 5. Reset form fields for next patient while advancing token
     setFormData(prev => ({
       ...prev,
       patientName: '',
@@ -3580,10 +3789,12 @@ function RegistrationForm({
       idNumber: '',
       parentOrHusband: '',
       healthIssue: '',
-      token: `OPD-${Math.floor(120 + appointments.length + 2)}`
+      token: String(nextTokenNum)
     }));
+    setPaymentRows([]);
+    setPayAmount((formData.totalBillAmt || 1050).toFixed(2));
 
-    // 5. Asynchronously persist to backend in background without freezing the UI
+    // 6. Asynchronously persist to backend in background without freezing the UI
     fetch('/api/patient/register', {
       method: 'POST',
       headers: {
@@ -4479,19 +4690,10 @@ function RegistrationForm({
       clearFieldError('state');
     },
     className: `dense-select equal-input ${formErrors.state ? 'input-has-error' : ''}`
-  }, /*#__PURE__*/React.createElement("option", {
-    value: "Andhra Pradesh"
-  }, "Andhra Pradesh"), /*#__PURE__*/React.createElement("option", {
-    value: "Telangana"
-  }, "Telangana"), /*#__PURE__*/React.createElement("option", {
-    value: "Odisha"
-  }, "Odisha"), /*#__PURE__*/React.createElement("option", {
-    value: "Tamil Nadu"
-  }, "Tamil Nadu"), /*#__PURE__*/React.createElement("option", {
-    value: "Karnataka"
-  }, "Karnataka"), /*#__PURE__*/React.createElement("option", {
-    value: "Maharashtra"
-  }, "Maharashtra")), /*#__PURE__*/React.createElement("small", {
+  }, MASTER_STATES.map(st => /*#__PURE__*/React.createElement("option", {
+    key: st,
+    value: st
+  }, st))), /*#__PURE__*/React.createElement("small", {
     id: "stateText",
     className: "field-error-text",
     style: {
@@ -4515,17 +4717,10 @@ function RegistrationForm({
       clearFieldError('city');
     },
     className: `dense-select equal-input ${formErrors.city ? 'input-has-error' : ''}`
-  }, /*#__PURE__*/React.createElement("option", {
-    value: "Visakhapatnam"
-  }, "Visakhapatnam"), /*#__PURE__*/React.createElement("option", {
-    value: "Hyderabad"
-  }, "Hyderabad"), /*#__PURE__*/React.createElement("option", {
-    value: "Bhubaneswar"
-  }, "Bhubaneswar"), /*#__PURE__*/React.createElement("option", {
-    value: "Vijayawada"
-  }, "Vijayawada"), /*#__PURE__*/React.createElement("option", {
-    value: "Guntur"
-  }, "Guntur")), /*#__PURE__*/React.createElement("small", {
+  }, MASTER_CITIES.map(ct => /*#__PURE__*/React.createElement("option", {
+    key: ct,
+    value: ct
+  }, ct))), /*#__PURE__*/React.createElement("small", {
     id: "cityText",
     className: "field-error-text",
     style: {
@@ -4563,42 +4758,32 @@ function RegistrationForm({
   }, /*#__PURE__*/React.createElement("label", {
     className: "field-lbl"
   }, "Visit Category"), /*#__PURE__*/React.createElement("select", {
+    id: "refType",
     value: formData.walkIn,
     onChange: e => setFormData({
       ...formData,
       walkIn: e.target.value
     }),
     className: "dense-select equal-input"
-  }, /*#__PURE__*/React.createElement("option", {
-    value: "Walk In"
-  }, "Walk In"), /*#__PURE__*/React.createElement("option", {
-    value: "Referral"
-  }, "Referral"), /*#__PURE__*/React.createElement("option", {
-    value: "Online"
-  }, "Online"), /*#__PURE__*/React.createElement("option", {
-    value: "Emergency"
-  }, "Emergency"))), /*#__PURE__*/React.createElement("div", {
+  }, MASTER_REF_TYPES.map(rf => /*#__PURE__*/React.createElement("option", {
+    key: rf,
+    value: rf
+  }, rf)))), /*#__PURE__*/React.createElement("div", {
     className: "input-group col-span-1"
   }, /*#__PURE__*/React.createElement("label", {
     className: "field-lbl"
   }, "Organization"), /*#__PURE__*/React.createElement("select", {
+    id: "organizationsId",
     value: formData.organization,
     onChange: e => setFormData({
       ...formData,
       organization: e.target.value
     }),
     className: "dense-select equal-input"
-  }, /*#__PURE__*/React.createElement("option", {
-    value: "--Select Organization--"
-  }, "Self Pay / Individual"), /*#__PURE__*/React.createElement("option", {
-    value: "Individual"
-  }, "Individual Self-Pay"), /*#__PURE__*/React.createElement("option", {
-    value: "EHS"
-  }, "EHS (Govt)"), /*#__PURE__*/React.createElement("option", {
-    value: "Arogyasri"
-  }, "Arogyasri Trust"), /*#__PURE__*/React.createElement("option", {
-    value: "Corporate TPA"
-  }, "Corporate Insurance TPA"))), /*#__PURE__*/React.createElement("div", {
+  }, MASTER_ORGANIZATIONS.map(org => /*#__PURE__*/React.createElement("option", {
+    key: org,
+    value: org
+  }, org)))), /*#__PURE__*/React.createElement("div", {
     className: "input-group col-span-1"
   }, /*#__PURE__*/React.createElement("label", {
     className: "field-lbl"
@@ -4615,15 +4800,10 @@ function RegistrationForm({
       clearFieldError('category');
     },
     className: `dense-select equal-input ${formErrors.category ? 'input-has-error' : ''}`
-  }, /*#__PURE__*/React.createElement("option", {
-    value: "GENERAL - TRI"
-  }, "GENERAL - TRI"), /*#__PURE__*/React.createElement("option", {
-    value: "VIP"
-  }, "VIP"), /*#__PURE__*/React.createElement("option", {
-    value: "STAFF"
-  }, "STAFF"), /*#__PURE__*/React.createElement("option", {
-    value: "BPL"
-  }, "BPL")), /*#__PURE__*/React.createElement("small", {
+  }, MASTER_CATEGORIES.map(cat => /*#__PURE__*/React.createElement("option", {
+    key: cat,
+    value: cat
+  }, cat))), /*#__PURE__*/React.createElement("small", {
     id: "patientCatText",
     className: "field-error-text",
     style: {
@@ -4635,46 +4815,32 @@ function RegistrationForm({
   }, /*#__PURE__*/React.createElement("label", {
     className: "field-lbl"
   }, "Occupation"), /*#__PURE__*/React.createElement("select", {
+    id: "occupation",
     value: formData.occupation,
     onChange: e => setFormData({
       ...formData,
       occupation: e.target.value
     }),
     className: "dense-select equal-input"
-  }, /*#__PURE__*/React.createElement("option", {
-    value: "--Select Occupation--"
-  }, "--Select Occupation--"), /*#__PURE__*/React.createElement("option", {
-    value: "Private Service"
-  }, "Private Service"), /*#__PURE__*/React.createElement("option", {
-    value: "Govt Employee"
-  }, "Govt Employee"), /*#__PURE__*/React.createElement("option", {
-    value: "Business"
-  }, "Business"), /*#__PURE__*/React.createElement("option", {
-    value: "Farmer"
-  }, "Farmer"), /*#__PURE__*/React.createElement("option", {
-    value: "Student"
-  }, "Student"), /*#__PURE__*/React.createElement("option", {
-    value: "Homemaker"
-  }, "Homemaker"))), /*#__PURE__*/React.createElement("div", {
+  }, MASTER_OCCUPATIONS.map(occ => /*#__PURE__*/React.createElement("option", {
+    key: occ,
+    value: occ
+  }, occ)))), /*#__PURE__*/React.createElement("div", {
     className: "input-group col-span-1"
   }, /*#__PURE__*/React.createElement("label", {
     className: "field-lbl"
   }, "Govt ID Type"), /*#__PURE__*/React.createElement("select", {
+    id: "idType",
     value: formData.idType,
     onChange: e => setFormData({
       ...formData,
       idType: e.target.value
     }),
     className: "dense-select equal-input"
-  }, /*#__PURE__*/React.createElement("option", {
-    value: "Aadhaar"
-  }, "Aadhaar"), /*#__PURE__*/React.createElement("option", {
-    value: "PAN Card"
-  }, "PAN Card"), /*#__PURE__*/React.createElement("option", {
-    value: "Voter ID"
-  }, "Voter ID"), /*#__PURE__*/React.createElement("option", {
-    value: "Passport"
-  }, "Passport"))), /*#__PURE__*/React.createElement("div", {
+  }, MASTER_ID_TYPES.map(idt => /*#__PURE__*/React.createElement("option", {
+    key: idt,
+    value: idt
+  }, idt)))), /*#__PURE__*/React.createElement("div", {
     className: "input-group col-span-1"
   }, /*#__PURE__*/React.createElement("label", {
     className: "field-lbl"
@@ -4692,21 +4858,17 @@ function RegistrationForm({
   }, /*#__PURE__*/React.createElement("label", {
     className: "field-lbl"
   }, "Care By"), /*#__PURE__*/React.createElement("select", {
+    id: "careBy",
     value: formData.careBy,
     onChange: e => setFormData({
       ...formData,
       careBy: e.target.value
     }),
     className: "dense-select equal-input"
-  }, /*#__PURE__*/React.createElement("option", {
-    value: "Self"
-  }, "Self"), /*#__PURE__*/React.createElement("option", {
-    value: "Spouse"
-  }, "Spouse"), /*#__PURE__*/React.createElement("option", {
-    value: "Parent"
-  }, "Parent"), /*#__PURE__*/React.createElement("option", {
-    value: "Guardian"
-  }, "Guardian"))), /*#__PURE__*/React.createElement("div", {
+  }, MASTER_CARE_BY.map(cb => /*#__PURE__*/React.createElement("option", {
+    key: cb,
+    value: cb
+  }, cb)))), /*#__PURE__*/React.createElement("div", {
     className: "input-group col-span-1"
   }, /*#__PURE__*/React.createElement("label", {
     className: "field-lbl"
@@ -4724,67 +4886,47 @@ function RegistrationForm({
   }, /*#__PURE__*/React.createElement("label", {
     className: "field-lbl"
   }, "Religion"), /*#__PURE__*/React.createElement("select", {
+    id: "pntReligion",
     value: formData.religion,
     onChange: e => setFormData({
       ...formData,
       religion: e.target.value
     }),
     className: "dense-select equal-input"
-  }, /*#__PURE__*/React.createElement("option", {
-    value: "Hindu"
-  }, "Hindu"), /*#__PURE__*/React.createElement("option", {
-    value: "Muslim"
-  }, "Muslim"), /*#__PURE__*/React.createElement("option", {
-    value: "Christian"
-  }, "Christian"), /*#__PURE__*/React.createElement("option", {
-    value: "Sikh"
-  }, "Sikh"), /*#__PURE__*/React.createElement("option", {
-    value: "Other"
-  }, "Other"))), /*#__PURE__*/React.createElement("div", {
+  }, MASTER_RELIGIONS.map(rel => /*#__PURE__*/React.createElement("option", {
+    key: rel,
+    value: rel
+  }, rel)))), /*#__PURE__*/React.createElement("div", {
     className: "input-group col-span-1"
   }, /*#__PURE__*/React.createElement("label", {
     className: "field-lbl"
   }, "Marital Status"), /*#__PURE__*/React.createElement("select", {
+    id: "maritalStatusVal",
     value: formData.maritalStatus,
     onChange: e => setFormData({
       ...formData,
       maritalStatus: e.target.value
     }),
     className: "dense-select equal-input"
-  }, /*#__PURE__*/React.createElement("option", {
-    value: "Married"
-  }, "Married"), /*#__PURE__*/React.createElement("option", {
-    value: "Single"
-  }, "Single"), /*#__PURE__*/React.createElement("option", {
-    value: "Widowed"
-  }, "Widowed"))), /*#__PURE__*/React.createElement("div", {
+  }, MASTER_MARITAL_STATUS.map(ms => /*#__PURE__*/React.createElement("option", {
+    key: ms,
+    value: ms
+  }, ms)))), /*#__PURE__*/React.createElement("div", {
     className: "input-group col-span-1"
   }, /*#__PURE__*/React.createElement("label", {
     className: "field-lbl"
   }, "Blood Group"), /*#__PURE__*/React.createElement("select", {
+    id: "pntBloodGrp",
     value: formData.bloodGroup,
     onChange: e => setFormData({
       ...formData,
       bloodGroup: e.target.value
     }),
     className: "dense-select equal-input"
-  }, /*#__PURE__*/React.createElement("option", {
-    value: "B+"
-  }, "B+"), /*#__PURE__*/React.createElement("option", {
-    value: "A+"
-  }, "A+"), /*#__PURE__*/React.createElement("option", {
-    value: "O+"
-  }, "O+"), /*#__PURE__*/React.createElement("option", {
-    value: "AB+"
-  }, "AB+"), /*#__PURE__*/React.createElement("option", {
-    value: "B-"
-  }, "B-"), /*#__PURE__*/React.createElement("option", {
-    value: "A-"
-  }, "A-"), /*#__PURE__*/React.createElement("option", {
-    value: "O-"
-  }, "O-"), /*#__PURE__*/React.createElement("option", {
-    value: "AB-"
-  }, "AB-"))), /*#__PURE__*/React.createElement("div", {
+  }, MASTER_BLOOD_GROUPS.map(bg => /*#__PURE__*/React.createElement("option", {
+    key: bg,
+    value: bg
+  }, bg)))), /*#__PURE__*/React.createElement("div", {
     className: "input-group col-span-5"
   }, /*#__PURE__*/React.createElement("label", {
     className: "field-lbl"
@@ -5226,89 +5368,194 @@ function RegistrationForm({
   }, "Status :"), /*#__PURE__*/React.createElement("div", {
     className: "fee-cell-val"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "badge-paid-pill"
-  }, "PAID")), /*#__PURE__*/React.createElement("div", {
+    className: formData.balance > 0 ? "badge-pending-pill" : "badge-paid-pill",
+    style: formData.balance > 0 ? {
+      backgroundColor: '#fef3c7',
+      color: '#b45309',
+      border: '1px solid #fde68a',
+      padding: '2px 8px',
+      borderRadius: '4px',
+      fontWeight: 700
+    } : {}
+  }, formData.balance > 0 ? 'PENDING' : 'PAID')), /*#__PURE__*/React.createElement("div", {
     className: "fee-cell-lbl"
   }, "Authorized By :"), /*#__PURE__*/React.createElement("div", {
     className: "fee-cell-val"
   }, /*#__PURE__*/React.createElement("select", {
+    id: "authorizedBy",
+    name: "feeModel.authorizedBy",
     value: formData.authorizedBy,
     onChange: e => setFormData({
       ...formData,
       authorizedBy: e.target.value
     }),
     className: "dense-select equal-input"
-  }, /*#__PURE__*/React.createElement("option", {
-    value: "Admin"
-  }, "Admin"), /*#__PURE__*/React.createElement("option", {
-    value: "Medical Director"
-  }, "Medical Director"), /*#__PURE__*/React.createElement("option", {
-    value: "Chief Accountant"
-  }, "Chief Accountant"))))), /*#__PURE__*/React.createElement("div", {
-    className: "payment-table-wrap",
-    style: {
-      marginTop: '10px'
-    }
+  }, MASTER_AUTHORIZED.map(auth => /*#__PURE__*/React.createElement("option", {
+    key: auth,
+    value: auth
+  }, auth)))))), /*#__PURE__*/React.createElement("div", {
+    className: "legacy-paymode-wrapper"
   }, /*#__PURE__*/React.createElement("table", {
-    className: "equal-payment-table"
+    id: "payModeTable",
+    className: "legacy-paymode-table"
   }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", {
     style: {
-      width: '45%'
-    }
-  }, "Payment Mode"), /*#__PURE__*/React.createElement("th", {
-    style: {
-      width: '45%'
-    }
-  }, "Amount (\u20B9)"), /*#__PURE__*/React.createElement("th", {
-    style: {
-      width: '10%',
+      width: '18%',
       textAlign: 'center'
     }
-  }, "Action"))), /*#__PURE__*/React.createElement("tbody", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("select", {
-    value: formData.paymentMode,
-    onChange: e => setFormData({
-      ...formData,
-      paymentMode: e.target.value
-    }),
-    className: "dense-select equal-input"
+  }, "Mode"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      width: '18%',
+      textAlign: 'center'
+    }
+  }, "Amt"), payMode === '276' && /*#__PURE__*/React.createElement("th", {
+    style: {
+      width: '14%',
+      textAlign: 'center'
+    }
+  }, "Card Type"), (payMode === '276' || payMode === '277') && /*#__PURE__*/React.createElement("th", {
+    style: {
+      width: '20%',
+      textAlign: 'center'
+    }
+  }, "Trans Id."), payMode === '276' && /*#__PURE__*/React.createElement("th", {
+    style: {
+      width: '18%',
+      textAlign: 'center'
+    }
+  }, "Card Bank Name"), payMode === '276' && /*#__PURE__*/React.createElement("th", {
+    style: {
+      width: '12%',
+      textAlign: 'center'
+    }
+  }, "Expire Dt"), /*#__PURE__*/React.createElement("th", {
+    style: {
+      width: '30px',
+      textAlign: 'center'
+    }
+  }))), /*#__PURE__*/React.createElement("tbody", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("select", {
+    id: "creditPt",
+    name: "cashPt",
+    value: payMode,
+    onChange: e => {
+      setPayMode(e.target.value);
+      setPayModeError('');
+    },
+    className: "form-control"
   }, /*#__PURE__*/React.createElement("option", {
-    value: "Cash"
+    value: "0"
+  }, "--Select--"), /*#__PURE__*/React.createElement("option", {
+    value: "275"
   }, "Cash"), /*#__PURE__*/React.createElement("option", {
-    value: "UPI"
-  }, "UPI / GPay / PhonePe"), /*#__PURE__*/React.createElement("option", {
-    value: "Card"
-  }, "Debit / Credit Card"), /*#__PURE__*/React.createElement("option", {
+    value: "276"
+  }, "CARD"), /*#__PURE__*/React.createElement("option", {
+    value: "277"
+  }, "UPI"))), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    id: "creditAmount",
+    name: "amount",
+    value: payAmount,
+    onChange: e => {
+      setPayAmount(e.target.value);
+      setPayModeError('');
+    },
+    placeholder: "0.00",
+    className: "form-control"
+  })), payMode === '276' && /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("select", {
+    id: "cardcardType",
+    name: "cardType",
+    value: cardType,
+    onChange: e => setCardType(e.target.value),
+    className: "form-control"
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "0"
+  }, "--Select--"), /*#__PURE__*/React.createElement("option", {
     value: "Credit"
-  }, "Credit / Corporate TPA"))), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("input", {
-    type: "number",
-    value: formData.paymentAmt,
-    onChange: e => setFormData({
-      ...formData,
-      paymentAmt: Number(e.target.value)
-    }),
-    className: "dense-input equal-input text-right bold-num"
-  })), /*#__PURE__*/React.createElement("td", {
+  }, "Credit"), /*#__PURE__*/React.createElement("option", {
+    value: "Debit"
+  }, "Debit"))), (payMode === '276' || payMode === '277') && /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    id: "creditNo",
+    name: "creditNo",
+    value: cardTransNo,
+    onChange: e => setCardTransNo(e.target.value),
+    placeholder: payMode === '276' ? "Enter Card Number" : "Enter UPI Ref / Trans Id",
+    className: "form-control"
+  })), payMode === '276' && /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("select", {
+    id: "cardBankName",
+    name: "cardBankNames",
+    value: cardBankName,
+    onChange: e => setCardBankName(e.target.value),
+    className: "form-control"
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "0"
+  }, "-select-"), MASTER_BANKS.map(bank => /*#__PURE__*/React.createElement("option", {
+    key: bank,
+    value: bank
+  }, bank)))), payMode === '276' && /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("input", {
+    type: "text",
+    id: "creditDate",
+    name: "expDate",
+    value: cardExpDate,
+    onChange: e => setCardExpDate(e.target.value),
+    placeholder: "MM/YYYY",
+    maxLength: 7,
+    className: "form-control",
     style: {
       textAlign: 'center'
     }
+  })), /*#__PURE__*/React.createElement("td", {
+    align: "center"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
-    className: "btn-add-mode-circle",
-    onClick: () => showNotification("Split payment mode added."),
-    title: "Add Split Mode"
-  }, "+"))))), /*#__PURE__*/React.createElement("div", {
-    className: "payment-chips-row"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "chips-label"
-  }, "Quick Select:"), ['Cash', 'UPI', 'Card', 'Credit'].map(mode => /*#__PURE__*/React.createElement("button", {
+    id: "addPayments",
+    className: "btn-add-payment",
+    onClick: handleAddPayment,
+    title: "Add Payment Mode (+)"
+  }, "+"))), payModeError && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+    colSpan: payMode === '276' ? 7 : payMode === '277' ? 4 : 3,
+    style: {
+      color: '#A94442',
+      fontWeight: 700,
+      padding: '4px 8px'
+    }
+  }, payModeError))), paymentRows.length > 0 && /*#__PURE__*/React.createElement("tfoot", {
+    id: "paymentsTffotAmm"
+  }, paymentRows.map(row => /*#__PURE__*/React.createElement("tr", {
+    key: row.id,
+    style: {
+      backgroundColor: '#f8fafc'
+    }
+  }, /*#__PURE__*/React.createElement("td", {
+    style: {
+      fontWeight: 700,
+      color: '#0369a1'
+    }
+  }, row.modeLabel), /*#__PURE__*/React.createElement("td", {
+    style: {
+      fontWeight: 700,
+      textAlign: 'right'
+    }
+  }, "\u20B9", row.amount.toFixed(2)), payMode === '276' && /*#__PURE__*/React.createElement("td", null, row.cardType || '-'), (payMode === '276' || payMode === '277') && /*#__PURE__*/React.createElement("td", {
+    style: {
+      fontSize: '11px'
+    }
+  }, row.transNo || '-'), payMode === '276' && /*#__PURE__*/React.createElement("td", {
+    style: {
+      fontSize: '11px'
+    }
+  }, row.bankName || '-'), payMode === '276' && /*#__PURE__*/React.createElement("td", {
+    style: {
+      textAlign: 'center'
+    }
+  }, row.expDate || '-'), /*#__PURE__*/React.createElement("td", {
+    align: "center"
+  }, /*#__PURE__*/React.createElement("button", {
     type: "button",
-    key: mode,
-    className: `pay-mode-chip ${formData.paymentMode === mode ? 'active' : ''}`,
-    onClick: () => setFormData({
-      ...formData,
-      paymentMode: mode
-    })
-  }, mode === 'Cash' && '💵 Cash', mode === 'UPI' && '📱 UPI / QR', mode === 'Card' && '💳 Card', mode === 'Credit' && '🏥 Corporate'))))))), /*#__PURE__*/React.createElement("div", {
+    className: "btn-del-payment",
+    onClick: () => handleDeletePayment(row.id),
+    title: "Delete Payment Row"
+  }, "\uD83D\uDDD1\uFE0F")))))))))), /*#__PURE__*/React.createElement("div", {
     className: "form-equal-footer-bar"
   }, isEditMode && editingPatient ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     type: "submit",

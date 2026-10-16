@@ -6340,4 +6340,87 @@ body {
   color: #DC2626 !important;
   font-weight: bold;
   margin-left: 2px;
+}
+
+/* Legacy patientQueue.jsp #payModeTable (lines 3521-3625) */
+.legacy-paymode-wrapper {
+  border: 1px solid #428bca !important;
+  background: #D1E5F4 !important;
+  padding: 8px !important;
+  border-radius: 4px !important;
+  margin-top: 10px !important;
+  overflow-x: auto;
+}
+
+.legacy-paymode-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  background: #ffffff !important;
+  font-size: 11.5px !important;
+  border: 1px solid #bce8f1 !important;
+}
+
+.legacy-paymode-table thead tr {
+  background-color: #428bca !important;
+  color: #ffffff !important;
+}
+
+.legacy-paymode-table th {
+  padding: 6px 8px !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+  border: 1px solid #357ebd !important;
+  color: #ffffff !important;
+  white-space: nowrap;
+}
+
+.legacy-paymode-table td {
+  padding: 5px 6px !important;
+  border: 1px solid #cbd5e1 !important;
+  vertical-align: middle !important;
+}
+
+.legacy-paymode-table .form-control {
+  width: 100% !important;
+  height: 28px !important;
+  padding: 2px 6px !important;
+  font-size: 11.5px !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 3px !important;
+  background-color: #ffffff !important;
+  box-sizing: border-box;
+}
+
+.btn-add-payment {
+  background-color: #428bca !important;
+  color: #ffffff !important;
+  border: 1px solid #357ebd !important;
+  width: 30px !important;
+  height: 28px !important;
+  border-radius: 3px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 18px !important;
+  font-weight: bold !important;
+  cursor: pointer !important;
+  transition: background-color 0.15s;
+}
+
+.btn-add-payment:hover {
+  background-color: #3071a9 !important;
+}
+
+.btn-del-payment {
+  background: none !important;
+  border: none !important;
+  color: #dc2626 !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  padding: 2px 6px !important;
+  border-radius: 3px !important;
+}
+
+.btn-del-payment:hover {
+  background-color: #fee2e2 !important;
 }

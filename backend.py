@@ -1134,7 +1134,8 @@ def register_patient():
     blood_group = data.get('bloodGroup') or data.get('bloodGrp', 'B+')
     department = data.get('department') or data.get('departmentName', 'General Medicine')
     department_code = data.get('departmentCode', 'GEN')
-    doctor = data.get('doctor') or data.get('consultant') or data.get('docName', 'Consultant Doctor')
+    location = data.get('location') or data.get('locName') or data.get('hospital') or 'INDUS HEALTH CITY'
+    doctor = data.get('doctor') or data.get('consultant') or data.get('docName') or 'Consultant Doctor'
     room = data.get('room', 'OP Cabin')
     priority = data.get('priority', 'Regular')
     visit_date = data.get('visitDate') or data.get('appointmentDate', datetime.now().strftime('%d-%b-%Y'))
@@ -1221,6 +1222,9 @@ def register_patient():
         "doctor": doctor,
         "consultant": doctor,
         "docName": doctor,
+        "location": location,
+        "locName": location,
+        "hospital": location,
         "room": room,
         "priority": priority,
         "visitDate": visit_date,
@@ -1287,15 +1291,36 @@ def register_patient():
                 INSERT INTO at_pr_appt (
                     patient_id, umr_num, op_num, token_num, visit_type,
                     appt_status_id, bill_status, schedule_dt, reg_fee, cons_fee, tot_amt,
-                    reg_cash, reg_card, reg_upi, con_cash, con_card, con_upi, added_by, added_ip
-                ) VALUES (%s, %s, %s, %s, '174', '159', '17', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    reg_cash, reg_card, reg_upi, con_cash, con_card, con_upi, doc_name, added_by, added_ip
+                ) VALUES (%s, %s, %s, %s, '174', '159', '17', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                 """, (
                     patient_id, umr_no, op_id, token, visit_date,
                     reg_fee, cons_fee, tot_amt, reg_cash, reg_card, reg_upi,
-                    con_cash, con_card, con_upi, 'RECEPTIONIST', request.remote_addr or '127.0.0.1'
+                    con_cash, con_card, con_upi, doctor, 'RECEPTIONIST', request.remote_addr or '127.0.0.1'
                 ))
             except Exception as e_appt:
                 print(f"[Warning] at_pr_appt insert: {e_appt}")
+
+            # 3. Insert into patients table
+            try:
+                if DB_TYPE == 'mysql':
+                    cur.execute("""
+                    INSERT INTO patients (
+                        op_id, token, patient_name, age, gender, phone, blood_group,
+                        department, department_code, doctor, room, priority, visit_date, visit_type,
+                        symptoms, diagnosis, doctor_notes, payment_json, vitals_json
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ON DUPLICATE KEY UPDATE
+                        patient_name = VALUES(patient_name),
+                        doctor = VALUES(doctor),
+                        payment_json = VALUES(payment_json)
+                    """, (
+                        op_id, token, patient_name, age, gender, phone, blood_group,
+                        department, department_code, doctor, room, priority, visit_date, visit_type,
+                        symptoms, diagnosis, doctor_notes, json.dumps(payment), json.dumps(vitals)
+                    ))
+            except Exception as e_pat:
+                print(f"[Warning] patients insert: {e_pat}")
 
             conn.commit()
             cur.close()

@@ -140,13 +140,28 @@ function proxyApiRequest(req, res) {
   });
 
   proxyReq.on('error', (err) => {
-    console.error(`[Proxy Error] Failed to proxy to backend: ${err.message}`);
-    res.writeHead(502, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({
-      error: 'Backend API service unavailable',
-      message: err.message,
-      suggestion: 'Ensure py backend.py is running on port 5000'
-    }));
+    if (err.code === 'ECONNREFUSED') {
+      res.writeHead(503, { 
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Retry-After': '5'
+      });
+      res.end(JSON.stringify({
+        status: 'warming_up',
+        error: 'Backend API is initializing',
+        message: 'Spring Boot backend is currently starting up (takes ~30-45s). It will be ready in a few moments.'
+      }));
+    } else {
+      console.error(`[Proxy Error] Failed to proxy to backend: ${err.message}`);
+      res.writeHead(502, { 
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      });
+      res.end(JSON.stringify({
+        error: 'Backend API service unavailable',
+        message: err.message
+      }));
+    }
   });
 
   req.pipe(proxyReq);

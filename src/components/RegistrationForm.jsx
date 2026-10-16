@@ -1559,11 +1559,29 @@ export function RegistrationForm({
               }} 
             />
 
-            <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginLeft: '6px' }}>
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: '6px' }}>
               <button
                 type="button"
-                className={`reg-tab-btn ${dateFilterRange && dateFilterRange.start && dateFilterRange.end && formatToDdMmmYyyy(dateFilterRange.start) === formatToDdMmmYyyy(new Date()) && formatToDdMmmYyyy(dateFilterRange.end) === formatToDdMmmYyyy(new Date()) ? 'active' : ''}`}
-                style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 700, borderRadius: '6px', height: '34px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                style={{
+                  padding: '6px 14px',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  borderRadius: '6px',
+                  height: '34px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  background: (dateFilterRange && dateFilterRange.start && dateFilterRange.end && formatToDdMmmYyyy(dateFilterRange.start) === formatToDdMmmYyyy(new Date()) && formatToDdMmmYyyy(dateFilterRange.end) === formatToDdMmmYyyy(new Date()))
+                    ? 'linear-gradient(180deg, #0284c7 0%, #0369a1 100%)'
+                    : '#dbeafe',
+                  color: (dateFilterRange && dateFilterRange.start && dateFilterRange.end && formatToDdMmmYyyy(dateFilterRange.start) === formatToDdMmmYyyy(new Date()) && formatToDdMmmYyyy(dateFilterRange.end) === formatToDdMmmYyyy(new Date()))
+                    ? '#ffffff'
+                    : '#0369a1',
+                  border: '1px solid #93c5fd',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                  transition: 'all 0.15s ease'
+                }}
                 onClick={() => {
                   const today = new Date();
                   setDateRange(getTodayDateRangeFormatted());
@@ -1576,8 +1594,24 @@ export function RegistrationForm({
               </button>
               <button
                 type="button"
-                className={`reg-tab-btn ${!dateFilterRange ? 'active' : ''}`}
-                style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 700, borderRadius: '6px', height: '34px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                style={{
+                  padding: '6px 14px',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  borderRadius: '6px',
+                  height: '34px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  background: !dateFilterRange
+                    ? 'linear-gradient(180deg, #0284c7 0%, #0369a1 100%)'
+                    : '#e2e8f0',
+                  color: !dateFilterRange ? '#ffffff' : '#334155',
+                  border: '1px solid #cbd5e1',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+                  transition: 'all 0.15s ease'
+                }}
                 onClick={() => {
                   setDateRange("All Appointments");
                   setDateFilterRange(null);

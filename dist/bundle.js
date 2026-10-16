@@ -2077,61 +2077,81 @@ const CONSULTANTS_ROSTER = [{
   code: 'EMP00006',
   spec: 'NEUROLOGIST',
   fee: 1000,
-  depCode: 'NEU'
+  depCode: 'NEU',
+  doctorId: 6,
+  doctorDetails: '6:EMP00006:NEUROLOGIST'
 }, {
   name: 'R LALITHA LA',
   code: 'EMP00001',
   spec: 'SENIOR GENERAL PHYSICIAN / OPD',
   fee: 800,
-  depCode: 'GEN'
+  depCode: 'GEN',
+  doctorId: 1,
+  doctorDetails: '1:EMP00001:GENERAL MEDICINE'
 }, {
   name: 'RAKESH TUMULA RT',
   code: 'EMP00002',
   spec: 'ORTHOPEDICS & SPINE SPECIALIST',
   fee: 1450,
-  depCode: 'ORT'
+  depCode: 'ORT',
+  doctorId: 2,
+  doctorDetails: '2:EMP00002:ORTHOPEDICS'
 }, {
   name: 'ANIL KUMAR MAHAPATRO AKM',
   code: 'EMP00003',
   spec: 'CARDIOLOGY & INTERVENTIONAL SPECIALIST',
   fee: 850,
-  depCode: 'CAR'
+  depCode: 'CAR',
+  doctorId: 3,
+  doctorDetails: '3:EMP00003:CARDIOLOGY'
 }, {
   name: 'RAMESH NAIDU M RNM',
   code: 'EMP00004',
   spec: 'GENERAL MEDICINE & DIABETOLOGY',
   fee: 600,
-  depCode: 'GEN'
+  depCode: 'GEN',
+  doctorId: 4,
+  doctorDetails: '4:EMP00004:GENERAL MEDICINE'
 }, {
   name: 'Dr. Ananya Iyer',
   code: 'EMP00005',
   spec: 'CHIEF CARDIOLOGIST',
   fee: 700,
-  depCode: 'CAR'
+  depCode: 'CAR',
+  doctorId: 5,
+  doctorDetails: '5:EMP00005:CARDIOLOGY'
 }, {
   name: 'Dr. Sandeep K. Banerjee',
   code: 'EMP00007',
   spec: 'CHIEF PHYSICIAN',
   fee: 600,
-  depCode: 'GEN'
+  depCode: 'GEN',
+  doctorId: 7,
+  doctorDetails: '7:EMP00007:GENERAL MEDICINE'
 }, {
   name: 'Dr. Vikramaditya Rathore',
   code: 'EMP00008',
   spec: 'CONSULTANT ORTHOPEDIC SURGEON',
   fee: 750,
-  depCode: 'ORT'
+  depCode: 'ORT',
+  doctorId: 8,
+  doctorDetails: '8:EMP00008:ORTHOPEDICS'
 }, {
   name: 'Dr. Shalini Deshmukh',
   code: 'EMP00009',
   spec: 'SENIOR PEDIATRICIAN',
   fee: 500,
-  depCode: 'PED'
+  depCode: 'PED',
+  doctorId: 9,
+  doctorDetails: '9:EMP00009:PEDIATRICS'
 }, {
   name: 'Dr. Neil Chatterjee',
   code: 'EMP00010',
   spec: 'CLINICAL DERMATOLOGIST',
   fee: 650,
-  depCode: 'DER'
+  depCode: 'DER',
+  doctorId: 10,
+  doctorDetails: '10:EMP00010:DERMATOLOGY'
 }];
 
 // Helper to format minutes into 12-hour AM/PM string (e.g. 08:30 AM)
@@ -2993,13 +3013,13 @@ function RegistrationForm({
     maritalStatus: 'Married',
     bloodGroup: 'B+',
     healthIssue: '',
-    // Appointment Details (Selected dynamically on step-by-step workflow)
-    location: '',
+    // Appointment Details (Defaulted to Hospital and Doctor ready to book)
+    location: 'INDUS HEALTH CITY',
     appointmentDate: getTodayDateFormatted(),
-    token: '',
-    consultant: '',
-    doctorCode: '',
-    specialization: '',
+    token: '1',
+    consultant: 'SATYANARAYANA V VSN / ',
+    doctorCode: 'EMP00006',
+    specialization: 'NEUROLOGIST',
     // Fee Details
     regFee: 50,
     regFinalAmt: 50,
@@ -3018,10 +3038,10 @@ function RegistrationForm({
     paymentAmt: 1050
   });
 
-  // Doctor Slots & Extra Tokens State (Tokens OPEN after Doctor is selected)
+  // Doctor Slots & Extra Tokens State (Tokens directly visible)
   const [extraTokensCount, setExtraTokensCount] = useState(0);
-  const [selectedSlotToken, setSelectedSlotToken] = useState(null);
-  const [isSlotsOpen, setIsSlotsOpen] = useState(false);
+  const [selectedSlotToken, setSelectedSlotToken] = useState(1);
+  const [isSlotsOpen, setIsSlotsOpen] = useState(true);
 
   // Exact Payment Table (#payModeTable) State matching patientQueue.jsp (lines 3521-3625)
   const [paymentRows, setPaymentRows] = useState([]);
@@ -3113,8 +3133,9 @@ function RegistrationForm({
 
   // Dynamic slot generation for currently selected doctor, date, and extra tokens
   const currentDoctorSlots = (React.useMemo || useMemo || (fn => fn()))(() => {
-    if (!formData.consultant) return [];
-    return generateDoctorSlots(formData.consultant, formData.appointmentDate, appointments, extraTokensCount);
+    const docName = formData.consultant || CONSULTANTS_ROSTER[0] && CONSULTANTS_ROSTER[0].name;
+    if (!docName) return [];
+    return generateDoctorSlots(docName, formData.appointmentDate, appointments, extraTokensCount);
   }, [formData.consultant, formData.appointmentDate, appointments, extraTokensCount]);
   const showNotification = msg => {
     setToast(msg);
@@ -3224,27 +3245,18 @@ function RegistrationForm({
     showNotification('Switched to New Patient Registration mode.');
   };
 
-  // Step 1: Hospital Change Handler
+  // Hospital Change Handler
   const handleHospitalChange = hospitalName => {
     setFormData(prev => ({
       ...prev,
-      location: hospitalName,
-      consultant: '',
-      doctorCode: '',
-      specialization: '',
-      token: ''
+      location: hospitalName
     }));
     clearFieldError('location');
-    setIsSlotsOpen(false); // Close tokens until doctor is chosen
-    setSelectedSlotToken(null);
-    if (hospitalName) {
-      showNotification(`🏥 Hospital selected: ${hospitalName}. Please choose a Doctor to OPEN tokens.`);
-    }
   };
 
-  // Step 2: Doctor Change Handler (ONCHANGE OPENS TOKENS)
-  const handleConsultantChange = name => {
-    if (!name) {
+  // Doctor Change Handler (Query-based onchange updates fees, amounts, and slots immediately)
+  const handleConsultantChange = val => {
+    if (!val || val === '0') {
       setFormData(prev => ({
         ...prev,
         consultant: '',
@@ -3252,12 +3264,14 @@ function RegistrationForm({
         specialization: '',
         token: ''
       }));
-      setIsSlotsOpen(false);
       setSelectedSlotToken(null);
       return;
     }
-    const doc = CONSULTANTS_ROSTER.find(c => c.name === name) || CONSULTANTS_ROSTER[0];
-    const total = (formData.regFinalAmt || 50) + doc.fee - (formData.discAmt || 0);
+    const doc = CONSULTANTS_ROSTER.find(c => c.name === val || c.doctorDetails === val || c.code === val || String(c.doctorId) === String(val) || val.startsWith(c.name) || c.doctorDetails && val.includes(c.code)) || CONSULTANTS_ROSTER[0];
+    const regFee = 50;
+    const consFee = Number(doc.fee);
+    const discAmt = Number(formData.discAmt || 0);
+    const total = regFee + consFee - discAmt;
     setExtraTokensCount(0);
 
     // Compute slots for newly selected doctor
@@ -3266,28 +3280,31 @@ function RegistrationForm({
     const firstAvail = newSlots.find(s => !s.isBooked) || newSlots[0];
     const chosenToken = firstAvail ? firstAvail.tokenNumber : 1;
     setSelectedSlotToken(chosenToken);
-    setIsSlotsOpen(true); // <--- OPEN TOKENS IMMEDIATELY ON DOCTOR ONCHANGE!
-
+    setIsSlotsOpen(true);
     setFormData(prev => ({
       ...prev,
       location: prev.location || 'INDUS HEALTH CITY',
       consultant: doc.name,
       doctorCode: doc.code,
       specialization: doc.spec,
-      consFee: doc.fee,
-      consFinalAmt: doc.fee,
+      consFee: consFee,
+      consFinalAmt: consFee,
+      regFee: regFee,
+      regFinalAmt: regFee,
       totalAmt: total,
       totalBillAmt: total,
       amtReceived: total,
       paymentAmt: total,
-      token: String(chosenToken)
+      balance: 0,
+      token: String(chosenToken),
+      status: 'PAID'
     }));
     setPayAmount(total.toFixed(2));
     setPaymentRows([]);
     clearFieldError('consultant');
     clearFieldError('token');
     clearFieldError('location');
-    showNotification(`✓ Doctor ${doc.name} (${doc.code}) selected — Token slots OPENED!`);
+    showNotification(`✓ Doctor ${doc.name} selected | Fee: ₹${consFee} | Total: ₹${total}`);
   };
 
   // Click on a slot pill - user can select ANY token of their choice, turning it to OCCUPIED RED
@@ -4974,16 +4991,6 @@ function RegistrationForm({
   }, "\uD83C\uDFE5"), " Doctor & Token Details:"), /*#__PURE__*/React.createElement("span", {
     className: "sec-badge-hint"
   }, "Token & Consultant Routing")), /*#__PURE__*/React.createElement("div", {
-    className: "hospital-quick-selector"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "hosp-step-tag"
-  }, "Step 1: Hospital"), ['INDUS HEALTH CITY', 'INDUS SUPER SPECIALITY', 'INDUS CLINIC & DIAGNOSTICS'].map(hosp => /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    key: hosp,
-    className: `hosp-quick-btn ${formData.location === hosp ? 'active' : ''}`,
-    onClick: () => handleHospitalChange(hosp),
-    title: `Select ${hosp}`
-  }, "\uD83C\uDFE5 ", hosp))), /*#__PURE__*/React.createElement("div", {
     className: "doctor-token-box-container"
   }, /*#__PURE__*/React.createElement("div", {
     className: "doctor-token-box-row"
@@ -4994,10 +5001,10 @@ function RegistrationForm({
     value: formData.location,
     onChange: e => handleHospitalChange(e.target.value),
     className: `dt-select ${formErrors.location ? 'input-has-error' : ''}`,
-    title: "Step 1: Select Hospital *"
+    title: "Select Hospital *"
   }, /*#__PURE__*/React.createElement("option", {
     value: ""
-  }, "-- Step 1: Select Hospital * --"), /*#__PURE__*/React.createElement("option", {
+  }, "Select Hospital"), /*#__PURE__*/React.createElement("option", {
     value: "INDUS HEALTH CITY"
   }, "INDUS HEALTH CITY"), /*#__PURE__*/React.createElement("option", {
     value: "INDUS SUPER SPECIALITY"
@@ -5066,12 +5073,11 @@ function RegistrationForm({
     id: "idDoctor",
     value: formData.consultant,
     onChange: e => handleConsultantChange(e.target.value),
-    className: `dt-select dt-doctor-select ${formErrors.consultant ? 'input-has-error' : ''} ${formData.location && !formData.consultant ? 'ready-for-doc' : ''}`,
-    title: "Step 2: Select Consultant Doctor (Opens Tokens) *",
-    disabled: !formData.location
+    className: `dt-select dt-doctor-select ${formErrors.consultant ? 'input-has-error' : ''}`,
+    title: "Select Consultant Doctor *"
   }, /*#__PURE__*/React.createElement("option", {
     value: ""
-  }, !formData.location ? '-- 1st Select Hospital Above * --' : '-- Step 2: Select Consultant Doctor (Opens Tokens) * --'), CONSULTANTS_ROSTER.map(doc => /*#__PURE__*/React.createElement("option", {
+  }, "Select Consultant"), CONSULTANTS_ROSTER.map(doc => /*#__PURE__*/React.createElement("option", {
     key: doc.code,
     value: doc.name
   }, doc.name))), /*#__PURE__*/React.createElement("small", {
@@ -5085,34 +5091,25 @@ function RegistrationForm({
     className: "dt-col dt-col-code"
   }, /*#__PURE__*/React.createElement("input", {
     type: "text",
-    value: formData.doctorCode || '-',
+    id: "empCode",
+    value: formData.doctorCode || '',
     readOnly: true,
     className: "dt-input dt-readonly",
     title: "Doctor Employee Code",
-    placeholder: "Emp Code"
+    placeholder: "Doctor Code"
   })), /*#__PURE__*/React.createElement("div", {
     className: "dt-col dt-col-spec"
   }, /*#__PURE__*/React.createElement("input", {
     type: "text",
-    value: formData.specialization || '-',
+    id: "specName",
+    value: formData.specialization || '',
     readOnly: true,
     className: "dt-input dt-readonly",
     title: "Doctor Specialization",
     placeholder: "Specialization"
-  })))), !formData.location ? /*#__PURE__*/React.createElement("div", {
-    className: "doctor-slots-waiting-box"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "waiting-icon"
-  }, "\uD83C\uDFE5"), /*#__PURE__*/React.createElement("div", {
-    className: "waiting-text"
-  }, /*#__PURE__*/React.createElement("strong", null, "Step 1: Select Hospital First"), /*#__PURE__*/React.createElement("p", null, "Please choose a Hospital from the dropdown or click a hospital button above to enable Doctor selection."))) : !formData.consultant || !isSlotsOpen ? /*#__PURE__*/React.createElement("div", {
-    className: "doctor-slots-waiting-box"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "waiting-icon"
-  }, "\uD83D\uDC68\u200D\u2695\uFE0F"), /*#__PURE__*/React.createElement("div", {
-    className: "waiting-text"
-  }, /*#__PURE__*/React.createElement("strong", null, "Step 2: Select Doctor to OPEN Tokens"), /*#__PURE__*/React.createElement("p", null, "Hospital: ", /*#__PURE__*/React.createElement("strong", null, formData.location), " selected. Choose a Consultant Doctor from the dropdown above to OPEN available token slots."))) : /*#__PURE__*/React.createElement("div", {
-    className: "doctor-slots-open-wrapper"
+  })))), /*#__PURE__*/React.createElement("div", {
+    className: "doctor-slots-open-wrapper",
+    id: "docSlotsMainDiv"
   }, /*#__PURE__*/React.createElement("div", {
     className: "slots-title-row",
     style: {
@@ -5165,12 +5162,14 @@ function RegistrationForm({
       backgroundColor: '#dc2626',
       display: 'inline-block'
     }
-  }), " Occupied / Selected (Red)"), /*#__PURE__*/React.createElement("span", {
+  }), " Occupied / Selected (Red)"), formData.consultant && /*#__PURE__*/React.createElement("span", {
     className: "slots-open-badge"
   }, "\u25CF Dr. ", formData.consultant.split(' ')[0]))), /*#__PURE__*/React.createElement("div", {
-    className: "doctor-slots-details-container"
+    className: "doctor-slots-details-container",
+    id: "docSlotsDiv"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "doctor-slots-grid"
+    className: "doctor-slots-grid",
+    id: "docSlots"
   }, currentDoctorSlots.map(slot => {
     const isSelected = selectedSlotToken === slot.tokenNumber || String(formData.token) === String(slot.tokenNumber);
     const isOccupiedRed = slot.isBooked || isSelected;
@@ -5202,7 +5201,8 @@ function RegistrationForm({
       title: isSelected ? `Token #${slot.tokenNumber} (${slot.timeLabel}) - SELECTED WISH TOKEN (OCCUPIED RED)` : slot.isBooked ? `Token #${slot.tokenNumber} (${slot.timeLabel}) - Occupied / Booked (Click to select wish token)` : `Token #${slot.tokenNumber} (${slot.timeLabel}) - Available (Click to select wish token)`
     }, slot.timeLabel, " ", isSelected ? ' 🔴' : '');
   }))), /*#__PURE__*/React.createElement("div", {
-    className: "add-extra-tokens-row"
+    className: "add-extra-tokens-row",
+    id: "addExtraTokensDiv"
   }, /*#__PURE__*/React.createElement("span", {
     className: "add-extra-tokens-label"
   }, "Add Extra Tokens:"), /*#__PURE__*/React.createElement("button", {
@@ -5210,44 +5210,7 @@ function RegistrationForm({
     className: "btn-add-extra-token",
     onClick: handleAddExtraToken,
     title: "Add Emergency / Extra Token Slot"
-  }, "+"))), /*#__PURE__*/React.createElement("div", {
-    className: "quick-doc-chips-wrap",
-    style: {
-      marginTop: '12px'
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "chips-label"
-  }, "Quick Select Consultant:"), /*#__PURE__*/React.createElement("div", {
-    className: "payment-chips-row",
-    style: {
-      marginTop: '4px',
-      borderTop: 'none',
-      paddingTop: '0'
-    }
-  }, CONSULTANTS_ROSTER.slice(0, 4).map(doc => /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    key: doc.code,
-    className: `pay-mode-chip ${formData.consultant === doc.name ? 'active' : ''}`,
-    onClick: () => {
-      if (!formData.location) {
-        handleHospitalChange('INDUS HEALTH CITY');
-      }
-      handleConsultantChange(doc.name);
-    }
-  }, "\uD83D\uDC68\u200D\u2695\uFE0F ", doc.name.split(' ')[0], " (", doc.fee, " \u20B9)")))), /*#__PURE__*/React.createElement("div", {
-    className: "doc-room-info-pill",
-    style: {
-      marginTop: '10px',
-      padding: '6px 10px',
-      background: '#ffffff',
-      borderRadius: '4px',
-      border: '1px solid #e2e8f0',
-      display: 'flex',
-      justifyContent: 'space-between',
-      fontSize: '0.74rem',
-      color: '#475569'
-    }
-  }, /*#__PURE__*/React.createElement("span", null, "\uD83D\uDCCD ", /*#__PURE__*/React.createElement("strong", null, "OPD Cabin:"), " Room 102 (First Floor)"), /*#__PURE__*/React.createElement("span", null, "\uD83D\uDD52 ", /*#__PURE__*/React.createElement("strong", null, "Assigned Slot:"), " ", formData.token ? `Token #${formData.token}` : 'Immediate Consultation')))), /*#__PURE__*/React.createElement("div", {
+  }, "+"))))), /*#__PURE__*/React.createElement("div", {
     className: "lower-grid-col"
   }, /*#__PURE__*/React.createElement("div", {
     className: "form-section-card h-100"

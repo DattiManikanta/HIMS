@@ -4,16 +4,16 @@ import React, { useState, useEffect, useMemo } from 'react';
 const INITIAL_APPOINTMENTS = [];
 
 const CONSULTANTS_ROSTER = [
-  { name: 'SATYANARAYANA V VSN / ', code: 'EMP00006', spec: 'NEUROLOGIST', fee: 1000, depCode: 'NEU' },
-  { name: 'R LALITHA LA', code: 'EMP00001', spec: 'SENIOR GENERAL PHYSICIAN / OPD', fee: 800, depCode: 'GEN' },
-  { name: 'RAKESH TUMULA RT', code: 'EMP00002', spec: 'ORTHOPEDICS & SPINE SPECIALIST', fee: 1450, depCode: 'ORT' },
-  { name: 'ANIL KUMAR MAHAPATRO AKM', code: 'EMP00003', spec: 'CARDIOLOGY & INTERVENTIONAL SPECIALIST', fee: 850, depCode: 'CAR' },
-  { name: 'RAMESH NAIDU M RNM', code: 'EMP00004', spec: 'GENERAL MEDICINE & DIABETOLOGY', fee: 600, depCode: 'GEN' },
-  { name: 'Dr. Ananya Iyer', code: 'EMP00005', spec: 'CHIEF CARDIOLOGIST', fee: 700, depCode: 'CAR' },
-  { name: 'Dr. Sandeep K. Banerjee', code: 'EMP00007', spec: 'CHIEF PHYSICIAN', fee: 600, depCode: 'GEN' },
-  { name: 'Dr. Vikramaditya Rathore', code: 'EMP00008', spec: 'CONSULTANT ORTHOPEDIC SURGEON', fee: 750, depCode: 'ORT' },
-  { name: 'Dr. Shalini Deshmukh', code: 'EMP00009', spec: 'SENIOR PEDIATRICIAN', fee: 500, depCode: 'PED' },
-  { name: 'Dr. Neil Chatterjee', code: 'EMP00010', spec: 'CLINICAL DERMATOLOGIST', fee: 650, depCode: 'DER' }
+  { name: 'SATYANARAYANA V VSN / ', code: 'EMP00006', spec: 'NEUROLOGIST', fee: 1000, depCode: 'NEU', doctorId: 6, doctorDetails: '6:EMP00006:NEUROLOGIST' },
+  { name: 'R LALITHA LA', code: 'EMP00001', spec: 'SENIOR GENERAL PHYSICIAN / OPD', fee: 800, depCode: 'GEN', doctorId: 1, doctorDetails: '1:EMP00001:GENERAL MEDICINE' },
+  { name: 'RAKESH TUMULA RT', code: 'EMP00002', spec: 'ORTHOPEDICS & SPINE SPECIALIST', fee: 1450, depCode: 'ORT', doctorId: 2, doctorDetails: '2:EMP00002:ORTHOPEDICS' },
+  { name: 'ANIL KUMAR MAHAPATRO AKM', code: 'EMP00003', spec: 'CARDIOLOGY & INTERVENTIONAL SPECIALIST', fee: 850, depCode: 'CAR', doctorId: 3, doctorDetails: '3:EMP00003:CARDIOLOGY' },
+  { name: 'RAMESH NAIDU M RNM', code: 'EMP00004', spec: 'GENERAL MEDICINE & DIABETOLOGY', fee: 600, depCode: 'GEN', doctorId: 4, doctorDetails: '4:EMP00004:GENERAL MEDICINE' },
+  { name: 'Dr. Ananya Iyer', code: 'EMP00005', spec: 'CHIEF CARDIOLOGIST', fee: 700, depCode: 'CAR', doctorId: 5, doctorDetails: '5:EMP00005:CARDIOLOGY' },
+  { name: 'Dr. Sandeep K. Banerjee', code: 'EMP00007', spec: 'CHIEF PHYSICIAN', fee: 600, depCode: 'GEN', doctorId: 7, doctorDetails: '7:EMP00007:GENERAL MEDICINE' },
+  { name: 'Dr. Vikramaditya Rathore', code: 'EMP00008', spec: 'CONSULTANT ORTHOPEDIC SURGEON', fee: 750, depCode: 'ORT', doctorId: 8, doctorDetails: '8:EMP00008:ORTHOPEDICS' },
+  { name: 'Dr. Shalini Deshmukh', code: 'EMP00009', spec: 'SENIOR PEDIATRICIAN', fee: 500, depCode: 'PED', doctorId: 9, doctorDetails: '9:EMP00009:PEDIATRICS' },
+  { name: 'Dr. Neil Chatterjee', code: 'EMP00010', spec: 'CLINICAL DERMATOLOGIST', fee: 650, depCode: 'DER', doctorId: 10, doctorDetails: '10:EMP00010:DERMATOLOGY' }
 ];
 
 // Helper to format minutes into 12-hour AM/PM string (e.g. 08:30 AM)
@@ -1038,13 +1038,13 @@ export function RegistrationForm({
     maritalStatus: 'Married',
     bloodGroup: 'B+',
     healthIssue: '',
-    // Appointment Details (Selected dynamically on step-by-step workflow)
-    location: '',
+    // Appointment Details (Defaulted to Hospital and Doctor ready to book)
+    location: 'INDUS HEALTH CITY',
     appointmentDate: getTodayDateFormatted(),
-    token: '',
-    consultant: '',
-    doctorCode: '',
-    specialization: '',
+    token: '1',
+    consultant: 'SATYANARAYANA V VSN / ',
+    doctorCode: 'EMP00006',
+    specialization: 'NEUROLOGIST',
     // Fee Details
     regFee: 50,
     regFinalAmt: 50,
@@ -1063,10 +1063,10 @@ export function RegistrationForm({
     paymentAmt: 1050
   });
 
-  // Doctor Slots & Extra Tokens State (Tokens OPEN after Doctor is selected)
+  // Doctor Slots & Extra Tokens State (Tokens directly visible)
   const [extraTokensCount, setExtraTokensCount] = useState(0);
-  const [selectedSlotToken, setSelectedSlotToken] = useState(null);
-  const [isSlotsOpen, setIsSlotsOpen] = useState(false);
+  const [selectedSlotToken, setSelectedSlotToken] = useState(1);
+  const [isSlotsOpen, setIsSlotsOpen] = useState(true);
 
   // Exact Payment Table (#payModeTable) State matching patientQueue.jsp (lines 3521-3625)
   const [paymentRows, setPaymentRows] = useState([]);
@@ -1163,9 +1163,10 @@ export function RegistrationForm({
 
   // Dynamic slot generation for currently selected doctor, date, and extra tokens
   const currentDoctorSlots = (React.useMemo || useMemo || ((fn) => fn()))(() => {
-    if (!formData.consultant) return [];
+    const docName = formData.consultant || (CONSULTANTS_ROSTER[0] && CONSULTANTS_ROSTER[0].name);
+    if (!docName) return [];
     return generateDoctorSlots(
-      formData.consultant,
+      docName,
       formData.appointmentDate,
       appointments,
       extraTokensCount
@@ -1279,27 +1280,18 @@ export function RegistrationForm({
     showNotification('Switched to New Patient Registration mode.');
   };
 
-  // Step 1: Hospital Change Handler
+  // Hospital Change Handler
   const handleHospitalChange = (hospitalName) => {
     setFormData(prev => ({
       ...prev,
-      location: hospitalName,
-      consultant: '',
-      doctorCode: '',
-      specialization: '',
-      token: ''
+      location: hospitalName
     }));
     clearFieldError('location');
-    setIsSlotsOpen(false); // Close tokens until doctor is chosen
-    setSelectedSlotToken(null);
-    if (hospitalName) {
-      showNotification(`🏥 Hospital selected: ${hospitalName}. Please choose a Doctor to OPEN tokens.`);
-    }
   };
 
-  // Step 2: Doctor Change Handler (ONCHANGE OPENS TOKENS)
-  const handleConsultantChange = (name) => {
-    if (!name) {
+  // Doctor Change Handler (Query-based onchange updates fees, amounts, and slots immediately)
+  const handleConsultantChange = (val) => {
+    if (!val || val === '0') {
       setFormData(prev => ({
         ...prev,
         consultant: '',
@@ -1307,13 +1299,23 @@ export function RegistrationForm({
         specialization: '',
         token: ''
       }));
-      setIsSlotsOpen(false);
       setSelectedSlotToken(null);
       return;
     }
 
-    const doc = CONSULTANTS_ROSTER.find(c => c.name === name) || CONSULTANTS_ROSTER[0];
-    const total = (formData.regFinalAmt || 50) + doc.fee - (formData.discAmt || 0);
+    const doc = CONSULTANTS_ROSTER.find(c => 
+      c.name === val || 
+      c.doctorDetails === val || 
+      c.code === val || 
+      String(c.doctorId) === String(val) ||
+      val.startsWith(c.name) ||
+      (c.doctorDetails && val.includes(c.code))
+    ) || CONSULTANTS_ROSTER[0];
+
+    const regFee = 50;
+    const consFee = Number(doc.fee);
+    const discAmt = Number(formData.discAmt || 0);
+    const total = regFee + consFee - discAmt;
     setExtraTokensCount(0);
 
     // Compute slots for newly selected doctor
@@ -1323,7 +1325,7 @@ export function RegistrationForm({
     const chosenToken = firstAvail ? firstAvail.tokenNumber : 1;
 
     setSelectedSlotToken(chosenToken);
-    setIsSlotsOpen(true); // <--- OPEN TOKENS IMMEDIATELY ON DOCTOR ONCHANGE!
+    setIsSlotsOpen(true);
 
     setFormData(prev => ({
       ...prev,
@@ -1331,13 +1333,17 @@ export function RegistrationForm({
       consultant: doc.name,
       doctorCode: doc.code,
       specialization: doc.spec,
-      consFee: doc.fee,
-      consFinalAmt: doc.fee,
+      consFee: consFee,
+      consFinalAmt: consFee,
+      regFee: regFee,
+      regFinalAmt: regFee,
       totalAmt: total,
       totalBillAmt: total,
       amtReceived: total,
       paymentAmt: total,
-      token: String(chosenToken)
+      balance: 0,
+      token: String(chosenToken),
+      status: 'PAID'
     }));
     setPayAmount(total.toFixed(2));
     setPaymentRows([]);
@@ -1345,7 +1351,7 @@ export function RegistrationForm({
     clearFieldError('token');
     clearFieldError('location');
 
-    showNotification(`✓ Doctor ${doc.name} (${doc.code}) selected — Token slots OPENED!`);
+    showNotification(`✓ Doctor ${doc.name} selected | Fee: ₹${consFee} | Total: ₹${total}`);
   };
 
   // Click on a slot pill - user can select ANY token of their choice, turning it to OCCUPIED RED
@@ -2938,25 +2944,9 @@ export function RegistrationForm({
                   <span className="sec-badge-hint">Token & Consultant Routing</span>
                 </div>
 
-                {/* Step 1 Quick Hospital Pill Buttons for fast 1-click selection */}
-                <div className="hospital-quick-selector">
-                  <span className="hosp-step-tag">Step 1: Hospital</span>
-                  {['INDUS HEALTH CITY', 'INDUS SUPER SPECIALITY', 'INDUS CLINIC & DIAGNOSTICS'].map(hosp => (
-                    <button
-                      type="button"
-                      key={hosp}
-                      className={`hosp-quick-btn ${formData.location === hosp ? 'active' : ''}`}
-                      onClick={() => handleHospitalChange(hosp)}
-                      title={`Select ${hosp}`}
-                    >
-                      🏥 {hosp}
-                    </button>
-                  ))}
-                </div>
-
-                {/* 1. TOP BOX: Light Blue Container with 2 Rows (Matching Indus Screenshot) */}
+                {/* 1. TOP BOX: Hospital Select, Appointment Date, Token, Doctor Select, Code, Specialization */}
                 <div className="doctor-token-box-container">
-                  {/* Row 1: Hospital Select (Step 1), Appointment Date, Token number input */}
+                  {/* Row 1: Hospital Select, Appointment Date, Token number input */}
                   <div className="doctor-token-box-row">
                     <div className="dt-col dt-col-hospital">
                       <select 
@@ -2964,9 +2954,9 @@ export function RegistrationForm({
                         value={formData.location} 
                         onChange={(e) => handleHospitalChange(e.target.value)}
                         className={`dt-select ${formErrors.location ? 'input-has-error' : ''}`}
-                        title="Step 1: Select Hospital *"
+                        title="Select Hospital *"
                       >
-                        <option value="">-- Step 1: Select Hospital * --</option>
+                        <option value="">Select Hospital</option>
                         <option value="INDUS HEALTH CITY">INDUS HEALTH CITY</option>
                         <option value="INDUS SUPER SPECIALITY">INDUS SUPER SPECIALITY</option>
                         <option value="INDUS CLINIC & DIAGNOSTICS">INDUS CLINIC & DIAGNOSTICS</option>
@@ -3019,22 +3009,17 @@ export function RegistrationForm({
                     </div>
                   </div>
 
-                  {/* Row 2: Doctor select (Step 2 - ONCHANGE OPENS TOKENS), Doctor Code, Specialization */}
+                  {/* Row 2: Doctor select, Doctor Code, Specialization */}
                   <div className="doctor-token-box-row">
                     <div className="dt-col dt-col-doctor">
                       <select 
                         id="idDoctor"
                         value={formData.consultant} 
                         onChange={(e) => handleConsultantChange(e.target.value)}
-                        className={`dt-select dt-doctor-select ${formErrors.consultant ? 'input-has-error' : ''} ${formData.location && !formData.consultant ? 'ready-for-doc' : ''}`}
-                        title="Step 2: Select Consultant Doctor (Opens Tokens) *"
-                        disabled={!formData.location}
+                        className={`dt-select dt-doctor-select ${formErrors.consultant ? 'input-has-error' : ''}`}
+                        title="Select Consultant Doctor *"
                       >
-                        <option value="">
-                          {!formData.location 
-                            ? '-- 1st Select Hospital Above * --' 
-                            : '-- Step 2: Select Consultant Doctor (Opens Tokens) * --'}
-                        </option>
+                        <option value="">Select Consultant</option>
                         {CONSULTANTS_ROSTER.map(doc => (
                           <option key={doc.code} value={doc.name}>{doc.name}</option>
                         ))}
@@ -3047,18 +3032,20 @@ export function RegistrationForm({
                     <div className="dt-col dt-col-code">
                       <input 
                         type="text" 
-                        value={formData.doctorCode || '-'} 
+                        id="empCode"
+                        value={formData.doctorCode || ''} 
                         readOnly 
                         className="dt-input dt-readonly"
                         title="Doctor Employee Code"
-                        placeholder="Emp Code"
+                        placeholder="Doctor Code"
                       />
                     </div>
 
                     <div className="dt-col dt-col-spec">
                       <input 
                         type="text" 
-                        value={formData.specialization || '-'} 
+                        id="specName"
+                        value={formData.specialization || ''} 
                         readOnly 
                         className="dt-input dt-readonly"
                         title="Doctor Specialization"
@@ -3068,131 +3055,83 @@ export function RegistrationForm({
                   </div>
                 </div>
 
-                {/* 2. DOCTOR SLOTS DETAILS (OPENS ON DOCTOR ONCHANGE) */}
-                {!formData.location ? (
-                  <div className="doctor-slots-waiting-box">
-                    <div className="waiting-icon">🏥</div>
-                    <div className="waiting-text">
-                      <strong>Step 1: Select Hospital First</strong>
-                      <p>
-                        Please choose a Hospital from the dropdown or click a hospital button above to enable Doctor selection.
-                      </p>
+                {/* 2. DOCTOR SLOTS DETAILS - DIRECTLY VISIBLE (NO WAITING BOXES) */}
+                <div className="doctor-slots-open-wrapper" id="docSlotsMainDiv">
+                  {/* Doctor Slots Details Heading with Color Legend */}
+                  <div className="slots-title-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                    <div className="doctor-slots-title" style={{ margin: 0 }}>
+                      <span>Doctor Slots Details:</span>
                     </div>
-                  </div>
-                ) : !formData.consultant || !isSlotsOpen ? (
-                  <div className="doctor-slots-waiting-box">
-                    <div className="waiting-icon">👨‍⚕️</div>
-                    <div className="waiting-text">
-                      <strong>Step 2: Select Doctor to OPEN Tokens</strong>
-                      <p>
-                        Hospital: <strong>{formData.location}</strong> selected. Choose a Consultant Doctor from the dropdown above to OPEN available token slots.
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="doctor-slots-open-wrapper">
-                    {/* Doctor Slots Details Heading with Color Legend */}
-                    <div className="slots-title-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-                      <div className="doctor-slots-title" style={{ margin: 0 }}>
-                        <span>Doctor Slots Details:</span>
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '11px', fontWeight: 600 }}>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#15803d' }}>
-                          <span style={{ width: '10px', height: '10px', borderRadius: '2px', backgroundColor: '#008000', display: 'inline-block' }}></span> Available (Green)
-                        </span>
-                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#b91c1c' }}>
-                          <span style={{ width: '10px', height: '10px', borderRadius: '2px', backgroundColor: '#dc2626', display: 'inline-block' }}></span> Occupied / Selected (Red)
-                        </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '11px', fontWeight: 600 }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#15803d' }}>
+                        <span style={{ width: '10px', height: '10px', borderRadius: '2px', backgroundColor: '#008000', display: 'inline-block' }}></span> Available (Green)
+                      </span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#b91c1c' }}>
+                        <span style={{ width: '10px', height: '10px', borderRadius: '2px', backgroundColor: '#dc2626', display: 'inline-block' }}></span> Occupied / Selected (Red)
+                      </span>
+                      {formData.consultant && (
                         <span className="slots-open-badge">● Dr. {formData.consultant.split(' ')[0]}</span>
-                      </div>
-                    </div>
-
-                    {/* Doctor Slots Details Container with 3 Columns of Red/Green Slot Pills */}
-                    <div className="doctor-slots-details-container">
-                      <div className="doctor-slots-grid">
-                        {currentDoctorSlots.map((slot) => {
-                          const isSelected = selectedSlotToken === slot.tokenNumber || String(formData.token) === String(slot.tokenNumber);
-                          const isOccupiedRed = slot.isBooked || isSelected;
-                          return (
-                            <button
-                              key={slot.tokenNumber}
-                              type="button"
-                              className={`doctor-slot-pill ${isOccupiedRed ? 'slot-red slot-occupied' : 'slot-green'} ${isSelected ? 'slot-selected slot-wish-selected' : ''}`}
-                              style={isSelected ? {
-                                backgroundColor: '#dc2626',
-                                borderColor: '#991b1b',
-                                color: '#ffffff',
-                                fontWeight: '800',
-                                boxShadow: '0 0 12px rgba(220, 38, 38, 0.9), inset 0 0 4px rgba(255, 255, 255, 0.45)',
-                                transform: 'scale(1.05)',
-                                outline: '2px solid #fecaca',
-                                outlineOffset: '1px',
-                                zIndex: 3
-                              } : (slot.isBooked ? {
-                                backgroundColor: '#d32f2f',
-                                borderColor: '#b71c1c',
-                                color: '#ffffff',
-                                opacity: 0.95
-                              } : {
-                                backgroundColor: '#008000',
-                                borderColor: '#006400',
-                                color: '#ffffff'
-                              })}
-                              onClick={() => handleSlotClick(slot)}
-                              title={isSelected 
-                                ? `Token #${slot.tokenNumber} (${slot.timeLabel}) - SELECTED WISH TOKEN (OCCUPIED RED)` 
-                                : (slot.isBooked 
-                                  ? `Token #${slot.tokenNumber} (${slot.timeLabel}) - Occupied / Booked (Click to select wish token)` 
-                                  : `Token #${slot.tokenNumber} (${slot.timeLabel}) - Available (Click to select wish token)`)}
-                            >
-                              {slot.timeLabel} {isSelected ? ' 🔴' : ''}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    {/* Add Extra Tokens Row with [+] Button */}
-                    <div className="add-extra-tokens-row">
-                      <span className="add-extra-tokens-label">Add Extra Tokens:</span>
-                      <button 
-                        type="button" 
-                        className="btn-add-extra-token"
-                        onClick={handleAddExtraToken}
-                        title="Add Emergency / Extra Token Slot"
-                      >
-                        +
-                      </button>
+                      )}
                     </div>
                   </div>
-                )}
 
-                {/* Quick Consultant Doctor Select Chips */}
-                <div className="quick-doc-chips-wrap" style={{ marginTop: '12px' }}>
-                  <span className="chips-label">Quick Select Consultant:</span>
-                  <div className="payment-chips-row" style={{ marginTop: '4px', borderTop: 'none', paddingTop: '0' }}>
-                    {CONSULTANTS_ROSTER.slice(0, 4).map(doc => (
-                      <button
-                        type="button"
-                        key={doc.code}
-                        className={`pay-mode-chip ${formData.consultant === doc.name ? 'active' : ''}`}
-                        onClick={() => {
-                          if (!formData.location) {
-                            handleHospitalChange('INDUS HEALTH CITY');
-                          }
-                          handleConsultantChange(doc.name);
-                        }}
-                      >
-                        👨‍⚕️ {doc.name.split(' ')[0]} ({doc.fee} ₹)
-                      </button>
-                    ))}
+                  {/* Doctor Slots Details Container with 3 Columns of Red/Green Slot Pills */}
+                  <div className="doctor-slots-details-container" id="docSlotsDiv">
+                    <div className="doctor-slots-grid" id="docSlots">
+                      {currentDoctorSlots.map((slot) => {
+                        const isSelected = selectedSlotToken === slot.tokenNumber || String(formData.token) === String(slot.tokenNumber);
+                        const isOccupiedRed = slot.isBooked || isSelected;
+                        return (
+                          <button
+                            key={slot.tokenNumber}
+                            type="button"
+                            className={`doctor-slot-pill ${isOccupiedRed ? 'slot-red slot-occupied' : 'slot-green'} ${isSelected ? 'slot-selected slot-wish-selected' : ''}`}
+                            style={isSelected ? {
+                              backgroundColor: '#dc2626',
+                              borderColor: '#991b1b',
+                              color: '#ffffff',
+                              fontWeight: '800',
+                              boxShadow: '0 0 12px rgba(220, 38, 38, 0.9), inset 0 0 4px rgba(255, 255, 255, 0.45)',
+                              transform: 'scale(1.05)',
+                              outline: '2px solid #fecaca',
+                              outlineOffset: '1px',
+                              zIndex: 3
+                            } : (slot.isBooked ? {
+                              backgroundColor: '#d32f2f',
+                              borderColor: '#b71c1c',
+                              color: '#ffffff',
+                              opacity: 0.95
+                            } : {
+                              backgroundColor: '#008000',
+                              borderColor: '#006400',
+                              color: '#ffffff'
+                            })}
+                            onClick={() => handleSlotClick(slot)}
+                            title={isSelected 
+                              ? `Token #${slot.tokenNumber} (${slot.timeLabel}) - SELECTED WISH TOKEN (OCCUPIED RED)` 
+                              : (slot.isBooked 
+                                ? `Token #${slot.tokenNumber} (${slot.timeLabel}) - Occupied / Booked (Click to select wish token)` 
+                                : `Token #${slot.tokenNumber} (${slot.timeLabel}) - Available (Click to select wish token)`)}
+                          >
+                            {slot.timeLabel} {isSelected ? ' 🔴' : ''}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
 
-                {/* Department & Cabin Info */}
-                <div className="doc-room-info-pill" style={{ marginTop: '10px', padding: '6px 10px', background: '#ffffff', borderRadius: '4px', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', fontSize: '0.74rem', color: '#475569' }}>
-                  <span>📍 <strong>OPD Cabin:</strong> Room 102 (First Floor)</span>
-                  <span>🕒 <strong>Assigned Slot:</strong> {formData.token ? `Token #${formData.token}` : 'Immediate Consultation'}</span>
+                  {/* Add Extra Tokens Row with [+] Button */}
+                  <div className="add-extra-tokens-row" id="addExtraTokensDiv">
+                    <span className="add-extra-tokens-label">Add Extra Tokens:</span>
+                    <button 
+                      type="button" 
+                      className="btn-add-extra-token"
+                      onClick={handleAddExtraToken}
+                      title="Add Emergency / Extra Token Slot"
+                    >
+                      +
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

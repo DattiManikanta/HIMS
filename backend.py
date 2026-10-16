@@ -1832,6 +1832,36 @@ def handle_departments():
     return jsonify(fallback.get("departments", []))
 
 
+# Available Doctors query matching PatientMapper.java GET_AVAIL_DOCTORS
+AVAILABLE_DOCTORS = [
+    {"doctorId": 6, "doctorName": "SATYANARAYANA V VSN / ", "doctorDetails": "6:EMP00006:NEUROLOGIST", "empCode": "EMP00006", "specName": "NEUROLOGIST", "fee": 1000.0, "depCode": "NEU"},
+    {"doctorId": 1, "doctorName": "R LALITHA LA", "doctorDetails": "1:EMP00001:GENERAL MEDICINE", "empCode": "EMP00001", "specName": "SENIOR GENERAL PHYSICIAN / OPD", "fee": 800.0, "depCode": "GEN"},
+    {"doctorId": 2, "doctorName": "RAKESH TUMULA RT", "doctorDetails": "2:EMP00002:ORTHOPEDICS", "empCode": "EMP00002", "specName": "ORTHOPEDICS & SPINE SPECIALIST", "fee": 1450.0, "depCode": "ORT"},
+    {"doctorId": 3, "doctorName": "ANIL KUMAR MAHAPATRO AKM", "doctorDetails": "3:EMP00003:CARDIOLOGY", "empCode": "EMP00003", "specName": "CARDIOLOGY & INTERVENTIONAL SPECIALIST", "fee": 850.0, "depCode": "CAR"},
+    {"doctorId": 4, "doctorName": "RAMESH NAIDU M RNM", "doctorDetails": "4:EMP00004:GENERAL MEDICINE", "empCode": "EMP00004", "specName": "GENERAL MEDICINE & DIABETOLOGY", "fee": 600.0, "depCode": "GEN"},
+    {"doctorId": 5, "doctorName": "Dr. Ananya Iyer", "doctorDetails": "5:EMP00005:CARDIOLOGY", "empCode": "EMP00005", "specName": "CHIEF CARDIOLOGIST", "fee": 700.0, "depCode": "CAR"},
+    {"doctorId": 7, "doctorName": "Dr. Sandeep K. Banerjee", "doctorDetails": "7:EMP00007:GENERAL MEDICINE", "empCode": "EMP00007", "specName": "CHIEF PHYSICIAN", "fee": 600.0, "depCode": "GEN"},
+    {"doctorId": 8, "doctorName": "Dr. Vikramaditya Rathore", "doctorDetails": "8:EMP00008:ORTHOPEDICS", "empCode": "EMP00008", "specName": "CONSULTANT ORTHOPEDIC SURGEON", "fee": 750.0, "depCode": "ORT"},
+    {"doctorId": 9, "doctorName": "Dr. Shalini Deshmukh", "doctorDetails": "9:EMP00009:PEDIATRICS", "empCode": "EMP00009", "specName": "SENIOR PEDIATRICIAN", "fee": 500.0, "depCode": "PED"},
+    {"doctorId": 10, "doctorName": "Dr. Neil Chatterjee", "doctorDetails": "10:EMP00010:DERMATOLOGY", "empCode": "EMP00010", "specName": "CLINICAL DERMATOLOGIST", "fee": 650.0, "depCode": "DER"}
+]
+
+@app.route('/api/doctors', methods=['GET'])
+@app.route('/patient/getAvailableDoctors', methods=['GET'])
+def get_available_doctors():
+    """Returns available doctors matching PatientMapper.java GET_AVAIL_DOCTORS query."""
+    return jsonify(AVAILABLE_DOCTORS)
+
+@app.route('/patient/getConsultationFee', methods=['GET'])
+@app.route('/api/patient/getConsultationFee', methods=['GET'])
+def get_consultation_fee():
+    """Returns consultation fee response format (serviceChargeId:fee:visitType:patVisit:validity) matching PatientRegistrationController.java."""
+    doc_id = request.args.get('docId') or request.args.get('empId') or '6'
+    doc_match = next((d for d in AVAILABLE_DOCTORS if str(d['doctorId']) == str(doc_id) or d['empCode'] == str(doc_id) or str(doc_id) in d['doctorName']), AVAILABLE_DOCTORS[0])
+    fee = doc_match['fee']
+    return f"1:{fee:.2f}:Regular:1:7 days"
+
+
 if __name__ == '__main__':
     logger.info("Starting INDUS HEALTH CITY (%s %s:%d/%s) API backend on port %d...", 
                 DB_TYPE.upper(), DB_HOST, DB_PORT, DB_DATABASE, BACKEND_PORT)

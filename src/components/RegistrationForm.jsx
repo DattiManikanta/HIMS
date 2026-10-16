@@ -3545,6 +3545,12 @@ export function RegistrationForm({
                               setPayAmount(e.target.value);
                               setPayModeError('');
                             }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleAddPayment();
+                              }
+                            }}
                             placeholder="0.00"
                             className="form-control"
                           />

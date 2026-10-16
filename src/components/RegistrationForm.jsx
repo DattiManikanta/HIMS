@@ -1457,40 +1457,51 @@ export function RegistrationForm({
         </div>
       )}
 
-      {/* Top Breadcrumb & User Info Header */}
-      <div className="patient-reg-top-bar">
-        <div className="reg-center-title">
-          <h1>Patient Registration</h1>
+      {/* Modern Clinical Page Header & Breadcrumbs */}
+      <div className="clinical-page-header">
+        <div className="header-meta">
+          <div className="title-row">
+            <span className="badge-live-pulse" title="Live System Active"></span>
+            <h1 className="clinical-title">Patient Queue &amp; Reception Desk</h1>
+            <span className="clinical-badge-pill">Live OPD Queue</span>
+          </div>
+          <p className="clinical-subtitle">Active outpatient registrations, doctor consultation queues, and instant token desk</p>
         </div>
-        <div className="reg-top-right">
-          <span className="reg-breadcrumb">
-            <span style={{ color: '#dc2626' }}>⌂ Home</span> &gt; Patient Management &gt; Patient Queue
-          </span>
-          <div className="reg-top-icons">
+        <div className="header-actions">
+          <div className="clinical-breadcrumb">
+            <span className="crumb-home">⌂ Home</span>
+            <span className="crumb-sep">›</span>
+            <span>Patient Management</span>
+            <span className="crumb-sep">›</span>
+            <span className="crumb-active">Patient Queue</span>
+          </div>
+          <div className="clinical-quick-btns">
             <button 
-              className="reg-icon-btn refresh" 
+              type="button"
+              className="clinical-action-btn refresh" 
               onClick={() => {
                 fetchServerQueue();
-                showNotification("🔄 Data refreshed from database.");
+                showNotification("✓ Queue refreshed from database.");
               }} 
-              title="Refresh Appointments"
+              title="Refresh Appointments from Database"
             >
-              🔄
+              <span>🔄</span> Refresh
             </button>
             <button 
-              className="reg-icon-btn save" 
+              type="button"
+              className="clinical-action-btn save" 
               onClick={handleSave} 
               disabled={isSaving}
               style={{ opacity: isSaving ? 0.6 : 1, cursor: isSaving ? 'not-allowed' : 'pointer' }}
               title={isSaving ? "Saving..." : "Save Record"}
             >
-              💾
+              <span>💾</span> {isSaving ? "Saving..." : "Save Record"}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Tabs Navigation Bar (Exact Screenshot 1 & 2 Tabs) */}
+      {/* Modern Segmented Tab Bar */}
       <div className="reg-tabs-header">
         <div className="reg-tab-buttons">
           <button 
@@ -1498,47 +1509,54 @@ export function RegistrationForm({
             className={`reg-tab-btn ${activeTab === 'appointments' ? 'active' : ''}`}
             onClick={() => setActiveTab('appointments')}
           >
-            Appointments
+            <span className="tab-icon">📋</span>
+            <span>Appointments</span>
+            <span className="tab-counter-badge">{totalPatients}</span>
           </button>
           <button 
             type="button"
             className={`reg-tab-btn ${activeTab === 'add_appointment' ? 'active' : ''}`}
             onClick={() => setActiveTab('add_appointment')}
           >
-            Add Appointment
+            <span className="tab-icon">➕</span>
+            <span>Add Appointment</span>
           </button>
         </div>
         <div className="reg-tab-right-help">
-          <span className="reg-help-link">
-            <span className="green-circle-help">?</span> Help
+          <span className="reg-help-link" title="Clinical Help & Guidelines">
+            <span className="green-circle-help">?</span> Help Guide
           </span>
-          <span className="reg-mgmt-link">
+          <span className="reg-mgmt-link" title="Patient Management Portal">
             👤 Patient Management
           </span>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* TAB 1: APPOINTMENTS (Matching Screenshot 1 Precisely) */}
+      {/* TAB 1: APPOINTMENTS (Modern Clinical Premium Grid) */}
       {/* ========================================================================= */}
       {activeTab === 'appointments' && (
         <div className="appointments-tab-pane">
           {/* Top Organization & Hospital Filter Row */}
           <div className="reg-org-filter-row">
             <div className="reg-company-box">
+              <span className="filter-field-icon">🏢</span>
               <input 
                 type="text" 
                 defaultValue="Vasugan Medical Specialities Pvt Ltd" 
                 readOnly 
                 className="reg-company-input"
+                title="Medical Group Organization"
               />
             </div>
 
             <div className="reg-hospital-select-box">
+              <span className="filter-field-icon">🏥</span>
               <select 
                 value={selectedHospital} 
                 onChange={(e) => setSelectedHospital(e.target.value)}
                 className="reg-hospital-select"
+                title="Facility Location"
               >
                 <option value="INDUS HEALTH CITY">INDUS HEALTH CITY</option>
                 <option value="INDUS SUPER SPECIALITY">INDUS SUPER SPECIALITY</option>
@@ -1559,29 +1577,10 @@ export function RegistrationForm({
               }} 
             />
 
-            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginLeft: '6px' }}>
+            <div className="filter-action-buttons">
               <button
                 type="button"
-                style={{
-                  padding: '6px 14px',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  borderRadius: '6px',
-                  height: '34px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  background: (dateFilterRange && dateFilterRange.start && dateFilterRange.end && formatToDdMmmYyyy(dateFilterRange.start) === formatToDdMmmYyyy(new Date()) && formatToDdMmmYyyy(dateFilterRange.end) === formatToDdMmmYyyy(new Date()))
-                    ? 'linear-gradient(180deg, #0284c7 0%, #0369a1 100%)'
-                    : '#dbeafe',
-                  color: (dateFilterRange && dateFilterRange.start && dateFilterRange.end && formatToDdMmmYyyy(dateFilterRange.start) === formatToDdMmmYyyy(new Date()) && formatToDdMmmYyyy(dateFilterRange.end) === formatToDdMmmYyyy(new Date()))
-                    ? '#ffffff'
-                    : '#0369a1',
-                  border: '1px solid #93c5fd',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                  transition: 'all 0.15s ease'
-                }}
+                className={`filter-btn-today ${(dateFilterRange && dateFilterRange.start && dateFilterRange.end && formatToDdMmmYyyy(dateFilterRange.start) === formatToDdMmmYyyy(new Date()) && formatToDdMmmYyyy(dateFilterRange.end) === formatToDdMmmYyyy(new Date())) ? 'active' : ''}`}
                 onClick={() => {
                   const today = new Date();
                   setDateRange(getTodayDateRangeFormatted());
@@ -1590,28 +1589,11 @@ export function RegistrationForm({
                 }}
                 title="Show only Today's patient records"
               >
-                📅 Today
+                <span>📅</span> Today
               </button>
               <button
                 type="button"
-                style={{
-                  padding: '6px 14px',
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  borderRadius: '6px',
-                  height: '34px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                  background: !dateFilterRange
-                    ? 'linear-gradient(180deg, #0284c7 0%, #0369a1 100%)'
-                    : '#e2e8f0',
-                  color: !dateFilterRange ? '#ffffff' : '#334155',
-                  border: '1px solid #cbd5e1',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                  transition: 'all 0.15s ease'
-                }}
+                className={`filter-btn-all ${!dateFilterRange ? 'active' : ''}`}
                 onClick={() => {
                   setDateRange("All Appointments");
                   setDateFilterRange(null);
@@ -1619,48 +1601,75 @@ export function RegistrationForm({
                 }}
                 title="Show all records without date filtering"
               >
-                🌐 Show All
+                <span>🌐</span> Show All
               </button>
             </div>
           </div>
 
-          {/* Light Blue Summary Metrics Pill Bar (Matching Screenshot 1) */}
-          <div className="reg-summary-pill-bar">
-            <div className="metric-chip">
-              <span className="lbl">Total Patients:</span>
-              <span className="val blue">{totalPatients}</span>
+          {/* Modern Clinical KPI Metric Cards */}
+          <div className="clinical-kpi-bar">
+            <div className="kpi-card kpi-total">
+              <div className="kpi-icon-wrap">👥</div>
+              <div className="kpi-content">
+                <span className="kpi-label">Total Patients</span>
+                <span className="kpi-value">{totalPatients}</span>
+              </div>
             </div>
-            <div className="metric-chip">
-              <span className="lbl">Reg Cash:</span>
-              <span className="val blue">{regCashTotal.toFixed(2)}</span>
+
+            <div className="kpi-group-card">
+              <div className="kpi-group-title">
+                <span>📋</span> Registration Fees
+              </div>
+              <div className="kpi-group-items">
+                <div className="kpi-sub-item">
+                  <span className="sub-lbl">Cash:</span>
+                  <span className="sub-val">₹{regCashTotal.toFixed(2)}</span>
+                </div>
+                <div className="kpi-sub-item">
+                  <span className="sub-lbl">Card:</span>
+                  <span className="sub-val">₹{regCardTotal.toFixed(2)}</span>
+                </div>
+                <div className="kpi-sub-item">
+                  <span className="sub-lbl">UPI:</span>
+                  <span className="sub-val">₹{regUpiTotal.toFixed(2)}</span>
+                </div>
+              </div>
             </div>
-            <div className="metric-chip">
-              <span className="lbl">Reg Card:</span>
-              <span className="val blue">{regCardTotal.toFixed(2)}</span>
+
+            <div className="kpi-group-card">
+              <div className="kpi-group-title">
+                <span>🩺</span> Consultation Fees
+              </div>
+              <div className="kpi-group-items">
+                <div className="kpi-sub-item">
+                  <span className="sub-lbl">Cash:</span>
+                  <span className="sub-val">₹{consCashTotal.toFixed(2)}</span>
+                </div>
+                <div className="kpi-sub-item">
+                  <span className="sub-lbl">Card:</span>
+                  <span className="sub-val">₹{consCardTotal.toFixed(2)}</span>
+                </div>
+                <div className="kpi-sub-item">
+                  <span className="sub-lbl">UPI:</span>
+                  <span className="sub-val">₹{consUpiTotal.toFixed(2)}</span>
+                </div>
+              </div>
             </div>
-            <div className="metric-chip">
-              <span className="lbl">Reg UPI:</span>
-              <span className="val blue">{regUpiTotal.toFixed(2)}</span>
+
+            <div className="kpi-card kpi-paid">
+              <div className="kpi-icon-wrap">💳</div>
+              <div className="kpi-content">
+                <span className="kpi-label">Paid Collection</span>
+                <span className="kpi-value success">₹{paidAmtTotal.toFixed(2)}</span>
+              </div>
             </div>
-            <div className="metric-chip">
-              <span className="lbl">Cons Cash:</span>
-              <span className="val blue">{consCashTotal.toFixed(2)}</span>
-            </div>
-            <div className="metric-chip">
-              <span className="lbl">Cons Card:</span>
-              <span className="val blue">{consCardTotal.toFixed(2)}</span>
-            </div>
-            <div className="metric-chip">
-              <span className="lbl">Cons Upi:</span>
-              <span className="val blue">{consUpiTotal.toFixed(2)}</span>
-            </div>
-            <div className="metric-chip">
-              <span className="lbl">Paid Amt:</span>
-              <span className="val blue">{paidAmtTotal.toFixed(2)}</span>
-            </div>
-            <div className="metric-chip">
-              <span className="lbl">Refund Amt:</span>
-              <span className="val blue">0.00</span>
+
+            <div className="kpi-card kpi-refund">
+              <div className="kpi-icon-wrap">🔄</div>
+              <div className="kpi-content">
+                <span className="kpi-label">Refund Amount</span>
+                <span className="kpi-value neutral">₹0.00</span>
+              </div>
             </div>
           </div>
 
@@ -1668,7 +1677,7 @@ export function RegistrationForm({
           <div className="reg-table-controls">
             <div className="table-left-tools">
               <div className="entries-dropdown-wrap">
-                <span>Show</span>
+                <span className="entries-label">Show</span>
                 <select 
                   value={entriesPerPage} 
                   onChange={(e) => setEntriesPerPage(Number(e.target.value))}
@@ -1678,25 +1687,28 @@ export function RegistrationForm({
                   <option value={25}>25</option>
                   <option value={50}>50</option>
                 </select>
-                <span>entries</span>
+                <span className="entries-label">entries</span>
               </div>
-              <button className="export-btn" onClick={handleExportExcel} title="Export to Excel / CSV">
-                Excel
+              <button className="export-btn excel" onClick={handleExportExcel} title="Export to Excel / CSV">
+                <span>📊</span> Excel
               </button>
-              <button className="export-btn" onClick={() => window.print()} title="Print Table to PDF">
-                PDF
+              <button className="export-btn pdf" onClick={() => window.print()} title="Print Table to PDF">
+                <span>📄</span> PDF
               </button>
             </div>
 
             <div className="table-search-wrap">
-              <label>Search:</label>
+              <span className="search-icon">🔍</span>
               <input 
                 type="text" 
                 value={searchTerm} 
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search UMR, Patient, Doctor..."
+                placeholder="Search UMR, Patient Name, Consultant, Category..."
                 className="table-search-input"
               />
+              {searchTerm && (
+                <button type="button" className="search-clear-btn" onClick={() => setSearchTerm('')} title="Clear Search">✕</button>
+              )}
             </div>
           </div>
 

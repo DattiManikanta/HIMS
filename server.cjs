@@ -61,6 +61,57 @@ function ensureBackendRunning() {
 
 ensureBackendRunning();
 
+// Auto-Sync from GitHub (checks every 60 seconds if code was pushed from another system)
+function syncFromGitHub(callback) {
+  const gitCmd = fs.existsSync(path.join(ROOT, 'tools', 'git', 'cmd', 'git.exe'))
+    ? path.join(ROOT, 'tools', 'git', 'cmd', 'git.exe')
+    : 'git';
+  const { exec } = require('child_process');
+
+  exec(`"${gitCmd}" fetch origin main`, { cwd: ROOT }, (err) => {
+    if (err) {
+      if (callback) callback({ success: false, error: err.message });
+      return;
+    }
+
+    exec(`"${gitCmd}" rev-list HEAD..origin/main --count`, { cwd: ROOT }, (err2, stdout) => {
+      if (err2) {
+        if (callback) callback({ success: false, error: err2.message });
+        return;
+      }
+
+      const behindCount = parseInt((stdout || '').trim(), 10) || 0;
+      if (behindCount > 0) {
+        console.log(`[Auto-Sync] Found ${behindCount} new commit(s) on GitHub! Automatically retrieving into this system...`);
+        exec(`"${gitCmd}" pull origin main`, { cwd: ROOT }, (err3, pullOut) => {
+          if (err3) {
+            console.warn(`[Auto-Sync] Pull warning: ${err3.message}`);
+            if (callback) callback({ success: false, error: err3.message });
+            return;
+          }
+
+          console.log(`[Auto-Sync] Code successfully synchronized with your other system:\n${pullOut.trim()}`);
+          
+          const buildScript = path.join(ROOT, 'tools', 'build.cjs');
+          if (fs.existsSync(buildScript)) {
+            exec(`node "${buildScript}"`, { cwd: ROOT });
+          }
+
+          if (callback) callback({ success: true, updated: true, commitsPulled: behindCount, details: pullOut.trim() });
+        });
+      } else {
+        if (callback) callback({ success: true, updated: false, message: 'Already up to date with GitHub.' });
+      }
+    });
+  });
+}
+
+// Background auto-sync check every 60 seconds
+setTimeout(() => {
+  syncFromGitHub();
+  setInterval(() => syncFromGitHub(), 60 * 1000);
+}, 3000);
+
 // Reverse proxy /api/* requests to Flask backend
 function proxyApiRequest(req, res) {
   const options = {
@@ -111,6 +162,17 @@ const server = http.createServer((req, res) => {
 
   const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   let pathname = decodeURIComponent(parsedUrl.pathname);
+
+  // Handle GitHub Sync Routes directly
+  if (pathname === '/api/sync/pull' || pathname === '/api/sync/status') {
+    return syncFromGitHub((result) => {
+      res.writeHead(200, { 
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      });
+      res.end(JSON.stringify(result));
+    });
+  }
 
   // Forward /api and /patient routes to backend
   if (pathname.startsWith('/api/') || pathname.startsWith('/patient/')) {

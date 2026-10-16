@@ -3506,45 +3506,28 @@ function RegistrationForm({
   }, /*#__PURE__*/React.createElement("span", null, toast), /*#__PURE__*/React.createElement("button", {
     onClick: () => setToast(null)
   }, "\u2715")), /*#__PURE__*/React.createElement("div", {
-    className: "clinical-page-header"
+    className: "patient-reg-top-bar"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "header-meta"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "title-row"
+    className: "reg-center-title"
+  }, /*#__PURE__*/React.createElement("h1", null, "Patient Registration")), /*#__PURE__*/React.createElement("div", {
+    className: "reg-top-right"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "badge-live-pulse",
-    title: "Live System Active"
-  }), /*#__PURE__*/React.createElement("h1", {
-    className: "clinical-title"
-  }, "Patient Queue & Reception Desk"), /*#__PURE__*/React.createElement("span", {
-    className: "clinical-badge-pill"
-  }, "Live OPD Queue")), /*#__PURE__*/React.createElement("p", {
-    className: "clinical-subtitle"
-  }, "Active outpatient registrations, doctor consultation queues, and instant token desk")), /*#__PURE__*/React.createElement("div", {
-    className: "header-actions"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "clinical-breadcrumb"
+    className: "reg-breadcrumb"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "crumb-home"
-  }, "\u2302 Home"), /*#__PURE__*/React.createElement("span", {
-    className: "crumb-sep"
-  }, "\u203A"), /*#__PURE__*/React.createElement("span", null, "Patient Management"), /*#__PURE__*/React.createElement("span", {
-    className: "crumb-sep"
-  }, "\u203A"), /*#__PURE__*/React.createElement("span", {
-    className: "crumb-active"
-  }, "Patient Queue")), /*#__PURE__*/React.createElement("div", {
-    className: "clinical-quick-btns"
+    style: {
+      color: '#dc2626'
+    }
+  }, "\u2302 Home"), " > Patient Management > Patient Queue"), /*#__PURE__*/React.createElement("div", {
+    className: "reg-top-icons"
   }, /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "clinical-action-btn refresh",
+    className: "reg-icon-btn refresh",
     onClick: () => {
       fetchServerQueue();
-      showNotification("✓ Queue refreshed from database.");
+      showNotification("🔄 Data refreshed from database.");
     },
-    title: "Refresh Appointments from Database"
-  }, /*#__PURE__*/React.createElement("span", null, "\uD83D\uDD04"), " Refresh"), /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "clinical-action-btn save",
+    title: "Refresh Appointments"
+  }, "\uD83D\uDD04"), /*#__PURE__*/React.createElement("button", {
+    className: "reg-icon-btn save",
     onClick: handleSave,
     disabled: isSaving,
     style: {
@@ -3552,7 +3535,7 @@ function RegistrationForm({
       cursor: isSaving ? 'not-allowed' : 'pointer'
     },
     title: isSaving ? "Saving..." : "Save Record"
-  }, /*#__PURE__*/React.createElement("span", null, "\uD83D\uDCBE"), " ", isSaving ? "Saving..." : "Save Record")))), /*#__PURE__*/React.createElement("div", {
+  }, "\uD83D\uDCBE")))), /*#__PURE__*/React.createElement("div", {
     className: "reg-tabs-header"
   }, /*#__PURE__*/React.createElement("div", {
     className: "reg-tab-buttons"
@@ -3560,49 +3543,35 @@ function RegistrationForm({
     type: "button",
     className: `reg-tab-btn ${activeTab === 'appointments' ? 'active' : ''}`,
     onClick: () => setActiveTab('appointments')
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "tab-icon"
-  }, "\uD83D\uDCCB"), /*#__PURE__*/React.createElement("span", null, "Appointments"), /*#__PURE__*/React.createElement("span", {
-    className: "tab-counter-badge"
-  }, totalPatients)), /*#__PURE__*/React.createElement("button", {
+  }, "Appointments"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: `reg-tab-btn ${activeTab === 'add_appointment' ? 'active' : ''}`,
     onClick: () => setActiveTab('add_appointment')
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "tab-icon"
-  }, "\u2795"), /*#__PURE__*/React.createElement("span", null, "Add Appointment"))), /*#__PURE__*/React.createElement("div", {
+  }, "Add Appointment")), /*#__PURE__*/React.createElement("div", {
     className: "reg-tab-right-help"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "reg-help-link",
-    title: "Clinical Help & Guidelines"
+    className: "reg-help-link"
   }, /*#__PURE__*/React.createElement("span", {
     className: "green-circle-help"
-  }, "?"), " Help Guide"), /*#__PURE__*/React.createElement("span", {
-    className: "reg-mgmt-link",
-    title: "Patient Management Portal"
+  }, "?"), " Help"), /*#__PURE__*/React.createElement("span", {
+    className: "reg-mgmt-link"
   }, "\uD83D\uDC64 Patient Management"))), activeTab === 'appointments' && /*#__PURE__*/React.createElement("div", {
     className: "appointments-tab-pane"
   }, /*#__PURE__*/React.createElement("div", {
     className: "reg-org-filter-row"
   }, /*#__PURE__*/React.createElement("div", {
     className: "reg-company-box"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "filter-field-icon"
-  }, "\uD83C\uDFE2"), /*#__PURE__*/React.createElement("input", {
+  }, /*#__PURE__*/React.createElement("input", {
     type: "text",
     defaultValue: "Vasugan Medical Specialities Pvt Ltd",
     readOnly: true,
-    className: "reg-company-input",
-    title: "Medical Group Organization"
+    className: "reg-company-input"
   })), /*#__PURE__*/React.createElement("div", {
     className: "reg-hospital-select-box"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "filter-field-icon"
-  }, "\uD83C\uDFE5"), /*#__PURE__*/React.createElement("select", {
+  }, /*#__PURE__*/React.createElement("select", {
     value: selectedHospital,
     onChange: e => setSelectedHospital(e.target.value),
-    className: "reg-hospital-select",
-    title: "Facility Location"
+    className: "reg-hospital-select"
   }, /*#__PURE__*/React.createElement("option", {
     value: "INDUS HEALTH CITY"
   }, "INDUS HEALTH CITY"), /*#__PURE__*/React.createElement("option", {
@@ -3624,10 +3593,30 @@ function RegistrationForm({
       }
     }
   }), /*#__PURE__*/React.createElement("div", {
-    className: "filter-action-buttons"
+    style: {
+      display: 'flex',
+      gap: '8px',
+      alignItems: 'center',
+      marginLeft: '6px'
+    }
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
-    className: `filter-btn-today ${dateFilterRange && dateFilterRange.start && dateFilterRange.end && formatToDdMmmYyyy(dateFilterRange.start) === formatToDdMmmYyyy(new Date()) && formatToDdMmmYyyy(dateFilterRange.end) === formatToDdMmmYyyy(new Date()) ? 'active' : ''}`,
+    style: {
+      padding: '6px 14px',
+      fontSize: '12px',
+      fontWeight: 700,
+      borderRadius: '6px',
+      height: '34px',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '5px',
+      background: dateFilterRange && dateFilterRange.start && dateFilterRange.end && formatToDdMmmYyyy(dateFilterRange.start) === formatToDdMmmYyyy(new Date()) && formatToDdMmmYyyy(dateFilterRange.end) === formatToDdMmmYyyy(new Date()) ? 'linear-gradient(180deg, #0284c7 0%, #0369a1 100%)' : '#dbeafe',
+      color: dateFilterRange && dateFilterRange.start && dateFilterRange.end && formatToDdMmmYyyy(dateFilterRange.start) === formatToDdMmmYyyy(new Date()) && formatToDdMmmYyyy(dateFilterRange.end) === formatToDdMmmYyyy(new Date()) ? '#ffffff' : '#0369a1',
+      border: '1px solid #93c5fd',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+      transition: 'all 0.15s ease'
+    },
     onClick: () => {
       const today = new Date();
       setDateRange(getTodayDateRangeFormatted());
@@ -3638,104 +3627,93 @@ function RegistrationForm({
       showNotification("📅 Filtered: Showing Today's appointments");
     },
     title: "Show only Today's patient records"
-  }, /*#__PURE__*/React.createElement("span", null, "\uD83D\uDCC5"), " Today"), /*#__PURE__*/React.createElement("button", {
+  }, "\uD83D\uDCC5 Today"), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    className: `filter-btn-all ${!dateFilterRange ? 'active' : ''}`,
+    style: {
+      padding: '6px 14px',
+      fontSize: '12px',
+      fontWeight: 700,
+      borderRadius: '6px',
+      height: '34px',
+      cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '5px',
+      background: !dateFilterRange ? 'linear-gradient(180deg, #0284c7 0%, #0369a1 100%)' : '#e2e8f0',
+      color: !dateFilterRange ? '#ffffff' : '#334155',
+      border: '1px solid #cbd5e1',
+      boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+      transition: 'all 0.15s ease'
+    },
     onClick: () => {
       setDateRange("All Appointments");
       setDateFilterRange(null);
       showNotification("🌐 Showing all appointment records");
     },
     title: "Show all records without date filtering"
-  }, /*#__PURE__*/React.createElement("span", null, "\uD83C\uDF10"), " Show All"))), /*#__PURE__*/React.createElement("div", {
-    className: "clinical-kpi-bar"
+  }, "\uD83C\uDF10 Show All"))), /*#__PURE__*/React.createElement("div", {
+    className: "reg-summary-pill-bar"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "kpi-card kpi-total"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "kpi-icon-wrap"
-  }, "\uD83D\uDC65"), /*#__PURE__*/React.createElement("div", {
-    className: "kpi-content"
+    className: "metric-chip"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "kpi-label"
-  }, "Total Patients"), /*#__PURE__*/React.createElement("span", {
-    className: "kpi-value"
-  }, totalPatients))), /*#__PURE__*/React.createElement("div", {
-    className: "kpi-group-card"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "kpi-group-title"
-  }, /*#__PURE__*/React.createElement("span", null, "\uD83D\uDCCB"), " Registration Fees"), /*#__PURE__*/React.createElement("div", {
-    className: "kpi-group-items"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "kpi-sub-item"
+    className: "lbl"
+  }, "Total Patients:"), /*#__PURE__*/React.createElement("span", {
+    className: "val blue"
+  }, totalPatients)), /*#__PURE__*/React.createElement("div", {
+    className: "metric-chip"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "sub-lbl"
-  }, "Cash:"), /*#__PURE__*/React.createElement("span", {
-    className: "sub-val"
-  }, "\u20B9", regCashTotal.toFixed(2))), /*#__PURE__*/React.createElement("div", {
-    className: "kpi-sub-item"
+    className: "lbl"
+  }, "Reg Cash:"), /*#__PURE__*/React.createElement("span", {
+    className: "val blue"
+  }, regCashTotal.toFixed(2))), /*#__PURE__*/React.createElement("div", {
+    className: "metric-chip"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "sub-lbl"
-  }, "Card:"), /*#__PURE__*/React.createElement("span", {
-    className: "sub-val"
-  }, "\u20B9", regCardTotal.toFixed(2))), /*#__PURE__*/React.createElement("div", {
-    className: "kpi-sub-item"
+    className: "lbl"
+  }, "Reg Card:"), /*#__PURE__*/React.createElement("span", {
+    className: "val blue"
+  }, regCardTotal.toFixed(2))), /*#__PURE__*/React.createElement("div", {
+    className: "metric-chip"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "sub-lbl"
-  }, "UPI:"), /*#__PURE__*/React.createElement("span", {
-    className: "sub-val"
-  }, "\u20B9", regUpiTotal.toFixed(2))))), /*#__PURE__*/React.createElement("div", {
-    className: "kpi-group-card"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "kpi-group-title"
-  }, /*#__PURE__*/React.createElement("span", null, "\uD83E\uDE7A"), " Consultation Fees"), /*#__PURE__*/React.createElement("div", {
-    className: "kpi-group-items"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "kpi-sub-item"
+    className: "lbl"
+  }, "Reg UPI:"), /*#__PURE__*/React.createElement("span", {
+    className: "val blue"
+  }, regUpiTotal.toFixed(2))), /*#__PURE__*/React.createElement("div", {
+    className: "metric-chip"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "sub-lbl"
-  }, "Cash:"), /*#__PURE__*/React.createElement("span", {
-    className: "sub-val"
-  }, "\u20B9", consCashTotal.toFixed(2))), /*#__PURE__*/React.createElement("div", {
-    className: "kpi-sub-item"
+    className: "lbl"
+  }, "Cons Cash:"), /*#__PURE__*/React.createElement("span", {
+    className: "val blue"
+  }, consCashTotal.toFixed(2))), /*#__PURE__*/React.createElement("div", {
+    className: "metric-chip"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "sub-lbl"
-  }, "Card:"), /*#__PURE__*/React.createElement("span", {
-    className: "sub-val"
-  }, "\u20B9", consCardTotal.toFixed(2))), /*#__PURE__*/React.createElement("div", {
-    className: "kpi-sub-item"
+    className: "lbl"
+  }, "Cons Card:"), /*#__PURE__*/React.createElement("span", {
+    className: "val blue"
+  }, consCardTotal.toFixed(2))), /*#__PURE__*/React.createElement("div", {
+    className: "metric-chip"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "sub-lbl"
-  }, "UPI:"), /*#__PURE__*/React.createElement("span", {
-    className: "sub-val"
-  }, "\u20B9", consUpiTotal.toFixed(2))))), /*#__PURE__*/React.createElement("div", {
-    className: "kpi-card kpi-paid"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "kpi-icon-wrap"
-  }, "\uD83D\uDCB3"), /*#__PURE__*/React.createElement("div", {
-    className: "kpi-content"
+    className: "lbl"
+  }, "Cons Upi:"), /*#__PURE__*/React.createElement("span", {
+    className: "val blue"
+  }, consUpiTotal.toFixed(2))), /*#__PURE__*/React.createElement("div", {
+    className: "metric-chip"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "kpi-label"
-  }, "Paid Collection"), /*#__PURE__*/React.createElement("span", {
-    className: "kpi-value success"
-  }, "\u20B9", paidAmtTotal.toFixed(2)))), /*#__PURE__*/React.createElement("div", {
-    className: "kpi-card kpi-refund"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "kpi-icon-wrap"
-  }, "\uD83D\uDD04"), /*#__PURE__*/React.createElement("div", {
-    className: "kpi-content"
+    className: "lbl"
+  }, "Paid Amt:"), /*#__PURE__*/React.createElement("span", {
+    className: "val blue"
+  }, paidAmtTotal.toFixed(2))), /*#__PURE__*/React.createElement("div", {
+    className: "metric-chip"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "kpi-label"
-  }, "Refund Amount"), /*#__PURE__*/React.createElement("span", {
-    className: "kpi-value neutral"
-  }, "\u20B90.00")))), /*#__PURE__*/React.createElement("div", {
+    className: "lbl"
+  }, "Refund Amt:"), /*#__PURE__*/React.createElement("span", {
+    className: "val blue"
+  }, "0.00"))), /*#__PURE__*/React.createElement("div", {
     className: "reg-table-controls"
   }, /*#__PURE__*/React.createElement("div", {
     className: "table-left-tools"
   }, /*#__PURE__*/React.createElement("div", {
     className: "entries-dropdown-wrap"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "entries-label"
-  }, "Show"), /*#__PURE__*/React.createElement("select", {
+  }, /*#__PURE__*/React.createElement("span", null, "Show"), /*#__PURE__*/React.createElement("select", {
     value: entriesPerPage,
     onChange: e => setEntriesPerPage(Number(e.target.value)),
     className: "entries-select"
@@ -3745,32 +3723,23 @@ function RegistrationForm({
     value: 25
   }, "25"), /*#__PURE__*/React.createElement("option", {
     value: 50
-  }, "50")), /*#__PURE__*/React.createElement("span", {
-    className: "entries-label"
-  }, "entries")), /*#__PURE__*/React.createElement("button", {
-    className: "export-btn excel",
+  }, "50")), /*#__PURE__*/React.createElement("span", null, "entries")), /*#__PURE__*/React.createElement("button", {
+    className: "export-btn",
     onClick: handleExportExcel,
     title: "Export to Excel / CSV"
-  }, /*#__PURE__*/React.createElement("span", null, "\uD83D\uDCCA"), " Excel"), /*#__PURE__*/React.createElement("button", {
-    className: "export-btn pdf",
+  }, "Excel"), /*#__PURE__*/React.createElement("button", {
+    className: "export-btn",
     onClick: () => window.print(),
     title: "Print Table to PDF"
-  }, /*#__PURE__*/React.createElement("span", null, "\uD83D\uDCC4"), " PDF")), /*#__PURE__*/React.createElement("div", {
+  }, "PDF")), /*#__PURE__*/React.createElement("div", {
     className: "table-search-wrap"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "search-icon"
-  }, "\uD83D\uDD0D"), /*#__PURE__*/React.createElement("input", {
+  }, /*#__PURE__*/React.createElement("label", null, "Search:"), /*#__PURE__*/React.createElement("input", {
     type: "text",
     value: searchTerm,
     onChange: e => setSearchTerm(e.target.value),
-    placeholder: "Search UMR, Patient Name, Consultant, Category...",
+    placeholder: "Search UMR, Patient, Doctor...",
     className: "table-search-input"
-  }), searchTerm && /*#__PURE__*/React.createElement("button", {
-    type: "button",
-    className: "search-clear-btn",
-    onClick: () => setSearchTerm(''),
-    title: "Clear Search"
-  }, "\u2715"))), /*#__PURE__*/React.createElement("div", {
+  }))), /*#__PURE__*/React.createElement("div", {
     className: "reg-table-container"
   }, /*#__PURE__*/React.createElement("table", {
     className: "reg-appointments-table"
@@ -9532,23 +9501,13 @@ function App() {
     y1: "18",
     x2: "21",
     y2: "18"
-  }))), /*#__PURE__*/React.createElement("div", {
-    className: "top-facility-brand"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "top-facility-icon"
-  }, "\uD83C\uDFE5"), /*#__PURE__*/React.createElement("span", {
+  }))), /*#__PURE__*/React.createElement("span", {
     className: "top-facility-name"
-  }, "INDUS HEALTH CITY"), /*#__PURE__*/React.createElement("span", {
-    className: "top-facility-tag"
-  }, "HIMS v2.4"))), /*#__PURE__*/React.createElement("div", {
+  }, "INDUS HEALTH CITY")), /*#__PURE__*/React.createElement("div", {
     className: "top-nav-center"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "top-nav-title-wrap"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "nav-title-badge"
-  }, "OUTPATIENT"), /*#__PURE__*/React.createElement("span", {
     className: "top-nav-title"
-  }, "Patient Registration & Daily Queue"))), /*#__PURE__*/React.createElement("div", {
+  }, "Patient Registration")), /*#__PURE__*/React.createElement("div", {
     className: "top-nav-right"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -9559,43 +9518,52 @@ function App() {
         localStorage.setItem('atri_hims_current_view', 'home');
       } catch (e) {}
     },
-    title: "Return to Home Dashboard (Metro JSP)"
+    title: "Return to Home Dashboard (Metro JSP)",
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '6px',
+      background: 'linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%)',
+      border: '1.5px solid #94a3b8',
+      borderRadius: '6px',
+      padding: '5px 12px',
+      fontSize: '12px',
+      fontWeight: '700',
+      color: '#0284c7',
+      cursor: 'pointer',
+      boxShadow: '0 2px 4px rgba(0,0,0,0.06)'
+    }
   }, /*#__PURE__*/React.createElement("span", {
-    className: "home-icon"
-  }, "\uD83C\uDFE0"), /*#__PURE__*/React.createElement("span", null, "Home Dashboard")), /*#__PURE__*/React.createElement("div", {
-    className: "top-login-time",
-    title: "Current Session Login Timestamp"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "clock-icon"
-  }, "\uD83D\uDD52"), /*#__PURE__*/React.createElement("span", {
-    className: "time-lbl"
-  }, "LogIn:"), /*#__PURE__*/React.createElement("span", {
+    style: {
+      fontSize: '14px'
+    }
+  }, "\uD83C\uDFE0"), " Home Dashboard"), /*#__PURE__*/React.createElement("div", {
+    className: "top-login-time"
+  }, "LogInTime: ", /*#__PURE__*/React.createElement("span", {
     className: "time-val"
   }, loginTime || '2026-10-08 11:26:13')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: `top-pg-indicator ${postgresStatus.postgres_connected ? 'connected' : 'offline'}`,
     onClick: () => setShowPostgresModal(true),
-    title: "Database Connection Status (Click to inspect)"
+    title: "PostgreSQL Database Connection Status (Click to inspect)"
   }, /*#__PURE__*/React.createElement("span", {
     className: "indicator-dot"
   }), /*#__PURE__*/React.createElement("span", null, "\uD83D\uDC18 ", postgresStatus.postgres_connected ? 'PostgreSQL Active' : 'PostgreSQL Local Cache')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "top-action-icon",
     onClick: () => showToast('All systems running smoothly.'),
-    title: "System Notifications"
-  }, "\uD83D\uDD14", /*#__PURE__*/React.createElement("span", {
-    className: "notif-dot"
-  })), /*#__PURE__*/React.createElement("div", {
+    title: "Notifications"
+  }, "\uD83D\uDD14"), /*#__PURE__*/React.createElement("div", {
     className: "top-user-chip"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "user-avatar-circle"
-  }, (currentUser?.name || 'A')[0].toUpperCase()), /*#__PURE__*/React.createElement("strong", {
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "user-icon"
+  }, "\uD83D\uDC64"), /*#__PURE__*/React.createElement("strong", {
     className: "user-name"
   }, currentUser?.name || 'admin'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "top-signout-btn",
     onClick: handleLogout,
-    title: "Sign Out of HIMS"
+    title: "Sign Out"
   }, "Logout")))), /*#__PURE__*/React.createElement("main", {
     className: "hims-content-area"
   }, showDatabaseView ? /*#__PURE__*/React.createElement("div", {

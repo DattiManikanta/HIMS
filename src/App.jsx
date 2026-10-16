@@ -387,7 +387,7 @@ export function App() {
 
       {/* Main Content Area */}
       <div className="hims-main-viewport">
-        {/* Top Navbar - Modern Clinical Premium Design */}
+        {/* Top Navbar Matching Screenshot 1 & 2 */}
         <header className="hims-top-navbar">
           <div className="top-nav-left">
             <button 
@@ -402,18 +402,11 @@ export function App() {
                 <line x1="3" y1="18" x2="21" y2="18" />
               </svg>
             </button>
-            <div className="top-facility-brand">
-              <span className="top-facility-icon">🏥</span>
-              <span className="top-facility-name">INDUS HEALTH CITY</span>
-              <span className="top-facility-tag">HIMS v2.4</span>
-            </div>
+            <span className="top-facility-name">INDUS HEALTH CITY</span>
           </div>
 
           <div className="top-nav-center">
-            <div className="top-nav-title-wrap">
-              <span className="nav-title-badge">OUTPATIENT</span>
-              <span className="top-nav-title">Patient Registration &amp; Daily Queue</span>
-            </div>
+            <span className="top-nav-title">Patient Registration</span>
           </div>
 
           <div className="top-nav-right">
@@ -428,16 +421,27 @@ export function App() {
                 } catch (e) {}
               }}
               title="Return to Home Dashboard (Metro JSP)"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: 'linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%)',
+                border: '1.5px solid #94a3b8',
+                borderRadius: '6px',
+                padding: '5px 12px',
+                fontSize: '12px',
+                fontWeight: '700',
+                color: '#0284c7',
+                cursor: 'pointer',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.06)'
+              }}
             >
-              <span className="home-icon">🏠</span>
-              <span>Home Dashboard</span>
+              <span style={{ fontSize: '14px' }}>🏠</span> Home Dashboard
             </button>
 
-            {/* Login Time Chip */}
-            <div className="top-login-time" title="Current Session Login Timestamp">
-              <span className="clock-icon">🕒</span>
-              <span className="time-lbl">LogIn:</span>
-              <span className="time-val">{loginTime || '2026-10-08 11:26:13'}</span>
+
+            <div className="top-login-time">
+              LogInTime: <span className="time-val">{loginTime || '2026-10-08 11:26:13'}</span>
             </div>
 
             {/* PostgreSQL Status Indicator Button */}
@@ -445,34 +449,31 @@ export function App() {
               type="button"
               className={`top-pg-indicator ${postgresStatus.postgres_connected ? 'connected' : 'offline'}`}
               onClick={() => setShowPostgresModal(true)}
-              title="Database Connection Status (Click to inspect)"
+              title="PostgreSQL Database Connection Status (Click to inspect)"
             >
               <span className="indicator-dot"></span>
               <span>🐘 {postgresStatus.postgres_connected ? 'PostgreSQL Active' : 'PostgreSQL Local Cache'}</span>
             </button>
 
-            {/* Notification Bell */}
+            {/* Bell Icon */}
             <button 
               type="button" 
               className="top-action-icon" 
               onClick={() => showToast('All systems running smoothly.')}
-              title="System Notifications"
+              title="Notifications"
             >
               🔔
-              <span className="notif-dot"></span>
             </button>
 
             {/* Admin Profile Chip */}
             <div className="top-user-chip">
-              <div className="user-avatar-circle">
-                {(currentUser?.name || 'A')[0].toUpperCase()}
-              </div>
+              <span className="user-icon">👤</span>
               <strong className="user-name">{currentUser?.name || 'admin'}</strong>
               <button 
                 type="button" 
                 className="top-signout-btn" 
                 onClick={handleLogout}
-                title="Sign Out of HIMS"
+                title="Sign Out"
               >
                 Logout
               </button>

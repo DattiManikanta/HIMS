@@ -5600,39 +5600,7 @@ body {
 }
 
 .top-pg-indicator {
-  background: #f0fdf4;
-  border: 1px solid #86efac;
-  color: #15803d;
-  border-radius: 20px;
-  padding: 3px 10px;
-  font-size: 0.74rem;
-  font-weight: 700;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.15s ease;
-}
-
-.top-pg-indicator.offline {
-  background: #fffbeb;
-  border-color: #fde68a;
-  color: #b45309;
-}
-
-.top-pg-indicator:hover {
-  transform: translateY(-1px);
-}
-
-.indicator-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #16a34a;
-}
-
-.top-pg-indicator.offline .indicator-dot {
-  background: #d97706;
+  display: none !important;
 }
 
 .top-action-icon {

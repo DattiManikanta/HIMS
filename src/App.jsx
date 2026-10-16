@@ -444,16 +444,7 @@ export function App() {
               LogInTime: <span className="time-val">{loginTime || '2026-10-08 11:26:13'}</span>
             </div>
 
-            {/* PostgreSQL Status Indicator Button */}
-            <button 
-              type="button"
-              className={`top-pg-indicator ${postgresStatus.postgres_connected ? 'connected' : 'offline'}`}
-              onClick={() => setShowPostgresModal(true)}
-              title="PostgreSQL Database Connection Status (Click to inspect)"
-            >
-              <span className="indicator-dot"></span>
-              <span>🐘 {postgresStatus.postgres_connected ? 'PostgreSQL Active' : 'PostgreSQL Local Cache'}</span>
-            </button>
+
 
             {/* Bell Icon */}
             <button 

@@ -9543,13 +9543,6 @@ function App() {
     className: "time-val"
   }, loginTime || '2026-10-08 11:26:13')), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    className: `top-pg-indicator ${postgresStatus.postgres_connected ? 'connected' : 'offline'}`,
-    onClick: () => setShowPostgresModal(true),
-    title: "PostgreSQL Database Connection Status (Click to inspect)"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "indicator-dot"
-  }), /*#__PURE__*/React.createElement("span", null, "\uD83D\uDC18 ", postgresStatus.postgres_connected ? 'PostgreSQL Active' : 'PostgreSQL Local Cache')), /*#__PURE__*/React.createElement("button", {
-    type: "button",
     className: "top-action-icon",
     onClick: () => showToast('All systems running smoothly.'),
     title: "Notifications"

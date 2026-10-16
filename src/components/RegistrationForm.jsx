@@ -884,6 +884,7 @@ function generateDoctorSlots(doctorName, dateStr, appointmentsList, extraTokens 
 }
 
 export function RegistrationForm({ 
+  currentUser,
   departments, 
   doctors, 
   onRegisterSuccess, 
@@ -892,6 +893,19 @@ export function RegistrationForm({
   activeTab: propActiveTab,
   onTabChange: propOnTabChange
 }) {
+  const isAdmin = useMemo(() => {
+    let role = (currentUser?.role || '').toLowerCase();
+    let name = (currentUser?.name || currentUser?.username || '').toLowerCase();
+    if (!role) {
+      try {
+        const saved = JSON.parse(localStorage.getItem('atri_hims_user') || '{}');
+        role = (saved.role || '').toLowerCase();
+        name = (saved.name || saved.username || '').toLowerCase();
+      } catch (e) {}
+    }
+    return role === 'admin' || name.includes('admin');
+  }, [currentUser]);
+
   // Tabs: Always defaults to 'appointments' (Tab 1: Saved List)
   const [internalTab, setInternalTab] = useState('appointments');
   const activeTab = propActiveTab || internalTab;
@@ -900,14 +914,36 @@ export function RegistrationForm({
     if (propOnTabChange) propOnTabChange(tab);
   };
 
-  // Helper to remove any test/dummy leftovers from queue
+  // Helper to remove any test/dummy leftovers and deleted records from queue
   const sanitizeAppointments = (list) => {
     if (!Array.isArray(list)) return [];
+    let deletedKeys = new Set();
+    try {
+      const stored = JSON.parse(localStorage.getItem('atri_hims_deleted_umrs') || '[]');
+      if (Array.isArray(stored)) {
+        stored.forEach(x => {
+          if (x != null) deletedKeys.add(String(x).toUpperCase().trim());
+        });
+      }
+    } catch (e) {}
+
     return list.filter(p => {
       if (!p) return false;
+      const statusId = p.statusId ?? p.status_id ?? p.apptStatusId ?? p.appt_status_id;
+      if (statusId === 35 || statusId === '35' || statusId === 0 || statusId === '0') return false;
+
       const name = (p.patientName || p.pname || '').toUpperCase();
-      const umr = (p.umrNo || p.patientCode || '').toUpperCase();
-      const tok = String(p.token || p.tokenNum || '');
+      const umr = (p.umrNo || p.patientCode || p.umr_num || '').toUpperCase().trim();
+      const tok = String(p.token || p.tokenNum || p.token_num || '').toUpperCase().trim();
+      const cleanTok = tok.replace(/^OPD-/, '');
+      const pid = String(p.patientId || p.patient_id || '').trim();
+      const aid = String(p.apptId || p.patient_appt_id || '').trim();
+
+      if (umr && deletedKeys.has(umr)) return false;
+      if (tok && (deletedKeys.has(tok) || deletedKeys.has(cleanTok))) return false;
+      if (pid && deletedKeys.has(pid)) return false;
+      if (aid && deletedKeys.has(aid)) return false;
+
       if (name.includes('TEST SPEED CHECK') || umr === 'UMR334254') return false;
       if (umr === 'UMR334038' && (tok === '99' || tok === 'OPD-99')) return false;
       return true;
@@ -994,8 +1030,28 @@ export function RegistrationForm({
   // Merge newly registered records from App into appointments if present
   useEffect(() => {
     if (records && Object.keys(records).length > 0) {
+      let deletedKeys = new Set();
+      try {
+        const stored = JSON.parse(localStorage.getItem('atri_hims_deleted_umrs') || '[]');
+        if (Array.isArray(stored)) {
+          stored.forEach(x => {
+            if (x != null) deletedKeys.add(String(x).toUpperCase().trim());
+          });
+        }
+      } catch (e) {}
+
       const persistedList = Object.values(records)
-        .filter(rec => rec && (rec.umrNo || rec.opId || rec.patientCode))
+        .filter(rec => {
+          if (!rec) return false;
+          const statusId = rec.statusId ?? rec.status_id ?? rec.apptStatusId ?? rec.appt_status_id;
+          if (statusId === 35 || statusId === '35' || statusId === 0 || statusId === '0') return false;
+          const u = (rec.umrNo || rec.opId || rec.patientCode || '').toUpperCase().trim();
+          const t = String(rec.token || rec.tokenNum || '').toUpperCase().trim();
+          const cleanT = t.replace(/^OPD-/, '');
+          if (u && deletedKeys.has(u)) return false;
+          if (t && (deletedKeys.has(t) || deletedKeys.has(cleanT))) return false;
+          return u.length > 0;
+        })
         .map(rec => ({
           umrNo: rec.umrNo || rec.opId || rec.patientCode,
           token: rec.token || rec.tokenNum || '1',
@@ -1019,9 +1075,15 @@ export function RegistrationForm({
 
       if (persistedList.length > 0) {
         setAppointments(prev => {
-          const existingUmrs = new Set(prev.map(p => p.umrNo).filter(Boolean));
+          const sanitizedPrev = sanitizeAppointments(prev);
+          const existingUmrs = new Set(sanitizedPrev.map(p => p.umrNo).filter(Boolean));
           const newToAdd = persistedList.filter(p => p.umrNo && !existingUmrs.has(p.umrNo));
-          return [...newToAdd, ...prev];
+          if (newToAdd.length === 0) return sanitizedPrev;
+          const merged = [...newToAdd, ...sanitizedPrev];
+          try {
+            localStorage.setItem('atri_hims_saved_appointments', JSON.stringify(merged));
+          } catch (e) {}
+          return merged;
         });
       }
     }
@@ -1550,17 +1612,36 @@ export function RegistrationForm({
     showNotification(`✏️ Loaded ${row.patientName} (${row.umrNo}) into form for editing.`);
   };
 
-  // Handle Delete Patient
+  // Handle Delete Patient (Admin only)
   const handleDeletePatient = async (row) => {
+    if (!isAdmin) {
+      alert('Delete permission is restricted to Administrators only.');
+      return;
+    }
     const pName = row.patientName || row.pname || 'Patient';
     const pUmr = row.umrNo || row.token || '';
     if (window.confirm(`Are you sure you want to remove appointment for ${pName} (${pUmr}) from active queue?`)) {
+      // 1. Remember deleted keys in localStorage so refresh never resurrects
       try {
-        const q = `umrNo=${encodeURIComponent(row.umrNo || '')}&token=${encodeURIComponent(row.token || '')}&patientId=${encodeURIComponent(row.patientId || '')}&apptId=${encodeURIComponent(row.apptId || '')}`;
+        const stored = JSON.parse(localStorage.getItem('atri_hims_deleted_umrs') || '[]');
+        const updatedDeleted = Array.isArray(stored) ? stored : [];
+        if (row.umrNo) updatedDeleted.push(row.umrNo);
+        if (row.token) updatedDeleted.push(String(row.token));
+        if (row.tokenNum) updatedDeleted.push(String(row.tokenNum));
+        if (row.patientId) updatedDeleted.push(String(row.patientId));
+        if (row.apptId) updatedDeleted.push(String(row.apptId));
+        localStorage.setItem('atri_hims_deleted_umrs', JSON.stringify(Array.from(new Set(updatedDeleted))));
+      } catch (e) {}
+
+      // 2. Call backend delete endpoint (sets status_id = 35 and appt_status_id = 35 in DB)
+      try {
+        const q = `umrNo=${encodeURIComponent(row.umrNo || '')}&token=${encodeURIComponent(row.token || row.tokenNum || '')}&patientId=${encodeURIComponent(row.patientId || '')}&apptId=${encodeURIComponent(row.apptId || '')}`;
         await fetch(`/api/patient/delete?${q}`, { method: 'POST' });
       } catch (err) {
         console.warn('Delete server warning:', err);
       }
+
+      // 3. Update appointments state and localStorage immediately
       setAppointments(prev => {
         const updated = prev.filter(p => {
           if (row.apptId && p.apptId && String(p.apptId) === String(row.apptId)) return false;
@@ -1896,6 +1977,14 @@ export function RegistrationForm({
 
     // 1. Add record to list and local cache IMMEDIATELY (0ms delay!)
     // The booked token will now show RED for this doctor!
+    try {
+      const stored = JSON.parse(localStorage.getItem('atri_hims_deleted_umrs') || '[]');
+      if (Array.isArray(stored) && stored.length > 0) {
+        const filtered = stored.filter(x => x !== localUmrNo && String(x) !== String(savedTokenStr));
+        localStorage.setItem('atri_hims_deleted_umrs', JSON.stringify(filtered));
+      }
+    } catch (err) {}
+
     const updatedList = [newAppointmentRecord, ...appointments];
     setAppointments(updatedList);
     try {
@@ -2414,14 +2503,16 @@ export function RegistrationForm({
                       >
                         ✏️
                       </button>
-                      <button 
-                        className="btn-icon red-delete" 
-                        onClick={() => handleDeletePatient(row)}
-                        title="Delete Patient Record"
-                        style={{ cursor: 'pointer', background: 'none', border: 'none', fontSize: '15px' }}
-                      >
-                        🗑️
-                      </button>
+                      {isAdmin && (
+                        <button 
+                          className="btn-icon red-delete" 
+                          onClick={() => handleDeletePatient(row)}
+                          title="Delete Patient Record"
+                          style={{ cursor: 'pointer', background: 'none', border: 'none', fontSize: '15px' }}
+                        >
+                          🗑️
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))

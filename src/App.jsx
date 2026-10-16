@@ -490,6 +490,7 @@ export function App() {
             </div>
           ) : (
             <RegistrationForm 
+              currentUser={currentUser}
               departments={departments}
               doctors={doctors}
               records={records}

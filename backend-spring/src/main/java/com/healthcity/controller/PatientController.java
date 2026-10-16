@@ -106,7 +106,8 @@ public class PatientController {
             "FROM at_pr_patient p " +
             "JOIN at_pr_appt a ON p.patient_id = a.patient_id " +
             "LEFT JOIN at_hr_emp e ON a.emp_id = e.emp_id " +
-            "WHERE (a.appt_status_id IS NULL OR a.appt_status_id != 41) " +
+            "WHERE (p.status_id IS NULL OR (p.status_id != 35 AND p.status_id != 0)) " +
+            "  AND (a.appt_status_id IS NULL OR (a.appt_status_id != 35 AND a.appt_status_id != 41)) " +
             "  AND p.patient_name NOT LIKE '%TEST SPEED CHECK%' " +
             "  AND (a.token_num != '99' OR p.umr_num != 'UMR334038') " +
             "ORDER BY a.patient_appt_id DESC LIMIT 100";
@@ -635,6 +636,10 @@ public class PatientController {
             List<AtPrAppt> appts = atPrApptRepository.findAllByOrderByPatientApptIdDesc();
             if (!appts.isEmpty()) {
                 for (AtPrAppt a : appts) {
+                    if (a.getApptStatusId() != null && ("35".equals(a.getApptStatusId()) || "41".equals(a.getApptStatusId()))) {
+                        continue;
+                    }
+
                     Map<String, Object> row = new LinkedHashMap<>();
                     row.put("apptId", a.getPatientApptId());
                     row.put("patientId", a.getPatientId());
@@ -671,6 +676,9 @@ public class PatientController {
                         Optional<AtPrPatient> patOpt = atPrPatientRepository.findById(a.getPatientId());
                         if (patOpt.isPresent()) {
                             AtPrPatient p = patOpt.get();
+                            if (p.getStatusId() != null && (p.getStatusId() == 35 || p.getStatusId() == 0)) {
+                                continue;
+                            }
                             row.put("pname", p.getPatientName());
                             row.put("lastName", p.getLastName());
                             row.put("title", p.getTitle());
@@ -951,30 +959,53 @@ public class PatientController {
 
         boolean deleted = false;
 
-        // 1. Inactivate / Delete appointment in MySQL database
+        // 1. Inactivate / Delete appointment in MySQL database (Set status_id = 35 for deleted records)
         if (jdbcTemplate != null) {
             try {
                 if (apptId != null) {
-                    jdbcTemplate.update("UPDATE at_pr_appt SET appt_status_id = 41 WHERE patient_appt_id = ?", apptId);
+                    jdbcTemplate.update("UPDATE at_pr_appt SET appt_status_id = 35 WHERE patient_appt_id = ?", apptId);
                     deleted = true;
                 }
                 if (token != null && !token.trim().isEmpty()) {
                     String cleanTok = token.trim().replaceAll("(?i)^OPD-", "");
-                    jdbcTemplate.update("UPDATE at_pr_appt SET appt_status_id = 41 WHERE token_num = ? OR token_num = ?", token.trim(), cleanTok);
+                    jdbcTemplate.update("UPDATE at_pr_appt SET appt_status_id = 35 WHERE token_num = ? OR token_num = ?", token.trim(), cleanTok);
                     deleted = true;
                 }
                 if (umrNo != null && !umrNo.trim().isEmpty()) {
-                    jdbcTemplate.update("UPDATE at_pr_appt SET appt_status_id = 41 WHERE umr_num = ?", umrNo.trim());
+                    jdbcTemplate.update("UPDATE at_pr_patient SET status_id = 35 WHERE umr_num = ?", umrNo.trim());
+                    jdbcTemplate.update("UPDATE at_pr_appt SET appt_status_id = 35 WHERE umr_num = ?", umrNo.trim());
                     deleted = true;
                 }
                 if (patientId != null) {
-                    jdbcTemplate.update("UPDATE at_pr_appt SET appt_status_id = 41 WHERE patient_id = ?", patientId);
+                    jdbcTemplate.update("UPDATE at_pr_patient SET status_id = 35 WHERE patient_id = ?", patientId);
+                    jdbcTemplate.update("UPDATE at_pr_appt SET appt_status_id = 35 WHERE patient_id = ?", patientId);
                     deleted = true;
                 }
             } catch (Exception e) {
                 logger.warn("MySQL appointment delete warning: {}", e.getMessage());
             }
         }
+
+        // JPA Update Status to 35
+        try {
+            if (patientId != null) {
+                Optional<AtPrPatient> patOpt = atPrPatientRepository.findById(patientId);
+                if (patOpt.isPresent()) {
+                    AtPrPatient p = patOpt.get();
+                    p.setStatusId(35);
+                    atPrPatientRepository.save(p);
+                    deleted = true;
+                }
+            } else if (umrNo != null && !umrNo.trim().isEmpty()) {
+                Optional<AtPrPatient> patOpt = atPrPatientRepository.findByUmrNum(umrNo.trim());
+                if (patOpt.isPresent()) {
+                    AtPrPatient p = patOpt.get();
+                    p.setStatusId(35);
+                    atPrPatientRepository.save(p);
+                    deleted = true;
+                }
+            }
+        } catch (Exception ignored) {}
 
         // 2. Fallback Storage sync (remove from both patientQueue list and patients map)
         Map<String, Object> fallback = fallbackStorageService.loadFallbackData();
@@ -1011,6 +1042,13 @@ public class PatientController {
                        (token != null && !token.isEmpty() && (token.equalsIgnoreCase(tok) || token.equalsIgnoreCase(tokNum)));
             });
         }
+        try {
+            if (token != null && !token.trim().isEmpty()) {
+                patientRepository.deleteById(token.trim());
+                String cleanTok = token.trim().replaceAll("(?i)^OPD-", "");
+                patientRepository.deleteById(cleanTok);
+            }
+        } catch (Exception ignored) {}
         fallbackStorageService.saveFallbackData(fallback);
 
         Map<String, Object> res = new HashMap<>();

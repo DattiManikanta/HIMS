@@ -1584,8 +1584,8 @@ def get_patient_queue():
             FROM at_pr_patient p
             LEFT JOIN at_pr_appt a ON p.patient_id = a.patient_id
             LEFT JOIN at_bills bill ON bill.patient_id = p.patient_id
-            LEFT JOIN at_location l ON l.loc_id = a.loc_id
-            WHERE p.status_id = 34
+            WHERE (p.status_id IS NULL OR (p.status_id = 34 AND p.status_id != 35))
+              AND (a.appt_status_id IS NULL OR (a.appt_status_id != 35 AND a.appt_status_id != 41))
             ORDER BY a.priority_no DESC, a.patient_appt_id DESC, p.patient_id DESC
             """
             cur.execute(sql)
@@ -1748,10 +1748,34 @@ def get_patient_details():
 @app.route('/api/patient/delete', methods=['POST'])
 @app.route('/patient/deletePatientRecord', methods=['POST'])
 def delete_patient_record():
-    """Inactivate or remove patient from queue."""
+    """Inactivate or remove patient from queue (Set status_id = 35)."""
     umr_no = request.args.get('umrNo') or request.form.get('umrNo') or ''
     patient_id = request.args.get('patientId') or request.form.get('patientId') or ''
     token = request.args.get('token') or request.form.get('token') or ''
+    appt_id = request.args.get('apptId') or request.form.get('apptId') or ''
+
+    # 1. Update MySQL database with status_id = 35
+    if db_connected:
+        try:
+            conn = get_db_connection()
+            if conn:
+                with conn.cursor() as cur:
+                    if umr_no:
+                        cur.execute("UPDATE at_pr_patient SET status_id = 35 WHERE umr_num = %s", (umr_no.strip(),))
+                        cur.execute("UPDATE at_pr_appt SET appt_status_id = 35 WHERE umr_num = %s", (umr_no.strip(),))
+                    if patient_id and str(patient_id).isdigit():
+                        cur.execute("UPDATE at_pr_patient SET status_id = 35 WHERE patient_id = %s", (int(patient_id),))
+                        cur.execute("UPDATE at_pr_appt SET appt_status_id = 35 WHERE patient_id = %s", (int(patient_id),))
+                    if token:
+                        clean_tok = re.sub(r'(?i)^OPD-', '', token.strip())
+                        cur.execute("UPDATE at_pr_appt SET appt_status_id = 35 WHERE token_num = %s OR token_num = %s", (token.strip(), clean_tok))
+                    if appt_id and str(appt_id).isdigit():
+                        cur.execute("UPDATE at_pr_appt SET appt_status_id = 35 WHERE patient_appt_id = %s", (int(appt_id),))
+                conn.commit()
+        except Exception as e:
+            logger.warning(f"MySQL delete update status 35 failed: {e}")
+
+    # 2. Fallback Storage sync
     fallback = load_fallback_data()
     queue = fallback.get('patientQueue', [])
     fallback['patientQueue'] = [
@@ -1769,7 +1793,7 @@ def delete_patient_record():
     for k in keys_to_del:
         patients.pop(k, None)
     save_fallback_data(fallback)
-    return jsonify({"success": True, "message": "Patient record deleted / inactivated."})
+    return jsonify({"success": True, "message": "Patient record deleted / inactivated with status 35."})
 
 
 @app.route('/api/vitals', methods=['POST'])
